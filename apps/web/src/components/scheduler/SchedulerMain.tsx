@@ -2,6 +2,7 @@ import { ScheduleComponent, Day, Week, WorkWeek, Month, Resize, DragAndDrop, Inj
 import type { EventSettingsModel } from "@syncfusion/ej2-react-schedule";
 import type { Clinic, Operatory, AppointmentWithRelations } from "@/api/types";
 import { appointmentToSyncfusionEvent, operatoriesToResources } from "./syncfusionAdapters";
+import { useEffect, useRef, useState } from "react";
 
 interface SchedulerMainProps {
   clinic: Clinic;
@@ -94,8 +95,28 @@ export function SchedulerMain({
     }
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [schedulerHeight, setSchedulerHeight] = useState<string>("100%");
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.clientHeight;
+        setSchedulerHeight(`${height}px`);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
   return (
-    <div className="flex-1 min-w-0 h-full overflow-hidden">
+    <div 
+      ref={containerRef}
+      className="flex-1 min-w-0 h-full" 
+      style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}
+    >
       <ScheduleComponent
         selectedDate={selectedDate}
         currentView={currentView as any}
@@ -103,6 +124,7 @@ export function SchedulerMain({
         allowDragAndDrop={true}
         allowResizing={true}
         allowMultiCellSelection={true}
+        height={schedulerHeight}
         workHours={{
           start: "07:00",
           end: "19:00",

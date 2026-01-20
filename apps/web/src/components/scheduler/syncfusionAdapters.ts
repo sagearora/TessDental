@@ -93,21 +93,28 @@ export function syncfusionEventToUpdateRequest(
   event: Partial<SyncfusionEvent>,
   originalAppointment: AppointmentWithRelations
 ): UpdateAppointmentRequest {
+  console.log("syncfusionEventToUpdateRequest - event:", event);
+  console.log("syncfusionEventToUpdateRequest - originalAppointment:", originalAppointment);
+  
   const updates: UpdateAppointmentRequest = {
     row_version: originalAppointment.row_version,
   };
 
+  // Always update start_at and length_minutes if StartTime/EndTime are provided
   if (event.StartTime) {
     updates.start_at = event.StartTime.toISOString();
+    console.log("Setting start_at:", updates.start_at);
   }
 
   if (event.StartTime && event.EndTime) {
     const lengthMinutes = Math.round((event.EndTime.getTime() - event.StartTime.getTime()) / (1000 * 60));
     updates.length_minutes = lengthMinutes;
+    console.log("Setting length_minutes:", lengthMinutes, "from", event.StartTime, "to", event.EndTime);
   }
 
-  if (event.OperatoryId !== undefined) {
+  if (event.OperatoryId !== undefined && event.OperatoryId !== originalAppointment.operatory_id) {
     updates.operatory_id = event.OperatoryId;
+    console.log("Setting operatory_id:", updates.operatory_id);
   }
 
   if (event.ProviderId !== undefined) {

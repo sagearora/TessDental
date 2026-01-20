@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SchedulerMain } from "@/components/scheduler/SchedulerMain";
 import { SchedulerSidebar } from "@/components/sidebar/SchedulerSidebar";
@@ -12,6 +12,7 @@ import { getAppointments, createAppointment, updateAppointment, cancelAppointmen
 import { getAppointmentStatuses, getAppointmentConfirmations, getAppointmentTags } from "@/api/reference";
 import type { AppointmentWithRelations, Clinic, Patient, User } from "@/api/types";
 import { syncfusionEventToCreateRequest, syncfusionEventToUpdateRequest } from "@/components/scheduler/syncfusionAdapters";
+import { getDayStart } from "@/lib/time";
 
 // Mock clinic - in real app, this would come from auth/context
 const MOCK_CLINIC: Clinic = {
@@ -43,36 +44,61 @@ export function SchedulerDayPage() {
 
   // Calculate date range based on current view
   const getDateRange = () => {
-    const start = new Date(selectedDate);
-    const end = new Date(selectedDate);
-
+    // Use timezone-aware date calculations
+    const clinicTimezone = MOCK_CLINIC.timezone;
+    
     if (currentView === "Week" || currentView === "WorkWeek") {
-      // Get start of week (Sunday)
-      const day = start.getDay();
-      start.setDate(start.getDate() - day);
-      // Get end of week (Saturday)
-      end.setDate(start.getDate() + 6);
+      // Get start of week (Sunday) in clinic timezone
+      const startOfWeek = new Date(selectedDate);
+      const day = startOfWeek.getDay();
+      startOfWeek.setDate(startOfWeek.getDate() - day);
+      const start = getDayStart(startOfWeek, clinicTimezone);
+      
+      // Get end of week (Saturday) in clinic timezone
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(endOfWeek.getDate() + 6);
+      const end = new Date(getDayStart(endOfWeek, clinicTimezone));
       end.setHours(23, 59, 59, 999);
+      
+      return { start, end };
     } else if (currentView === "Month") {
-      // Get start of month
-      start.setDate(1);
-      // Get end of month
-      end.setMonth(end.getMonth() + 1);
-      end.setDate(0);
+      // Get start of month in clinic timezone
+      const startOfMonth = new Date(selectedDate);
+      startOfMonth.setDate(1);
+      const start = getDayStart(startOfMonth, clinicTimezone);
+      
+      // Get end of month in clinic timezone
+      const endOfMonth = new Date(selectedDate);
+      endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+      endOfMonth.setDate(0);
+      const end = new Date(getDayStart(endOfMonth, clinicTimezone));
       end.setHours(23, 59, 59, 999);
+      
+      return { start, end };
     } else {
-      // Day view
+      // Day view - get full day in clinic timezone
+      const start = getDayStart(selectedDate, clinicTimezone);
+      const end = new Date(start);
       end.setHours(23, 59, 59, 999);
+      
+      return { start, end };
     }
-
-    return { start, end };
   };
 
   const { start: windowStart, end: windowEnd } = getDateRange();
 
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments", MOCK_CLINIC.id, windowStart.toISOString(), windowEnd.toISOString()],
-    queryFn: () => getAppointments(MOCK_CLINIC.id, windowStart.toISOString(), windowEnd.toISOString()),
+    queryFn: async () => {
+      const result = await getAppointments(MOCK_CLINIC.id, windowStart.toISOString(), windowEnd.toISOString());
+      console.log("SchedulerDayPage - Fetched appointments:", result);
+      return result;
+    },
+  });
+
+  const { data: patients = [] } = useQuery({
+    queryKey: ["patients", MOCK_CLINIC.id],
+    queryFn: () => getPatients(MOCK_CLINIC.id),
   });
 
   const { data: statuses = [] } = useQuery({
@@ -89,6 +115,18 @@ export function SchedulerDayPage() {
     queryKey: ["appointment-tags", MOCK_CLINIC.id],
     queryFn: () => getAppointmentTags(MOCK_CLINIC.id),
   });
+
+  // Enrich appointments with relations
+  const appointmentsWithRelations = useMemo(() => {
+    const enriched = appointments.map((apt) => ({
+      ...apt,
+      patient: apt.patient_id ? patients.find((p) => p.id === apt.patient_id) : undefined,
+      status: statuses.find((s) => s.id === apt.status_id),
+      confirmation: apt.confirmation_id ? confirmations.find((c) => c.id === apt.confirmation_id) : undefined,
+    }));
+    console.log("SchedulerDayPage - Enriched appointments:", enriched);
+    return enriched;
+  }, [appointments, patients, statuses, confirmations]);
 
   // Mutations
   const createPatientMutation = useMutation({
@@ -115,7 +153,9 @@ export function SchedulerDayPage() {
 
   const updateAppointmentMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => updateAppointment(id, data),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log("Update mutation success, result:", result);
+      // Invalidate and refetch appointments to show the updated data
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Appointment updated successfully");
     },
@@ -153,18 +193,29 @@ export function SchedulerDayPage() {
 
   const handleEventChange = async (eventData: any) => {
     try {
+      console.log("=== Handle Event Change ===");
+      console.log("Event data from Syncfusion:", eventData);
+      
       // Find the original appointment
-      const appointment = appointments.find((a) => a.id === eventData.Id);
+      const appointment = appointmentsWithRelations.find((a) => a.id === eventData.Id);
       if (!appointment) {
+        console.error("Appointment not found for ID:", eventData.Id);
         throw new Error("Appointment not found");
       }
 
+      console.log("Original appointment:", appointment);
       const request = syncfusionEventToUpdateRequest(eventData, appointment);
-      await updateAppointmentMutation.mutateAsync({
+      console.log("Update request:", request);
+      
+      const result = await updateAppointmentMutation.mutateAsync({
         id: appointment.id,
         data: request,
       });
+      
+      console.log("Update result:", result);
+      console.log("=== End Event Change ===");
     } catch (error) {
+      console.error("Event change error:", error);
       toast.error("Failed to update appointment");
       throw error;
     }
@@ -209,7 +260,7 @@ export function SchedulerDayPage() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Top bar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
+      <div className="bg-white border-b border-gray-200 px-4 py-1.5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Select value={MOCK_CLINIC.id.toString()} className="w-48">
@@ -222,13 +273,13 @@ export function SchedulerDayPage() {
       {/* Main content: Scheduler + Sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Scheduler */}
-        <div className="flex-1 min-w-0 flex flex-col p-4">
+        <div className="flex-1 min-w-0 flex flex-col" style={{ overflow: 'hidden', height: '100%' }}>
           <SchedulerMain
             clinic={MOCK_CLINIC}
             selectedDate={selectedDate}
             currentView={currentView}
             operatories={activeOperatories}
-            appointments={appointments}
+            appointments={appointmentsWithRelations}
             onEventCreate={handleEventCreate}
             onEventChange={handleEventChange}
             onEventRemove={handleEventRemove}

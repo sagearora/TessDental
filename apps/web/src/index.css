@@ -39,24 +39,34 @@
 /* Syncfusion Scheduler height fix */
 .tessdental-scheduler {
   height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
+  width: 100% !important;
+  display: block !important;
 }
 
 .tessdental-scheduler .e-schedule {
   height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
+  width: 100% !important;
+  display: block !important;
 }
 
-.tessdental-scheduler .e-content-wrap {
-  flex: 1 !important;
+/* Enable scrolling in the content area - target the actual scrollable container */
+.tessdental-scheduler .e-content-wrap,
+.tessdental-scheduler .e-content-table-wrap {
   overflow-y: auto !important;
-  min-height: 0 !important;
+  overflow-x: auto !important;
+  max-height: 100% !important;
 }
 
-.tessdental-scheduler .e-content-table {
-  min-height: 100% !important;
+/* For timeline views */
+.tessdental-scheduler .e-timeline-view .e-content-wrap,
+.tessdental-scheduler .e-timeline-month-view .e-content-wrap,
+.tessdental-scheduler .e-day-view .e-content-wrap,
+.tessdental-scheduler .e-week-view .e-content-wrap,
+.tessdental-scheduler .e-work-week-view .e-content-wrap {
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  height: auto !important;
+  max-height: calc(100vh - 200px) !important;
 }
 
 /* Syncfusion Scheduler header icons fix */
@@ -78,4 +88,112 @@
 .tessdental-scheduler .e-toolbar-item {
   display: inline-flex !important;
   align-items: center !important;
+}
+
+/* Sidebar Mini Calendar styling */
+.tessdental-mini-calendar {
+  --rdp-cell-size: 38px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: transparent;
+}
+
+.tessdental-mini-calendar .rdp {
+  margin: 0;
+  width: 100%;
+}
+
+.tessdental-mini-calendar .rdp-months {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.tessdental-mini-calendar .rdp-month {
+  width: 100%;
+  margin: 0;
+}
+
+.tessdental-mini-calendar .rdp-caption {
+  margin-bottom: 8px;
+}
+
+.tessdental-mini-calendar .rdp-caption_label {
+  display: none;
+}
+
+.tessdental-mini-calendar .rdp-nav {
+  display: none;
+}
+
+.tessdental-mini-calendar .rdp-table {
+  width: 100%;
+  margin-top: 0;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+
+.tessdental-mini-calendar .rdp-head_row {
+  height: 26px;
+}
+
+.tessdental-mini-calendar .rdp-head_cell {
+  width: 38px;
+  height: 26px;
+  padding: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  vertical-align: middle;
+}
+
+.tessdental-mini-calendar .rdp-row {
+  height: 38px;
+}
+
+.tessdental-mini-calendar .rdp-cell {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tessdental-mini-calendar .rdp-button {
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tessdental-mini-calendar .rdp-button:hover:not([disabled]) {
+  background-color: hsl(var(--accent));
+}
+
+.tessdental-mini-calendar .rdp-day_selected {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.tessdental-mini-calendar .rdp-day_selected:hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+
+.tessdental-mini-calendar .rdp-day_outside {
+  color: hsl(var(--muted-foreground));
+}
+
+.tessdental-mini-calendar .rdp-day_today {
+  font-weight: 600;
+}
+
+.tessdental-mini-calendar .rdp-day[disabled] {
+  color: hsl(var(--muted-foreground));
+  cursor: not-allowed;
 }

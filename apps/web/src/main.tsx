@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import { registerLicense } from "@syncfusion/ej2-base";
 import App from "./App";
 import "./index.css";
-
 // Syncfusion Bootstrap 5 Theme Styles
 // Import base styles first (includes icon fonts)
 import "@syncfusion/ej2-base/styles/bootstrap5.css";

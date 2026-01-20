@@ -25,7 +25,107 @@ export async function createPatient(
 // Mock implementation
 const mockPatients: Patient[] = [];
 
+function initializeMockPatients(clinicId: number) {
+  if (mockPatients.length > 0) return; // Already initialized
+
+  const patients: Patient[] = [
+    {
+      id: 1,
+      clinic_id: clinicId,
+      chart_no: "CH001",
+      first_name: "John",
+      last_name: "Doe",
+      dob: "1980-01-15",
+      email: "john.doe@example.com",
+      preferred_contact_method: "email",
+      default_dentist_id: null,
+      default_hygienist_id: null,
+      default_assistant_id: null,
+      responsible_party_id: null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      row_version: 1,
+    },
+    {
+      id: 2,
+      clinic_id: clinicId,
+      chart_no: "CH002",
+      first_name: "Jane",
+      last_name: "Smith",
+      dob: "1985-05-20",
+      email: "jane.smith@example.com",
+      preferred_contact_method: "sms",
+      default_dentist_id: null,
+      default_hygienist_id: null,
+      default_assistant_id: null,
+      responsible_party_id: null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      row_version: 1,
+    },
+    {
+      id: 3,
+      clinic_id: clinicId,
+      chart_no: "CH003",
+      first_name: "Bob",
+      last_name: "Johnson",
+      dob: "1975-11-10",
+      email: "bob.johnson@example.com",
+      preferred_contact_method: "phone",
+      default_dentist_id: null,
+      default_hygienist_id: null,
+      default_assistant_id: null,
+      responsible_party_id: null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      row_version: 1,
+    },
+    {
+      id: 4,
+      clinic_id: clinicId,
+      chart_no: "CH004",
+      first_name: "Alice",
+      last_name: "Williams",
+      dob: "1990-03-25",
+      email: "alice.williams@example.com",
+      preferred_contact_method: "email",
+      default_dentist_id: null,
+      default_hygienist_id: null,
+      default_assistant_id: null,
+      responsible_party_id: null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      row_version: 1,
+    },
+    {
+      id: 5,
+      clinic_id: clinicId,
+      chart_no: "CH005",
+      first_name: "Charlie",
+      last_name: "Brown",
+      dob: "1988-07-12",
+      email: "charlie.brown@example.com",
+      preferred_contact_method: "sms",
+      default_dentist_id: null,
+      default_hygienist_id: null,
+      default_assistant_id: null,
+      responsible_party_id: null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      row_version: 1,
+    },
+  ];
+
+  mockPatients.push(...patients);
+}
+
 function mockGetPatients(clinicId: number, query?: string): Patient[] {
+  initializeMockPatients(clinicId);
   let results = mockPatients.filter((p) => p.clinic_id === clinicId);
   if (query) {
     const q = query.toLowerCase();
