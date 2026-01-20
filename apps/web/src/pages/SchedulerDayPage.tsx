@@ -1,11 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, addDays, subDays } from "date-fns";
-import { DayScheduler } from "@/components/scheduler/DayScheduler";
+import { SchedulerMain } from "@/components/scheduler/SchedulerMain";
+import { SchedulerSidebar } from "@/components/sidebar/SchedulerSidebar";
 import { CreatePatientModal } from "@/components/modals/CreatePatientModal";
 import { CreateEditAppointmentModal } from "@/components/modals/CreateEditAppointmentModal";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
 import { getOperatories } from "@/api/operatories";
@@ -13,8 +11,7 @@ import { getPatients, createPatient } from "@/api/patients";
 import { getAppointments, createAppointment, updateAppointment, cancelAppointment } from "@/api/appointments";
 import { getAppointmentStatuses, getAppointmentConfirmations, getAppointmentTags } from "@/api/reference";
 import type { AppointmentWithRelations, Clinic, Patient, User } from "@/api/types";
-import { getWindowStart, getWindowEnd, formatDate, DEFAULT_DAY_START_HOUR, DEFAULT_DAY_END_HOUR } from "@/lib/time";
-import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { syncfusionEventToCreateRequest, syncfusionEventToUpdateRequest } from "@/components/scheduler/syncfusionAdapters";
 
 // Mock clinic - in real app, this would come from auth/context
 const MOCK_CLINIC: Clinic = {
@@ -30,17 +27,11 @@ const MOCK_CLINIC: Clinic = {
 
 export function SchedulerDayPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [currentView, setCurrentView] = useState<"Day" | "Week" | "WorkWeek" | "Month">("Day");
   const [showCreatePatient, setShowCreatePatient] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentWithRelations | null>(null);
-  const [selectionData, setSelectionData] = useState<{
-    startTime: Date;
-    endTime: Date;
-    operatoryId: number;
-  } | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -50,17 +41,37 @@ export function SchedulerDayPage() {
     queryFn: () => getOperatories(MOCK_CLINIC.id),
   });
 
-  const { data: patients = [], isLoading: isLoadingPatients } = useQuery({
-    queryKey: ["patients", MOCK_CLINIC.id, searchQuery],
-    queryFn: () => getPatients(MOCK_CLINIC.id, searchQuery),
-    enabled: searchQuery.length > 0,
-  });
+  // Calculate date range based on current view
+  const getDateRange = () => {
+    const start = new Date(selectedDate);
+    const end = new Date(selectedDate);
 
-  const windowStart = getWindowStart(selectedDate, MOCK_CLINIC.timezone, DEFAULT_DAY_START_HOUR);
-  const windowEnd = getWindowEnd(selectedDate, MOCK_CLINIC.timezone, DEFAULT_DAY_END_HOUR);
+    if (currentView === "Week" || currentView === "WorkWeek") {
+      // Get start of week (Sunday)
+      const day = start.getDay();
+      start.setDate(start.getDate() - day);
+      // Get end of week (Saturday)
+      end.setDate(start.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+    } else if (currentView === "Month") {
+      // Get start of month
+      start.setDate(1);
+      // Get end of month
+      end.setMonth(end.getMonth() + 1);
+      end.setDate(0);
+      end.setHours(23, 59, 59, 999);
+    } else {
+      // Day view
+      end.setHours(23, 59, 59, 999);
+    }
+
+    return { start, end };
+  };
+
+  const { start: windowStart, end: windowEnd } = getDateRange();
 
   const { data: appointments = [] } = useQuery({
-    queryKey: ["appointments", MOCK_CLINIC.id, selectedDate.toISOString()],
+    queryKey: ["appointments", MOCK_CLINIC.id, windowStart.toISOString(), windowEnd.toISOString()],
     queryFn: () => getAppointments(MOCK_CLINIC.id, windowStart.toISOString(), windowEnd.toISOString()),
   });
 
@@ -129,8 +140,47 @@ export function SchedulerDayPage() {
     },
   });
 
-  const handleSelectionComplete = (selection: { startTime: Date; endTime: Date; operatoryId: number }) => {
-    setSelectionData(selection);
+  // Syncfusion event handlers
+  const handleEventCreate = async (eventData: any) => {
+    try {
+      const request = syncfusionEventToCreateRequest(eventData, MOCK_CLINIC.id);
+      await createAppointmentMutation.mutateAsync(request);
+    } catch (error) {
+      toast.error("Failed to create appointment");
+      throw error;
+    }
+  };
+
+  const handleEventChange = async (eventData: any) => {
+    try {
+      // Find the original appointment
+      const appointment = appointments.find((a) => a.id === eventData.Id);
+      if (!appointment) {
+        throw new Error("Appointment not found");
+      }
+
+      const request = syncfusionEventToUpdateRequest(eventData, appointment);
+      await updateAppointmentMutation.mutateAsync({
+        id: appointment.id,
+        data: request,
+      });
+    } catch (error) {
+      toast.error("Failed to update appointment");
+      throw error;
+    }
+  };
+
+  const handleEventRemove = async (eventId: number) => {
+    try {
+      await cancelAppointmentMutation.mutateAsync(eventId);
+    } catch (error) {
+      toast.error("Failed to cancel appointment");
+      throw error;
+    }
+  };
+
+  const handleEventClick = (appointment: AppointmentWithRelations) => {
+    setEditingAppointment(appointment);
     setShowAppointmentModal(true);
   };
 
@@ -140,42 +190,9 @@ export function SchedulerDayPage() {
         id: editingAppointment.id,
         data,
       });
-    } else if (selectionData) {
-      await createAppointmentMutation.mutateAsync({
-        ...data,
-        start_at: selectionData.startTime.toISOString(),
-        length_minutes: Math.round(
-          (selectionData.endTime.getTime() - selectionData.startTime.getTime()) / (1000 * 60)
-        ),
-        operatory_id: selectionData.operatoryId,
-      });
     }
     setShowAppointmentModal(false);
     setEditingAppointment(null);
-    setSelectionData(null);
-  };
-
-  const handleAppointmentMove = async (
-    appointmentId: number,
-    newStart: Date,
-    newOperatoryId: number
-  ) => {
-    const appointment = appointments.find((a) => a.id === appointmentId);
-    if (!appointment) return;
-
-    await updateAppointmentMutation.mutateAsync({
-      id: appointmentId,
-      data: {
-        start_at: newStart.toISOString(),
-        operatory_id: newOperatoryId,
-        row_version: appointment.row_version,
-      },
-    });
-  };
-
-  const handleEditAppointment = (appointment: AppointmentWithRelations) => {
-    setEditingAppointment(appointment);
-    setShowAppointmentModal(true);
   };
 
   const handleCancelAppointment = async () => {
@@ -185,32 +202,6 @@ export function SchedulerDayPage() {
       setEditingAppointment(null);
     }
   };
-
-  const goToToday = () => {
-    setSelectedDate(new Date());
-  };
-
-  const goToPrevDay = () => {
-    setSelectedDate((d) => subDays(d, 1));
-  };
-
-  const goToNextDay = () => {
-    setSelectedDate((d) => addDays(d, 1));
-  };
-
-  // Close search results when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSearchResults(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const activeOperatories = operatories.filter((o) => o.is_active && o.is_bookable);
   const activeProviders: User[] = []; // Would fetch from users API
@@ -225,96 +216,38 @@ export function SchedulerDayPage() {
               <option value={MOCK_CLINIC.id.toString()}>{MOCK_CLINIC.name}</option>
             </Select>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPrevDay}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={goToToday}>
-              Today
-            </Button>
-            <Button variant="outline" size="icon" onClick={goToNextDay}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Input
-              type="date"
-              value={format(selectedDate, "yyyy-MM-dd")}
-              onChange={(e) => setSelectedDate(new Date(e.target.value))}
-              className="w-40"
-            />
-            <div className="text-sm font-medium px-2">
-              {formatDate(selectedDate, MOCK_CLINIC.timezone)}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-1 max-w-md">
-            <div ref={searchRef} className="relative flex-1">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search patients..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSearchResults(true);
-                }}
-                onFocus={() => {
-                  if (searchQuery.length > 0) {
-                    setShowSearchResults(true);
-                  }
-                }}
-                className="pl-8"
-              />
-              {showSearchResults && searchQuery.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {isLoadingPatients ? (
-                    <div className="px-4 py-2 text-sm text-gray-500">Searching...</div>
-                  ) : patients.length > 0 ? (
-                    patients.map((patient) => (
-                      <div
-                        key={patient.id}
-                        className="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                        onClick={() => {
-                          // When clicking a patient, we could open a patient detail view or create an appointment
-                          // For now, just clear the search
-                          setSearchQuery("");
-                          setShowSearchResults(false);
-                        }}
-                      >
-                        <div className="font-medium text-sm">
-                          {patient.first_name} {patient.last_name}
-                        </div>
-                        {patient.chart_no && (
-                          <div className="text-xs text-gray-500">Chart: {patient.chart_no}</div>
-                        )}
-                        {patient.email && (
-                          <div className="text-xs text-gray-500">{patient.email}</div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="px-4 py-2 text-sm text-gray-500">No patients found</div>
-                  )}
-                </div>
-              )}
-            </div>
-            <Button onClick={() => setShowCreatePatient(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              Patient
-            </Button>
-          </div>
         </div>
       </div>
 
-      {/* Scheduler */}
-      <div className="flex-1 overflow-auto p-4">
-        <DayScheduler
-          clinic={MOCK_CLINIC}
-          date={selectedDate}
-          operatories={activeOperatories}
-          appointments={appointments}
-          onSelectionComplete={handleSelectionComplete}
-          onAppointmentMove={handleAppointmentMove}
-          onEditAppointment={handleEditAppointment}
+      {/* Main content: Scheduler + Sidebar */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Scheduler */}
+        <div className="flex-1 min-w-0 flex flex-col p-4">
+          <SchedulerMain
+            clinic={MOCK_CLINIC}
+            selectedDate={selectedDate}
+            currentView={currentView}
+            operatories={activeOperatories}
+            appointments={appointments}
+            onEventCreate={handleEventCreate}
+            onEventChange={handleEventChange}
+            onEventRemove={handleEventRemove}
+            onEventClick={handleEventClick}
+            onDateChange={setSelectedDate}
+            onViewChange={setCurrentView}
+          />
+        </div>
+
+        {/* Sidebar */}
+        <SchedulerSidebar
+          clinicId={MOCK_CLINIC.id}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          onPatientSelect={(patient) => {
+            setSelectedPatient(patient);
+            // Could open appointment modal with patient pre-selected
+          }}
+          onCreatePatient={() => setShowCreatePatient(true)}
         />
       </div>
 
@@ -328,23 +261,23 @@ export function SchedulerDayPage() {
         }}
       />
 
-      {showAppointmentModal && (
+      {showAppointmentModal && editingAppointment && (
         <CreateEditAppointmentModal
           open={showAppointmentModal}
           onOpenChange={setShowAppointmentModal}
           clinicId={MOCK_CLINIC.id}
-          operatoryId={editingAppointment?.operatory_id || selectionData?.operatoryId || activeOperatories[0]?.id || 0}
-          startTime={editingAppointment ? new Date(editingAppointment.start_at) : selectionData?.startTime || new Date()}
-          endTime={editingAppointment ? new Date(editingAppointment.end_at) : selectionData?.endTime || new Date()}
+          operatoryId={editingAppointment.operatory_id}
+          startTime={new Date(editingAppointment.start_at)}
+          endTime={new Date(editingAppointment.end_at)}
           timezone={MOCK_CLINIC.timezone}
-          appointment={editingAppointment || undefined}
-          patients={patients}
+          appointment={editingAppointment}
+          patients={[]} // Would fetch if needed
           providers={activeProviders}
           statuses={statuses}
           confirmations={confirmations}
           tags={tags}
           onSubmit={handleAppointmentSubmit}
-          onCancel={editingAppointment ? handleCancelAppointment : undefined}
+          onCancel={handleCancelAppointment}
         />
       )}
     </div>

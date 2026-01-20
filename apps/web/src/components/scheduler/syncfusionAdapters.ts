@@ -1,0 +1,149 @@
+import type { EventSettingsModel } from "@syncfusion/ej2-react-schedule";
+import type { AppointmentWithRelations, Operatory, CreateAppointmentRequest, UpdateAppointmentRequest } from "@/api/types";
+
+/**
+ * Syncfusion event interface
+ */
+export interface SyncfusionEvent {
+  Id: number;
+  Subject: string;
+  StartTime: Date;
+  EndTime: Date;
+  IsAllDay: boolean;
+  OperatoryId: number;
+  ProviderId?: number | null;
+  PatientId?: number | null;
+  Notes?: string | null;
+  StatusId: number;
+  ConfirmationId?: number | null;
+  Tags?: number[];
+  // Custom fields
+  AppointmentType?: "appointment" | "block";
+  Title?: string | null;
+  RowVersion?: number;
+}
+
+/**
+ * Convert database appointment to Syncfusion event
+ */
+export function appointmentToSyncfusionEvent(appointment: AppointmentWithRelations): SyncfusionEvent {
+  const startTime = new Date(appointment.start_at);
+  const endTime = new Date(appointment.end_at);
+
+  // Derive subject from patient name or title
+  let subject = "";
+  if (appointment.type === "block") {
+    subject = appointment.title || "Block";
+  } else if (appointment.patient) {
+    subject = `${appointment.patient.first_name} ${appointment.patient.last_name}`;
+  } else {
+    subject = "No Patient";
+  }
+
+  return {
+    Id: appointment.id,
+    Subject: subject,
+    StartTime: startTime,
+    EndTime: endTime,
+    IsAllDay: false,
+    OperatoryId: appointment.operatory_id,
+    ProviderId: appointment.provider_id,
+    PatientId: appointment.patient_id,
+    Notes: appointment.notes,
+    StatusId: appointment.status_id,
+    ConfirmationId: appointment.confirmation_id,
+    Tags: appointment.tags?.map((tag) => tag.id) || [],
+    AppointmentType: appointment.type,
+    Title: appointment.title,
+    RowVersion: appointment.row_version,
+  };
+}
+
+/**
+ * Convert Syncfusion event to database create request
+ */
+export function syncfusionEventToCreateRequest(
+  event: Partial<SyncfusionEvent>,
+  clinicId: number
+): CreateAppointmentRequest {
+  const startTime = event.StartTime!;
+  const endTime = event.EndTime!;
+  const lengthMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+
+  return {
+    clinic_id: clinicId,
+    type: event.AppointmentType || "appointment",
+    start_at: startTime.toISOString(),
+    length_minutes: lengthMinutes,
+    operatory_id: event.OperatoryId!,
+    provider_id: event.ProviderId || null,
+    patient_id: event.PatientId || null,
+    status_id: event.StatusId!,
+    confirmation_id: event.ConfirmationId || null,
+    title: event.Title || null,
+    notes: event.Notes || null,
+    source: "front_desk",
+  };
+}
+
+/**
+ * Convert Syncfusion event to database update request
+ */
+export function syncfusionEventToUpdateRequest(
+  event: Partial<SyncfusionEvent>,
+  originalAppointment: AppointmentWithRelations
+): UpdateAppointmentRequest {
+  const updates: UpdateAppointmentRequest = {
+    row_version: originalAppointment.row_version,
+  };
+
+  if (event.StartTime) {
+    updates.start_at = event.StartTime.toISOString();
+  }
+
+  if (event.StartTime && event.EndTime) {
+    const lengthMinutes = Math.round((event.EndTime.getTime() - event.StartTime.getTime()) / (1000 * 60));
+    updates.length_minutes = lengthMinutes;
+  }
+
+  if (event.OperatoryId !== undefined) {
+    updates.operatory_id = event.OperatoryId;
+  }
+
+  if (event.ProviderId !== undefined) {
+    updates.provider_id = event.ProviderId;
+  }
+
+  if (event.PatientId !== undefined) {
+    updates.patient_id = event.PatientId;
+  }
+
+  if (event.StatusId !== undefined) {
+    updates.status_id = event.StatusId;
+  }
+
+  if (event.ConfirmationId !== undefined) {
+    updates.confirmation_id = event.ConfirmationId;
+  }
+
+  if (event.Title !== undefined) {
+    updates.title = event.Title;
+  }
+
+  if (event.Notes !== undefined) {
+    updates.notes = event.Notes;
+  }
+
+  return updates;
+}
+
+/**
+ * Convert operatories to Syncfusion resource format
+ */
+export function operatoriesToResources(operatories: Operatory[]) {
+  return operatories.map((op) => ({
+    id: op.id,
+    text: op.name,
+    color: (op as any).color || undefined, // Color may not be in type yet
+  }));
+}

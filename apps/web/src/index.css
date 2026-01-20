@@ -35,3 +35,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Syncfusion Scheduler height fix */
+.tessdental-scheduler {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.tessdental-scheduler .e-schedule {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.tessdental-scheduler .e-content-wrap {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+}
+
+.tessdental-scheduler .e-content-table {
+  min-height: 100% !important;
+}
+
+/* Syncfusion Scheduler header icons fix */
+.tessdental-scheduler .e-header-icon,
+.tessdental-scheduler .e-toolbar-item .e-icon,
+.tessdental-scheduler .e-icon {
+  font-family: 'e-icons' !important;
+  font-size: 16px !important;
+  speak: none !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  line-height: 1 !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+.tessdental-scheduler .e-toolbar-item {
+  display: inline-flex !important;
+  align-items: center !important;
+}
