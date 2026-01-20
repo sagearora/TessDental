@@ -1,0 +1,18 @@
+{
+  "name": "tessdental",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:web": "pnpm --filter @tessdental/web dev",
+    "dev:api": "pnpm --filter @tessdental/api dev",
+    "dev:worker": "pnpm --filter @tessdental/worker dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose -f infra/compose/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/compose/docker-compose.yml down",
+    "db:migrate": "docker compose -f infra/compose/docker-compose.yml run --rm flyway migrate -X",
+    "db:info": "docker compose -f infra/compose/docker-compose.yml run --rm flyway info"
+  }
+}

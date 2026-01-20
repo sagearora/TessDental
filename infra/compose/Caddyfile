@@ -1,0 +1,3 @@
+:443 {
+  respond "TessDental dev proxy is up. API and web not wired yet." 200
+}

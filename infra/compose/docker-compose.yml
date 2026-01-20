@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tess-postgres
+    environment:
+      POSTGRES_DB: tessdental
+      POSTGRES_USER: tess
+      POSTGRES_PASSWORD: tess_password_change_me
+    ports:
+      - "5432:5432"
+    volumes:
+      - tess_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tess -d tessdental"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7
+    container_name: tess-redis
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    container_name: tess-minio
+    environment:
+      MINIO_ROOT_USER: tessminio
+      MINIO_ROOT_PASSWORD: tessminio_password_change_me
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - tess_minio:/data
+
+  caddy:
+    image: caddy:2
+    container_name: tess-caddy
+    ports:
+      - "8443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  flyway:
+    image: flyway/flyway:10
+    container_name: tess-flyway
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../flyway/conf:/flyway/conf:ro
+      - ../flyway/sql:/flyway/sql:ro
+    command: -configFiles=/flyway/conf/flyway.conf migrate
+
+volumes:
+  tess_pg:
+  tess_minio:
