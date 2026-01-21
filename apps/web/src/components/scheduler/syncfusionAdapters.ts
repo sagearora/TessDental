@@ -21,6 +21,12 @@ export interface SyncfusionEvent {
   AppointmentType?: "appointment" | "block";
   Title?: string | null;
   RowVersion?: number;
+  TagColor?: string | null; // Color of the first tag for styling
+  // Custom display fields
+  PatientName?: string | null;
+  TagNames?: string; // Comma-separated tag names
+  ProcedureCodes?: string; // Comma-separated procedure codes (placeholder for now)
+  ConfirmationName?: string | null; // Confirmation status name for border color
 }
 
 /**
@@ -40,6 +46,26 @@ export function appointmentToSyncfusionEvent(appointment: AppointmentWithRelatio
     subject = "No Patient";
   }
 
+  // Get the first tag's color for appointment styling
+  const firstTag = appointment.tags && appointment.tags.length > 0 ? appointment.tags[0] : null;
+  const tagColor = firstTag?.color || null;
+
+  // Get patient name
+  const patientName = appointment.patient 
+    ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
+    : null;
+
+  // Get comma-separated tag names
+  const tagNames = appointment.tags && appointment.tags.length > 0
+    ? appointment.tags.map(tag => tag.name).join(", ")
+    : "";
+
+  // Procedure codes - placeholder for now (will be added when schema is updated)
+  const procedureCodes = "";
+
+  // Get confirmation name for border color
+  const confirmationName = appointment.confirmation?.name || null;
+
   return {
     Id: appointment.id,
     Subject: subject,
@@ -56,6 +82,11 @@ export function appointmentToSyncfusionEvent(appointment: AppointmentWithRelatio
     AppointmentType: appointment.type,
     Title: appointment.title,
     RowVersion: appointment.row_version,
+    TagColor: tagColor,
+    PatientName: patientName,
+    TagNames: tagNames,
+    ProcedureCodes: procedureCodes,
+    ConfirmationName: confirmationName,
   };
 }
 

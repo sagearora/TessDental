@@ -11,6 +11,7 @@ interface SchedulerSidebarProps {
   clinicId: number;
   selectedDate: Date;
   onDateChange: (date: Date) => void;
+  selectedPatient?: Patient | null;
   onPatientSelect?: (patient: Patient) => void;
   onCreatePatient?: () => void;
 }
@@ -51,12 +52,26 @@ export function SchedulerSidebar({
   clinicId,
   selectedDate,
   onDateChange,
+  selectedPatient: externalSelectedPatient,
   onPatientSelect,
   onCreatePatient,
 }: SchedulerSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [internalSelectedPatient, setInternalSelectedPatient] = useState<Patient | null>(null);
+  
+  // Use external selected patient if provided, otherwise use internal state
+  const selectedPatient = externalSelectedPatient !== undefined ? externalSelectedPatient : internalSelectedPatient;
+  
+  const setSelectedPatient = (patient: Patient | null) => {
+    if (externalSelectedPatient === undefined) {
+      // Only update internal state if not controlled externally
+      setInternalSelectedPatient(patient);
+    }
+    if (patient && onPatientSelect) {
+      onPatientSelect(patient);
+    }
+  };
 
   const { data: patients = [], isLoading: isLoadingPatients } = useQuery({
     queryKey: ["patients", clinicId, searchQuery],

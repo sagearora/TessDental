@@ -155,6 +155,7 @@ export interface CreateAppointmentRequest {
   title?: string | null;
   notes?: string | null;
   source?: "front_desk" | "online" | "automation" | "import";
+  tag_ids?: number[];
 }
 
 export interface UpdateAppointmentRequest {
@@ -168,4 +169,5 @@ export interface UpdateAppointmentRequest {
   title?: string | null;
   notes?: string | null;
   row_version: number;
+  tag_ids?: number[];
 }

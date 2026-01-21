@@ -2,9 +2,12 @@ import { api } from "./client";
 import type {
   Appointment,
   AppointmentWithRelations,
+  AppointmentTag,
+  AppointmentConfirmation,
   CreateAppointmentRequest,
   UpdateAppointmentRequest,
 } from "./types";
+import { getAppointmentTags, getAppointmentConfirmations } from "./reference";
 
 export async function getAppointments(
   clinicId: number,
@@ -52,6 +55,8 @@ export async function cancelAppointment(id: number): Promise<Appointment> {
 
 // Mock implementation
 const mockAppointments: Appointment[] = [];
+// Map of appointment_id -> tag_ids (simulating appointment_tag_links table)
+const mockAppointmentTags: Map<number, number[]> = new Map();
 
 // Initialize mock appointments on first load
 function initializeMockAppointments(clinicId: number) {
@@ -196,7 +201,7 @@ function initializeMockAppointments(clinicId: number) {
       provider_id: null,
       patient_id: 4,
       status_id: 2,
-      confirmation_id: 3,
+      confirmation_id: 2, // Left Message
       title: null,
       notes: `Mock appointment 4 - Day ${dateIndex + 1}`,
       show_on_calendar: true,
@@ -287,14 +292,41 @@ function initializeMockAppointments(clinicId: number) {
   });
 
   mockAppointments.push(...appointments);
+  
+  // Assign tags to some appointments (simulating appointment_tag_links)
+  // Appointment 1 (baseId + 1): Perio scale, Audited
+  appointments.forEach((apt, idx) => {
+    const appointmentId = apt.id;
+    if (idx % 6 === 0) {
+      // First appointment of each day: Perio scale, Audited
+      mockAppointmentTags.set(appointmentId, [4]); // Perio scale, Audited
+    } else if (idx % 6 === 1) {
+      // Second appointment: NPE
+      mockAppointmentTags.set(appointmentId, [1]); // NPE
+    } else if (idx % 6 === 2) {
+      // Third appointment: Recare Exam (6 month)
+      mockAppointmentTags.set(appointmentId, [5]); // Recare Exam (6 month)
+    } else if (idx % 6 === 3) {
+      // Fourth appointment: Crown & Bridge, Restoration
+      mockAppointmentTags.set(appointmentId, [8, 9]); // Crown & Bridge, Restoration
+    } else if (idx % 6 === 4) {
+      // Block booking: no tags
+      // mockAppointmentTags.set(appointmentId, []);
+    } else if (idx % 6 === 5) {
+      // Sixth appointment: Emergency, Endo
+      mockAppointmentTags.set(appointmentId, [12, 10]); // Emergency, Endo
+    }
+  });
+  
   console.log("Initialized", mockAppointments.length, "mock appointments:", mockAppointments);
+  console.log("Appointment tags mapping:", Array.from(mockAppointmentTags.entries()));
 }
 
-function mockGetAppointments(
+async function mockGetAppointments(
   clinicId: number,
   start: string,
   end: string
-): AppointmentWithRelations[] {
+): Promise<AppointmentWithRelations[]> {
   // Initialize mock appointments only if empty (first time)
   // This preserves any updates made to appointments
   if (mockAppointments.length === 0) {
@@ -336,9 +368,19 @@ function mockGetAppointments(
   console.log("Filtered appointments:", filtered.length, filtered);
   console.log("=== End Debug ===");
   
-  // Return appointments - relations will be populated by the page component
-  // This avoids circular dependencies
-  return filtered.map((a) => ({ ...a })) as AppointmentWithRelations[];
+  // Get all tags and confirmations for the clinic to enrich appointments
+  const allTags = await getAppointmentTags(clinicId);
+  const allConfirmations = await getAppointmentConfirmations(clinicId);
+  
+  // Return appointments with tags and confirmation populated
+  return filtered.map((a) => {
+    const tagIds = mockAppointmentTags.get(a.id) || [];
+    const tags = allTags.filter((tag: AppointmentTag) => tagIds.includes(tag.id));
+    const confirmation = a.confirmation_id 
+      ? allConfirmations.find((c: AppointmentConfirmation) => c.id === a.confirmation_id)
+      : undefined;
+    return { ...a, tags, confirmation } as AppointmentWithRelations;
+  });
 }
 
 function mockCreateAppointment(
@@ -382,6 +424,12 @@ function mockCreateAppointment(
     row_version: 1,
   };
   mockAppointments.push(appointment);
+  
+  // Save tags if provided
+  if (data.tag_ids && data.tag_ids.length > 0) {
+    mockAppointmentTags.set(appointment.id, data.tag_ids);
+  }
+  
   return appointment;
 }
 
@@ -450,6 +498,16 @@ function mockUpdateAppointment(
   }
   if (data.notes !== undefined) {
     appointment.notes = data.notes;
+  }
+
+  // Update tags if provided
+  if (data.tag_ids !== undefined) {
+    if (data.tag_ids.length > 0) {
+      mockAppointmentTags.set(appointment.id, data.tag_ids);
+    } else {
+      // Remove tags if empty array
+      mockAppointmentTags.delete(appointment.id);
+    }
   }
 
   appointment.updated_at = new Date().toISOString();

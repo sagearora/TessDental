@@ -3,14 +3,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SchedulerMain } from "@/components/scheduler/SchedulerMain";
 import { SchedulerSidebar } from "@/components/sidebar/SchedulerSidebar";
 import { CreatePatientModal } from "@/components/modals/CreatePatientModal";
-import { CreateEditAppointmentModal } from "@/components/modals/CreateEditAppointmentModal";
+import { QuickCreateAppointmentModal } from "@/components/modals/QuickCreateAppointmentModal";
+import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
 import { getOperatories } from "@/api/operatories";
 import { getPatients, createPatient } from "@/api/patients";
 import { getAppointments, createAppointment, updateAppointment, cancelAppointment } from "@/api/appointments";
 import { getAppointmentStatuses, getAppointmentConfirmations, getAppointmentTags } from "@/api/reference";
-import type { AppointmentWithRelations, Clinic, Patient, User } from "@/api/types";
+import type {
+  AppointmentWithRelations,
+  Clinic,
+  CreateAppointmentRequest,
+  Patient,
+  UpdateAppointmentRequest,
+  User,
+} from "@/api/types";
 import { syncfusionEventToCreateRequest, syncfusionEventToUpdateRequest } from "@/components/scheduler/syncfusionAdapters";
 import { getDayStart } from "@/lib/time";
 
@@ -33,6 +41,16 @@ export function SchedulerDayPage() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentWithRelations | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [appointmentSlot, setAppointmentSlot] = useState<{
+    startTime: Date;
+    endTime: Date;
+    operatoryId: number;
+  } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    appointment: AppointmentWithRelations;
+  } | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -230,29 +248,132 @@ export function SchedulerDayPage() {
     }
   };
 
+  const handleEventSelect = (appointment: AppointmentWithRelations) => {
+    // Single click - set patient if appointment has one
+    if (appointment.patient) {
+      setSelectedPatient(appointment.patient);
+    }
+  };
+
   const handleEventClick = (appointment: AppointmentWithRelations) => {
+    // Double click - open edit modal
     setEditingAppointment(appointment);
+    setAppointmentSlot({
+      startTime: new Date(appointment.start_at),
+      endTime: new Date(appointment.end_at),
+      operatoryId: appointment.operatory_id,
+    });
     setShowAppointmentModal(true);
   };
 
-  const handleAppointmentSubmit = async (data: any) => {
+  const handleEventContextMenu = (appointment: AppointmentWithRelations, event: MouseEvent) => {
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      appointment,
+    });
+  };
+
+  const handleContextMenuAction = async (action: string) => {
+    if (!contextMenu) return;
+
+    const { appointment } = contextMenu;
+    setContextMenu(null);
+
+    try {
+      switch (action) {
+        case "edit":
+          handleEventClick(appointment);
+          break;
+        case "delete":
+          await cancelAppointmentMutation.mutateAsync(appointment.id);
+          toast.success("Appointment cancelled");
+          break;
+        case "check-in":
+          // TODO: Implement check-in
+          toast.info("Check-in functionality coming soon");
+          break;
+        case "check-out":
+          // TODO: Implement check-out
+          toast.info("Check-out functionality coming soon");
+          break;
+        case "missed":
+          // TODO: Implement missed
+          toast.info("Mark as missed functionality coming soon");
+          break;
+        case "cancel":
+          await cancelAppointmentMutation.mutateAsync(appointment.id);
+          toast.success("Appointment cancelled");
+          break;
+        case "move-to-queue":
+          // TODO: Implement move to queue
+          toast.info("Move to queue functionality coming soon");
+          break;
+        case "view-routing-slip":
+          // TODO: Implement routing slip
+          toast.info("View routing slip functionality coming soon");
+          break;
+        case "add-short-notice":
+          // TODO: Implement short notice
+          toast.info("Add short notice functionality coming soon");
+          break;
+        case "send-predetermination":
+          // TODO: Implement predetermination
+          toast.info("Send predetermination functionality coming soon");
+          break;
+        case "left-message":
+          // TODO: Update confirmation to "Left Message"
+          toast.info("Update confirmation functionality coming soon");
+          break;
+        case "called":
+          // TODO: Update confirmation
+          toast.info("Update confirmation functionality coming soon");
+          break;
+        case "no-confirmation":
+          // TODO: Update confirmation to null
+          toast.info("Update confirmation functionality coming soon");
+          break;
+        case "confirmed":
+          // TODO: Update confirmation to "Confirmed"
+          toast.info("Update confirmation functionality coming soon");
+          break;
+        case "patient-seated":
+          // TODO: Update appointment status
+          toast.info("Patient seated functionality coming soon");
+          break;
+        case "add-confirmation":
+          // TODO: Open confirmation dialog
+          toast.info("Add confirmation functionality coming soon");
+          break;
+        default:
+          console.log("Unknown action:", action);
+      }
+    } catch (error) {
+      console.error("Context menu action error:", error);
+      toast.error("Failed to perform action");
+    }
+  };
+
+  const handleSlotCreate = (slot: { startTime: Date; endTime: Date; operatoryId: number }) => {
+    setEditingAppointment(null);
+    setAppointmentSlot(slot);
+    setShowAppointmentModal(true);
+  };
+
+  const handleAppointmentSubmit = async (data: CreateAppointmentRequest | UpdateAppointmentRequest) => {
     if (editingAppointment) {
       await updateAppointmentMutation.mutateAsync({
         id: editingAppointment.id,
-        data,
+        data: data as UpdateAppointmentRequest,
       });
+    } else {
+      await createAppointmentMutation.mutateAsync(data as CreateAppointmentRequest);
     }
     setShowAppointmentModal(false);
     setEditingAppointment(null);
+    setAppointmentSlot(null);
   };
 
-  const handleCancelAppointment = async () => {
-    if (editingAppointment) {
-      await cancelAppointmentMutation.mutateAsync(editingAppointment.id);
-      setShowAppointmentModal(false);
-      setEditingAppointment(null);
-    }
-  };
 
   const activeOperatories = operatories.filter((o) => o.is_active && o.is_bookable);
   const activeProviders: User[] = []; // Would fetch from users API
@@ -283,7 +404,10 @@ export function SchedulerDayPage() {
             onEventCreate={handleEventCreate}
             onEventChange={handleEventChange}
             onEventRemove={handleEventRemove}
+            onSlotCreate={handleSlotCreate}
             onEventClick={handleEventClick}
+            onEventSelect={handleEventSelect}
+            onEventContextMenu={handleEventContextMenu}
             onDateChange={setSelectedDate}
             onViewChange={setCurrentView}
           />
@@ -294,6 +418,7 @@ export function SchedulerDayPage() {
           clinicId={MOCK_CLINIC.id}
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
+          selectedPatient={selectedPatient}
           onPatientSelect={(patient) => {
             setSelectedPatient(patient);
             // Could open appointment modal with patient pre-selected
@@ -301,6 +426,70 @@ export function SchedulerDayPage() {
           onCreatePatient={() => setShowCreatePatient(true)}
         />
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        >
+          <ContextMenuItem onClick={() => handleContextMenuAction("check-in")}>
+            Check In
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("delete")} variant="danger">
+            Delete
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("missed")}>
+            Missed
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("cancel")} variant="danger">
+            Cancel
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("check-out")}>
+            Check Out
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("move-to-queue")}>
+            Move to Queue
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => handleContextMenuAction("edit")}>
+            Edit
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => handleContextMenuAction("view-routing-slip")}>
+            View Routing Slip
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("add-short-notice")}>
+            Add Short Notice
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("send-predetermination")}>
+            Send Predetermination
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => handleContextMenuAction("left-message")}>
+            Left Message
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("called")}>
+            Called
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("no-confirmation")}>
+            No Confirmation
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={() => handleContextMenuAction("confirmed")}
+            disabled={contextMenu.appointment.confirmation?.name === "Confirmed"}
+          >
+            Confirmed
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("patient-seated")}>
+            Patient Seated
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => handleContextMenuAction("add-confirmation")} variant="primary">
+            Add Confirmation
+          </ContextMenuItem>
+        </ContextMenu>
+      )}
 
       {/* Modals */}
       <CreatePatientModal
@@ -312,23 +501,27 @@ export function SchedulerDayPage() {
         }}
       />
 
-      {showAppointmentModal && editingAppointment && (
-        <CreateEditAppointmentModal
+      {showAppointmentModal && appointmentSlot && (
+        <QuickCreateAppointmentModal
           open={showAppointmentModal}
-          onOpenChange={setShowAppointmentModal}
-          clinicId={MOCK_CLINIC.id}
-          operatoryId={editingAppointment.operatory_id}
-          startTime={new Date(editingAppointment.start_at)}
-          endTime={new Date(editingAppointment.end_at)}
-          timezone={MOCK_CLINIC.timezone}
-          appointment={editingAppointment}
-          patients={[]} // Would fetch if needed
+          onOpenChange={(open) => {
+            setShowAppointmentModal(open);
+            if (!open) {
+              setEditingAppointment(null);
+              setAppointmentSlot(null);
+            }
+          }}
+          clinic={MOCK_CLINIC}
+          operatoryId={appointmentSlot.operatoryId}
+          startTime={appointmentSlot.startTime}
+          endTime={appointmentSlot.endTime}
+          patients={patients}
           providers={activeProviders}
           statuses={statuses}
-          confirmations={confirmations}
           tags={tags}
+          initialPatient={selectedPatient}
+          appointment={editingAppointment}
           onSubmit={handleAppointmentSubmit}
-          onCancel={handleCancelAppointment}
         />
       )}
     </div>

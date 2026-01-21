@@ -90,6 +90,34 @@
   align-items: center !important;
 }
 
+/* Appointment card hover effect - darken on hover */
+.tessdental-scheduler .e-appointment {
+  transition: filter 0.2s ease, opacity 0.2s ease !important;
+  overflow: hidden !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+.tessdental-scheduler .e-appointment:hover {
+  filter: brightness(0.85) !important;
+  cursor: pointer !important;
+}
+
+/* Allow text wrapping in custom appointment content */
+.tessdental-scheduler .e-appointment .custom-appointment-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  height: 100% !important;
+}
+
+.tessdental-scheduler .e-appointment .custom-appointment-content > div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 /* Sidebar Mini Calendar styling */
 .tessdental-mini-calendar {
   --rdp-cell-size: 38px;
