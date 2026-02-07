@@ -1,0 +1,124 @@
+table:
+  name: user_provider_identifier
+  schema: public
+object_relationships:
+  - name: clinic_user
+    using:
+      manual_configuration:
+        column_mapping:
+          user_id: user_id
+        insertion_order: null
+        remote_table:
+          name: clinic_user
+          schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - clinic_user:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: users.manage
+                      - capability_key:
+                          _eq: system.admin
+      columns:
+        - user_id
+        - identifier_kind
+        - province_code
+        - license_type
+        - identifier_value
+        - effective_from
+        - effective_to
+        - is_active
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - user_id
+        - identifier_kind
+        - province_code
+        - license_type
+        - identifier_value
+        - effective_from
+        - effective_to
+        - is_active
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        clinic_user:
+          clinic_id:
+            _eq: X-Hasura-Clinic-Id
+      allow_aggregations: true
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - province_code
+        - license_type
+        - identifier_value
+        - effective_from
+        - effective_to
+        - is_active
+      filter:
+        clinic_user:
+          clinic_id:
+            _eq: X-Hasura-Clinic-Id
+      check:
+        _and:
+          - clinic_user:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: users.manage
+                      - capability_key:
+                          _eq: system.admin
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _and:
+          - clinic_user:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: users.manage
+                      - capability_key:
+                          _eq: system.admin

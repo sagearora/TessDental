@@ -15,6 +15,8 @@ export interface CreateUserRequest {
   lastName?: string
   clinicId?: number
   roleIds?: number[]
+  userKind?: 'staff' | 'dentist' | 'hygienist' | 'assistant' | 'manager'
+  licenseNo?: string
 }
 
 export interface UpdateUserRequest {
@@ -22,6 +24,22 @@ export interface UpdateUserRequest {
   lastName?: string
   isActive?: boolean
   password?: string
+}
+
+export interface UpdateUserProfileRequest {
+  userKind?: 'staff' | 'dentist' | 'hygienist' | 'assistant' | 'manager'
+  licenseNo?: string
+  schedulerColor?: string
+  isActive?: boolean
+}
+
+export interface UpdateUserMembershipRequest {
+  jobTitle?: string
+  isSchedulable?: boolean
+  providerKind?: 'dentist' | 'hygienist' | 'assistant' | null
+  defaultOperatoryId?: number | null
+  schedulerColor?: string
+  isActive?: boolean
 }
 
 export interface CreateRoleRequest {
@@ -171,4 +189,139 @@ export async function removeRoleFromUser(clinicId: number, userId: string, roleI
   }
 
   return response.json()
+}
+
+// User Profile Management
+export async function updateUserProfile(userId: string, data: UpdateUserProfileRequest) {
+  const response = await fetch(`${AUTH_API_URL}/auth/users/${userId}/profile`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update user profile')
+  }
+
+  return response.json()
+}
+
+// User Membership Management
+export async function updateUserMembership(
+  clinicId: number,
+  userId: string,
+  data: UpdateUserMembershipRequest
+) {
+  const response = await fetch(`${AUTH_API_URL}/auth/clinics/${clinicId}/users/${userId}/membership`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update user membership')
+  }
+
+  return response.json()
+}
+
+// Clinic Management
+export interface UpdateClinicRequest {
+  name?: string
+  timezone?: string
+  phone?: string | null
+  fax?: string | null
+  website?: string | null
+  email?: string | null
+  addressStreet?: string | null
+  addressUnit?: string | null
+  addressCity?: string | null
+  addressProvince?: string | null
+  addressPostal?: string | null
+  billingNumber?: string | null
+}
+
+export async function updateClinic(clinicId: number, data: UpdateClinicRequest) {
+  const response = await fetch(`${AUTH_API_URL}/auth/clinics/${clinicId}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update clinic')
+  }
+
+  return response.json()
+}
+
+// Provider Identifier Management
+export interface CreateProviderIdentifierRequest {
+  identifierKind?: string
+  provinceCode: string
+  licenseType: string
+  identifierValue: string
+  effectiveFrom?: string | null
+  effectiveTo?: string | null
+  isActive?: boolean
+}
+
+export interface UpdateProviderIdentifierRequest {
+  provinceCode?: string
+  licenseType?: string
+  identifierValue?: string
+  effectiveFrom?: string | null
+  effectiveTo?: string | null
+  isActive?: boolean
+}
+
+export async function createProviderIdentifier(
+  userId: string,
+  data: CreateProviderIdentifierRequest
+) {
+  const response = await fetch(`${AUTH_API_URL}/auth/users/${userId}/provider-identifiers`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to create provider identifier')
+  }
+
+  return response.json()
+}
+
+export async function updateProviderIdentifier(
+  identifierId: number,
+  data: UpdateProviderIdentifierRequest
+) {
+  const response = await fetch(`${AUTH_API_URL}/auth/users/provider-identifiers/${identifierId}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update provider identifier')
+  }
+
+  return response.json()
+}
+
+export async function deleteProviderIdentifier(identifierId: number) {
+  const response = await fetch(`${AUTH_API_URL}/auth/users/provider-identifiers/${identifierId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to delete provider identifier')
+  }
 }

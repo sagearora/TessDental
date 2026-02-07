@@ -1,0 +1,44 @@
+table:
+  name: app_user
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - email
+        - first_name
+        - last_name
+        - is_active
+        - created_at
+        - updated_at
+      filter: {}
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - first_name
+        - last_name
+        - is_active
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+      check:
+        _and:
+          - id:
+              _eq: X-Hasura-User-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: users.manage
+                      - capability_key:
+                          _eq: system.admin

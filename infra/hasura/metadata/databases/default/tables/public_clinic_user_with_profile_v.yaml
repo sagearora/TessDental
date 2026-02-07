@@ -1,0 +1,32 @@
+table:
+  name: clinic_user_with_profile_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - clinic_user_id
+        - clinic_id
+        - user_id
+        - job_title
+        - is_schedulable
+        - provider_kind
+        - default_operatory_id
+        - clinic_scheduler_color
+        - joined_at
+        - clinic_membership_active
+        - clinic_user_created_at
+        - clinic_user_created_by
+        - clinic_user_updated_at
+        - clinic_user_updated_by
+        - email
+        - first_name
+        - last_name
+        - user_account_active
+        - user_kind
+        - license_no
+        - global_scheduler_color
+        - profile_active
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id

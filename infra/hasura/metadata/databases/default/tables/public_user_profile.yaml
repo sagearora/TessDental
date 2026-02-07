@@ -1,0 +1,61 @@
+table:
+  name: user_profile
+  schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        user_id:
+          _eq: X-Hasura-User-Id
+      columns:
+        - user_id
+        - user_kind
+        - license_no
+        - scheduler_color
+        - is_active
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - user_id
+        - user_kind
+        - license_no
+        - scheduler_color
+        - is_active
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - user_kind
+        - license_no
+        - scheduler_color
+        - is_active
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+      check:
+        _and:
+          - user_id:
+              _eq: X-Hasura-User-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: users.manage
+                      - capability_key:
+                          _eq: system.admin

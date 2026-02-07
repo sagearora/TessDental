@@ -15,6 +15,8 @@ const createUserSchema = z.object({
   lastName: z.string().optional(),
   clinicId: z.number().optional(),
   roleIds: z.array(z.number()).optional(),
+  userKind: z.enum(['staff', 'dentist', 'hygienist', 'assistant', 'manager']).optional(),
+  licenseNo: z.string().optional(),
 })
 
 // POST /auth/users - Create user + membership + optional roles
@@ -28,9 +30,9 @@ router.post(
       return res.status(401).json({ error: 'Not authenticated' })
     }
 
-    try {
+      try {
       const body = createUserSchema.parse(req.body)
-      const { email, password, firstName, lastName, clinicId, roleIds } = body
+      const { email, password, firstName, lastName, clinicId, roleIds, userKind, licenseNo } = body
       const actorClinicId = Number(req.auditContext.clinicId)
       const targetClinicId = clinicId || actorClinicId
 
@@ -72,6 +74,15 @@ router.post(
         )
         const userId = userResult.rows[0].id
 
+        // Create user_profile (default to 'staff' if not provided)
+        const profileUserKind = userKind || 'staff'
+        await client.query(
+          `INSERT INTO public.user_profile (user_id, user_kind, license_no, is_active)
+           VALUES ($1, $2, $3, true)
+           ON CONFLICT (user_id) DO NOTHING`,
+          [userId, profileUserKind, licenseNo || null]
+        )
+
         // Create clinic_user membership
         const clinicUserResult = await client.query(
           `INSERT INTO public.clinic_user (clinic_id, user_id, is_active, joined_at)
@@ -105,6 +116,8 @@ router.post(
               clinic_id: targetClinicId,
               clinic_user_id: clinicUserId,
               role_ids: roleIds || [],
+              user_kind: profileUserKind,
+              license_no: licenseNo || null,
             }),
             true,
           ]

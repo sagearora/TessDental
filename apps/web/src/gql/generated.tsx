@@ -17,6 +17,7 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   bigint: { input: number; output: number; }
+  date: { input: any; output: any; }
   override_effect: { input: any; output: any; }
   smallint: { input: any; output: any; }
   time: { input: any; output: any; }
@@ -70,10 +71,295 @@ export type String_Comparison_Exp = {
   _similar?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** columns and relationships of "app_user" */
+export type App_User = {
+  __typename?: 'app_user';
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  current_clinic_id?: Maybe<Scalars['bigint']['output']>;
+  email: Scalars['String']['output'];
+  first_name?: Maybe<Scalars['String']['output']>;
+  id: Scalars['uuid']['output'];
+  is_active: Scalars['Boolean']['output'];
+  last_name?: Maybe<Scalars['String']['output']>;
+  password_hash: Scalars['String']['output'];
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregated selection of "app_user" */
+export type App_User_Aggregate = {
+  __typename?: 'app_user_aggregate';
+  aggregate?: Maybe<App_User_Aggregate_Fields>;
+  nodes: Array<App_User>;
+};
+
+/** aggregate fields of "app_user" */
+export type App_User_Aggregate_Fields = {
+  __typename?: 'app_user_aggregate_fields';
+  avg?: Maybe<App_User_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<App_User_Max_Fields>;
+  min?: Maybe<App_User_Min_Fields>;
+  stddev?: Maybe<App_User_Stddev_Fields>;
+  stddev_pop?: Maybe<App_User_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<App_User_Stddev_Samp_Fields>;
+  sum?: Maybe<App_User_Sum_Fields>;
+  var_pop?: Maybe<App_User_Var_Pop_Fields>;
+  var_samp?: Maybe<App_User_Var_Samp_Fields>;
+  variance?: Maybe<App_User_Variance_Fields>;
+};
+
+
+/** aggregate fields of "app_user" */
+export type App_User_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<App_User_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type App_User_Avg_Fields = {
+  __typename?: 'app_user_avg_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "app_user". All fields are combined with a logical 'AND'. */
+export type App_User_Bool_Exp = {
+  _and?: InputMaybe<Array<App_User_Bool_Exp>>;
+  _not?: InputMaybe<App_User_Bool_Exp>;
+  _or?: InputMaybe<Array<App_User_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  current_clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  email?: InputMaybe<String_Comparison_Exp>;
+  first_name?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Uuid_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  last_name?: InputMaybe<String_Comparison_Exp>;
+  password_hash?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "app_user" */
+export type App_User_Constraint =
+  /** unique or primary key constraint on columns "email" */
+  | 'app_user_email_key'
+  /** unique or primary key constraint on columns "id" */
+  | 'app_user_pkey';
+
+/** input type for incrementing numeric columns in table "app_user" */
+export type App_User_Inc_Input = {
+  current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "app_user" */
+export type App_User_Insert_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  first_name?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['uuid']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  last_name?: InputMaybe<Scalars['String']['input']>;
+  password_hash?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type App_User_Max_Fields = {
+  __typename?: 'app_user_max_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  current_clinic_id?: Maybe<Scalars['bigint']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['uuid']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  password_hash?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type App_User_Min_Fields = {
+  __typename?: 'app_user_min_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  current_clinic_id?: Maybe<Scalars['bigint']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['uuid']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  password_hash?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "app_user" */
+export type App_User_Mutation_Response = {
+  __typename?: 'app_user_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<App_User>;
+};
+
+/** on_conflict condition type for table "app_user" */
+export type App_User_On_Conflict = {
+  constraint: App_User_Constraint;
+  update_columns?: Array<App_User_Update_Column>;
+  where?: InputMaybe<App_User_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "app_user". */
+export type App_User_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  current_clinic_id?: InputMaybe<Order_By>;
+  email?: InputMaybe<Order_By>;
+  first_name?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  last_name?: InputMaybe<Order_By>;
+  password_hash?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: app_user */
+export type App_User_Pk_Columns_Input = {
+  id: Scalars['uuid']['input'];
+};
+
+/** select columns of table "app_user" */
+export type App_User_Select_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'current_clinic_id'
+  /** column name */
+  | 'email'
+  /** column name */
+  | 'first_name'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'last_name'
+  /** column name */
+  | 'password_hash'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+/** input type for updating data in table "app_user" */
+export type App_User_Set_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  first_name?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['uuid']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  last_name?: InputMaybe<Scalars['String']['input']>;
+  password_hash?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type App_User_Stddev_Fields = {
+  __typename?: 'app_user_stddev_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type App_User_Stddev_Pop_Fields = {
+  __typename?: 'app_user_stddev_pop_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type App_User_Stddev_Samp_Fields = {
+  __typename?: 'app_user_stddev_samp_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "app_user" */
+export type App_User_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: App_User_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type App_User_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  first_name?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['uuid']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  last_name?: InputMaybe<Scalars['String']['input']>;
+  password_hash?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type App_User_Sum_Fields = {
+  __typename?: 'app_user_sum_fields';
+  current_clinic_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "app_user" */
+export type App_User_Update_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'current_clinic_id'
+  /** column name */
+  | 'email'
+  /** column name */
+  | 'first_name'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'last_name'
+  /** column name */
+  | 'password_hash'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+export type App_User_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<App_User_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<App_User_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: App_User_Bool_Exp;
+};
+
 /** columns and relationships of "app_user_v" */
 export type App_User_V = {
   __typename?: 'app_user_v';
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
   current_clinic_id?: Maybe<Scalars['bigint']['output']>;
   email?: Maybe<Scalars['String']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
@@ -81,6 +367,7 @@ export type App_User_V = {
   is_active?: Maybe<Scalars['Boolean']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
 };
 
 /** aggregated selection of "app_user_v" */
@@ -125,6 +412,7 @@ export type App_User_V_Bool_Exp = {
   _not?: InputMaybe<App_User_V_Bool_Exp>;
   _or?: InputMaybe<Array<App_User_V_Bool_Exp>>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
   current_clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
   email?: InputMaybe<String_Comparison_Exp>;
   first_name?: InputMaybe<String_Comparison_Exp>;
@@ -132,6 +420,7 @@ export type App_User_V_Bool_Exp = {
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   last_name?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
 /** input type for incrementing numeric columns in table "app_user_v" */
@@ -142,6 +431,7 @@ export type App_User_V_Inc_Input = {
 /** input type for inserting data into table "app_user_v" */
 export type App_User_V_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
   current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
   first_name?: InputMaybe<Scalars['String']['input']>;
@@ -149,30 +439,35 @@ export type App_User_V_Insert_Input = {
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   last_name?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
 };
 
 /** aggregate max on columns */
 export type App_User_V_Max_Fields = {
   __typename?: 'app_user_v_max_fields';
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
   current_clinic_id?: Maybe<Scalars['bigint']['output']>;
   email?: Maybe<Scalars['String']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['uuid']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
 };
 
 /** aggregate min on columns */
 export type App_User_V_Min_Fields = {
   __typename?: 'app_user_v_min_fields';
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
   current_clinic_id?: Maybe<Scalars['bigint']['output']>;
   email?: Maybe<Scalars['String']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['uuid']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
 };
 
 /** response of any mutation on the table "app_user_v" */
@@ -187,6 +482,7 @@ export type App_User_V_Mutation_Response = {
 /** Ordering options when selecting data from "app_user_v". */
 export type App_User_V_Order_By = {
   created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
   current_clinic_id?: InputMaybe<Order_By>;
   email?: InputMaybe<Order_By>;
   first_name?: InputMaybe<Order_By>;
@@ -194,12 +490,15 @@ export type App_User_V_Order_By = {
   is_active?: InputMaybe<Order_By>;
   last_name?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
 };
 
 /** select columns of table "app_user_v" */
 export type App_User_V_Select_Column =
   /** column name */
   | 'created_at'
+  /** column name */
+  | 'created_by'
   /** column name */
   | 'current_clinic_id'
   /** column name */
@@ -213,11 +512,14 @@ export type App_User_V_Select_Column =
   /** column name */
   | 'last_name'
   /** column name */
-  | 'updated_at';
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
 
 /** input type for updating data in table "app_user_v" */
 export type App_User_V_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
   current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
   first_name?: InputMaybe<Scalars['String']['input']>;
@@ -225,6 +527,7 @@ export type App_User_V_Set_Input = {
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   last_name?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
 };
 
 /** aggregate stddev on columns */
@@ -256,6 +559,7 @@ export type App_User_V_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type App_User_V_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
   current_clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
   first_name?: InputMaybe<Scalars['String']['input']>;
@@ -263,6 +567,7 @@ export type App_User_V_Stream_Cursor_Value_Input = {
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   last_name?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
 };
 
 /** aggregate sum on columns */
@@ -295,6 +600,24 @@ export type App_User_V_Var_Samp_Fields = {
 /** aggregate variance on columns */
 export type App_User_V_Variance_Fields = {
   __typename?: 'app_user_v_variance_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_pop on columns */
+export type App_User_Var_Pop_Fields = {
+  __typename?: 'app_user_var_pop_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type App_User_Var_Samp_Fields = {
+  __typename?: 'app_user_var_samp_fields';
+  current_clinic_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type App_User_Variance_Fields = {
+  __typename?: 'app_user_variance_fields';
   current_clinic_id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -1724,10 +2047,17 @@ export type Clinic_User = {
   __typename?: 'clinic_user';
   clinic_id: Scalars['bigint']['output'];
   created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id: Scalars['bigint']['output'];
   is_active: Scalars['Boolean']['output'];
+  is_schedulable: Scalars['Boolean']['output'];
+  job_title?: Maybe<Scalars['String']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  provider_kind?: Maybe<Scalars['String']['output']>;
+  scheduler_color?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
   user_id: Scalars['uuid']['output'];
 };
 
@@ -1765,6 +2095,7 @@ export type Clinic_User_Aggregate_FieldsCountArgs = {
 export type Clinic_User_Avg_Fields = {
   __typename?: 'clinic_user_avg_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -1775,10 +2106,17 @@ export type Clinic_User_Bool_Exp = {
   _or?: InputMaybe<Array<Clinic_User_Bool_Exp>>;
   clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  default_operatory_id?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  is_schedulable?: InputMaybe<Boolean_Comparison_Exp>;
+  job_title?: InputMaybe<String_Comparison_Exp>;
   joined_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  provider_kind?: InputMaybe<String_Comparison_Exp>;
+  scheduler_color?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
   user_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
@@ -1951,6 +2289,7 @@ export type Clinic_User_Effective_Capabilities_V_Variance_Fields = {
 /** input type for incrementing numeric columns in table "clinic_user" */
 export type Clinic_User_Inc_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
 };
 
@@ -1958,10 +2297,17 @@ export type Clinic_User_Inc_Input = {
 export type Clinic_User_Insert_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_schedulable?: InputMaybe<Scalars['Boolean']['input']>;
+  job_title?: InputMaybe<Scalars['String']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  provider_kind?: InputMaybe<Scalars['String']['input']>;
+  scheduler_color?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
   user_id?: InputMaybe<Scalars['uuid']['input']>;
 };
 
@@ -1970,9 +2316,15 @@ export type Clinic_User_Max_Fields = {
   __typename?: 'clinic_user_max_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
+  job_title?: Maybe<Scalars['String']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  provider_kind?: Maybe<Scalars['String']['output']>;
+  scheduler_color?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
   user_id?: Maybe<Scalars['uuid']['output']>;
 };
 
@@ -1981,9 +2333,15 @@ export type Clinic_User_Min_Fields = {
   __typename?: 'clinic_user_min_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
   created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
+  job_title?: Maybe<Scalars['String']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  provider_kind?: Maybe<Scalars['String']['output']>;
+  scheduler_color?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
   user_id?: Maybe<Scalars['uuid']['output']>;
 };
 
@@ -1994,6 +2352,13 @@ export type Clinic_User_Mutation_Response = {
   affected_rows: Scalars['Int']['output'];
   /** data from the rows affected by the mutation */
   returning: Array<Clinic_User>;
+};
+
+/** input type for inserting object relation for remote table "clinic_user" */
+export type Clinic_User_Obj_Rel_Insert_Input = {
+  data: Clinic_User_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Clinic_User_On_Conflict>;
 };
 
 /** on_conflict condition type for table "clinic_user" */
@@ -2007,10 +2372,17 @@ export type Clinic_User_On_Conflict = {
 export type Clinic_User_Order_By = {
   clinic_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  default_operatory_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
+  is_schedulable?: InputMaybe<Order_By>;
+  job_title?: InputMaybe<Order_By>;
   joined_at?: InputMaybe<Order_By>;
+  provider_kind?: InputMaybe<Order_By>;
+  scheduler_color?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
 
@@ -2242,13 +2614,27 @@ export type Clinic_User_Select_Column =
   /** column name */
   | 'created_at'
   /** column name */
+  | 'created_by'
+  /** column name */
+  | 'default_operatory_id'
+  /** column name */
   | 'id'
   /** column name */
   | 'is_active'
   /** column name */
+  | 'is_schedulable'
+  /** column name */
+  | 'job_title'
+  /** column name */
   | 'joined_at'
   /** column name */
+  | 'provider_kind'
+  /** column name */
+  | 'scheduler_color'
+  /** column name */
   | 'updated_at'
+  /** column name */
+  | 'updated_by'
   /** column name */
   | 'user_id';
 
@@ -2256,10 +2642,17 @@ export type Clinic_User_Select_Column =
 export type Clinic_User_Set_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_schedulable?: InputMaybe<Scalars['Boolean']['input']>;
+  job_title?: InputMaybe<Scalars['String']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  provider_kind?: InputMaybe<Scalars['String']['input']>;
+  scheduler_color?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
   user_id?: InputMaybe<Scalars['uuid']['input']>;
 };
 
@@ -2267,6 +2660,7 @@ export type Clinic_User_Set_Input = {
 export type Clinic_User_Stddev_Fields = {
   __typename?: 'clinic_user_stddev_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -2274,6 +2668,7 @@ export type Clinic_User_Stddev_Fields = {
 export type Clinic_User_Stddev_Pop_Fields = {
   __typename?: 'clinic_user_stddev_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -2281,6 +2676,7 @@ export type Clinic_User_Stddev_Pop_Fields = {
 export type Clinic_User_Stddev_Samp_Fields = {
   __typename?: 'clinic_user_stddev_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -2296,10 +2692,17 @@ export type Clinic_User_Stream_Cursor_Input = {
 export type Clinic_User_Stream_Cursor_Value_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  is_schedulable?: InputMaybe<Scalars['Boolean']['input']>;
+  job_title?: InputMaybe<Scalars['String']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  provider_kind?: InputMaybe<Scalars['String']['input']>;
+  scheduler_color?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
   user_id?: InputMaybe<Scalars['uuid']['input']>;
 };
 
@@ -2307,6 +2710,7 @@ export type Clinic_User_Stream_Cursor_Value_Input = {
 export type Clinic_User_Sum_Fields = {
   __typename?: 'clinic_user_sum_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
 };
 
@@ -2317,13 +2721,27 @@ export type Clinic_User_Update_Column =
   /** column name */
   | 'created_at'
   /** column name */
+  | 'created_by'
+  /** column name */
+  | 'default_operatory_id'
+  /** column name */
   | 'id'
   /** column name */
   | 'is_active'
   /** column name */
+  | 'is_schedulable'
+  /** column name */
+  | 'job_title'
+  /** column name */
   | 'joined_at'
   /** column name */
+  | 'provider_kind'
+  /** column name */
+  | 'scheduler_color'
+  /** column name */
   | 'updated_at'
+  /** column name */
+  | 'updated_by'
   /** column name */
   | 'user_id';
 
@@ -2552,6 +2970,7 @@ export type Clinic_User_V_Variance_Fields = {
 export type Clinic_User_Var_Pop_Fields = {
   __typename?: 'clinic_user_var_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -2559,6 +2978,7 @@ export type Clinic_User_Var_Pop_Fields = {
 export type Clinic_User_Var_Samp_Fields = {
   __typename?: 'clinic_user_var_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -2566,7 +2986,311 @@ export type Clinic_User_Var_Samp_Fields = {
 export type Clinic_User_Variance_Fields = {
   __typename?: 'clinic_user_variance_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** columns and relationships of "clinic_user_with_profile_v" */
+export type Clinic_User_With_Profile_V = {
+  __typename?: 'clinic_user_with_profile_v';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_membership_active?: Maybe<Scalars['Boolean']['output']>;
+  clinic_scheduler_color?: Maybe<Scalars['String']['output']>;
+  clinic_user_created_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_user_created_by?: Maybe<Scalars['uuid']['output']>;
+  clinic_user_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_user_updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_user_updated_by?: Maybe<Scalars['uuid']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
+  global_scheduler_color?: Maybe<Scalars['String']['output']>;
+  is_schedulable?: Maybe<Scalars['Boolean']['output']>;
+  job_title?: Maybe<Scalars['String']['output']>;
+  joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  license_no?: Maybe<Scalars['String']['output']>;
+  profile_active?: Maybe<Scalars['Boolean']['output']>;
+  provider_kind?: Maybe<Scalars['String']['output']>;
+  user_account_active?: Maybe<Scalars['Boolean']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+  user_kind?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregated selection of "clinic_user_with_profile_v" */
+export type Clinic_User_With_Profile_V_Aggregate = {
+  __typename?: 'clinic_user_with_profile_v_aggregate';
+  aggregate?: Maybe<Clinic_User_With_Profile_V_Aggregate_Fields>;
+  nodes: Array<Clinic_User_With_Profile_V>;
+};
+
+/** aggregate fields of "clinic_user_with_profile_v" */
+export type Clinic_User_With_Profile_V_Aggregate_Fields = {
+  __typename?: 'clinic_user_with_profile_v_aggregate_fields';
+  avg?: Maybe<Clinic_User_With_Profile_V_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Clinic_User_With_Profile_V_Max_Fields>;
+  min?: Maybe<Clinic_User_With_Profile_V_Min_Fields>;
+  stddev?: Maybe<Clinic_User_With_Profile_V_Stddev_Fields>;
+  stddev_pop?: Maybe<Clinic_User_With_Profile_V_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Clinic_User_With_Profile_V_Stddev_Samp_Fields>;
+  sum?: Maybe<Clinic_User_With_Profile_V_Sum_Fields>;
+  var_pop?: Maybe<Clinic_User_With_Profile_V_Var_Pop_Fields>;
+  var_samp?: Maybe<Clinic_User_With_Profile_V_Var_Samp_Fields>;
+  variance?: Maybe<Clinic_User_With_Profile_V_Variance_Fields>;
+};
+
+
+/** aggregate fields of "clinic_user_with_profile_v" */
+export type Clinic_User_With_Profile_V_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Clinic_User_With_Profile_V_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Clinic_User_With_Profile_V_Avg_Fields = {
+  __typename?: 'clinic_user_with_profile_v_avg_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "clinic_user_with_profile_v". All fields are combined with a logical 'AND'. */
+export type Clinic_User_With_Profile_V_Bool_Exp = {
+  _and?: InputMaybe<Array<Clinic_User_With_Profile_V_Bool_Exp>>;
+  _not?: InputMaybe<Clinic_User_With_Profile_V_Bool_Exp>;
+  _or?: InputMaybe<Array<Clinic_User_With_Profile_V_Bool_Exp>>;
+  clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  clinic_membership_active?: InputMaybe<Boolean_Comparison_Exp>;
+  clinic_scheduler_color?: InputMaybe<String_Comparison_Exp>;
+  clinic_user_created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  clinic_user_created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  clinic_user_id?: InputMaybe<Bigint_Comparison_Exp>;
+  clinic_user_updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  clinic_user_updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+  default_operatory_id?: InputMaybe<Bigint_Comparison_Exp>;
+  email?: InputMaybe<String_Comparison_Exp>;
+  first_name?: InputMaybe<String_Comparison_Exp>;
+  global_scheduler_color?: InputMaybe<String_Comparison_Exp>;
+  is_schedulable?: InputMaybe<Boolean_Comparison_Exp>;
+  job_title?: InputMaybe<String_Comparison_Exp>;
+  joined_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  last_name?: InputMaybe<String_Comparison_Exp>;
+  license_no?: InputMaybe<String_Comparison_Exp>;
+  profile_active?: InputMaybe<Boolean_Comparison_Exp>;
+  provider_kind?: InputMaybe<String_Comparison_Exp>;
+  user_account_active?: InputMaybe<Boolean_Comparison_Exp>;
+  user_id?: InputMaybe<Uuid_Comparison_Exp>;
+  user_kind?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** aggregate max on columns */
+export type Clinic_User_With_Profile_V_Max_Fields = {
+  __typename?: 'clinic_user_with_profile_v_max_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_scheduler_color?: Maybe<Scalars['String']['output']>;
+  clinic_user_created_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_user_created_by?: Maybe<Scalars['uuid']['output']>;
+  clinic_user_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_user_updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_user_updated_by?: Maybe<Scalars['uuid']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
+  global_scheduler_color?: Maybe<Scalars['String']['output']>;
+  job_title?: Maybe<Scalars['String']['output']>;
+  joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  license_no?: Maybe<Scalars['String']['output']>;
+  provider_kind?: Maybe<Scalars['String']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+  user_kind?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Clinic_User_With_Profile_V_Min_Fields = {
+  __typename?: 'clinic_user_with_profile_v_min_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_scheduler_color?: Maybe<Scalars['String']['output']>;
+  clinic_user_created_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_user_created_by?: Maybe<Scalars['uuid']['output']>;
+  clinic_user_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_user_updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_user_updated_by?: Maybe<Scalars['uuid']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
+  global_scheduler_color?: Maybe<Scalars['String']['output']>;
+  job_title?: Maybe<Scalars['String']['output']>;
+  joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  license_no?: Maybe<Scalars['String']['output']>;
+  provider_kind?: Maybe<Scalars['String']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+  user_kind?: Maybe<Scalars['String']['output']>;
+};
+
+/** Ordering options when selecting data from "clinic_user_with_profile_v". */
+export type Clinic_User_With_Profile_V_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  clinic_membership_active?: InputMaybe<Order_By>;
+  clinic_scheduler_color?: InputMaybe<Order_By>;
+  clinic_user_created_at?: InputMaybe<Order_By>;
+  clinic_user_created_by?: InputMaybe<Order_By>;
+  clinic_user_id?: InputMaybe<Order_By>;
+  clinic_user_updated_at?: InputMaybe<Order_By>;
+  clinic_user_updated_by?: InputMaybe<Order_By>;
+  default_operatory_id?: InputMaybe<Order_By>;
+  email?: InputMaybe<Order_By>;
+  first_name?: InputMaybe<Order_By>;
+  global_scheduler_color?: InputMaybe<Order_By>;
+  is_schedulable?: InputMaybe<Order_By>;
+  job_title?: InputMaybe<Order_By>;
+  joined_at?: InputMaybe<Order_By>;
+  last_name?: InputMaybe<Order_By>;
+  license_no?: InputMaybe<Order_By>;
+  profile_active?: InputMaybe<Order_By>;
+  provider_kind?: InputMaybe<Order_By>;
+  user_account_active?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+  user_kind?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "clinic_user_with_profile_v" */
+export type Clinic_User_With_Profile_V_Select_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'clinic_membership_active'
+  /** column name */
+  | 'clinic_scheduler_color'
+  /** column name */
+  | 'clinic_user_created_at'
+  /** column name */
+  | 'clinic_user_created_by'
+  /** column name */
+  | 'clinic_user_id'
+  /** column name */
+  | 'clinic_user_updated_at'
+  /** column name */
+  | 'clinic_user_updated_by'
+  /** column name */
+  | 'default_operatory_id'
+  /** column name */
+  | 'email'
+  /** column name */
+  | 'first_name'
+  /** column name */
+  | 'global_scheduler_color'
+  /** column name */
+  | 'is_schedulable'
+  /** column name */
+  | 'job_title'
+  /** column name */
+  | 'joined_at'
+  /** column name */
+  | 'last_name'
+  /** column name */
+  | 'license_no'
+  /** column name */
+  | 'profile_active'
+  /** column name */
+  | 'provider_kind'
+  /** column name */
+  | 'user_account_active'
+  /** column name */
+  | 'user_id'
+  /** column name */
+  | 'user_kind';
+
+/** aggregate stddev on columns */
+export type Clinic_User_With_Profile_V_Stddev_Fields = {
+  __typename?: 'clinic_user_with_profile_v_stddev_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Clinic_User_With_Profile_V_Stddev_Pop_Fields = {
+  __typename?: 'clinic_user_with_profile_v_stddev_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Clinic_User_With_Profile_V_Stddev_Samp_Fields = {
+  __typename?: 'clinic_user_with_profile_v_stddev_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "clinic_user_with_profile_v" */
+export type Clinic_User_With_Profile_V_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Clinic_User_With_Profile_V_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Clinic_User_With_Profile_V_Stream_Cursor_Value_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  clinic_membership_active?: InputMaybe<Scalars['Boolean']['input']>;
+  clinic_scheduler_color?: InputMaybe<Scalars['String']['input']>;
+  clinic_user_created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_user_created_by?: InputMaybe<Scalars['uuid']['input']>;
+  clinic_user_id?: InputMaybe<Scalars['bigint']['input']>;
+  clinic_user_updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_user_updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  first_name?: InputMaybe<Scalars['String']['input']>;
+  global_scheduler_color?: InputMaybe<Scalars['String']['input']>;
+  is_schedulable?: InputMaybe<Scalars['Boolean']['input']>;
+  job_title?: InputMaybe<Scalars['String']['input']>;
+  joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  last_name?: InputMaybe<Scalars['String']['input']>;
+  license_no?: InputMaybe<Scalars['String']['input']>;
+  profile_active?: InputMaybe<Scalars['Boolean']['input']>;
+  provider_kind?: InputMaybe<Scalars['String']['input']>;
+  user_account_active?: InputMaybe<Scalars['Boolean']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+  user_kind?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Clinic_User_With_Profile_V_Sum_Fields = {
+  __typename?: 'clinic_user_with_profile_v_sum_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  clinic_user_id?: Maybe<Scalars['bigint']['output']>;
+  default_operatory_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** aggregate var_pop on columns */
+export type Clinic_User_With_Profile_V_Var_Pop_Fields = {
+  __typename?: 'clinic_user_with_profile_v_var_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Clinic_User_With_Profile_V_Var_Samp_Fields = {
+  __typename?: 'clinic_user_with_profile_v_var_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Clinic_User_With_Profile_V_Variance_Fields = {
+  __typename?: 'clinic_user_with_profile_v_variance_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  clinic_user_id?: Maybe<Scalars['Float']['output']>;
+  default_operatory_id?: Maybe<Scalars['Float']['output']>;
 };
 
 /** columns and relationships of "clinic_v" */
@@ -2907,6 +3631,19 @@ export type Cursor_Ordering =
   /** descending ordering of the cursor */
   | 'DESC';
 
+/** Boolean expression to compare columns of type "date". All fields are combined with logical 'AND'. */
+export type Date_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['date']['input']>;
+  _gt?: InputMaybe<Scalars['date']['input']>;
+  _gte?: InputMaybe<Scalars['date']['input']>;
+  _in?: InputMaybe<Array<Scalars['date']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['date']['input']>;
+  _lte?: InputMaybe<Scalars['date']['input']>;
+  _neq?: InputMaybe<Scalars['date']['input']>;
+  _nin?: InputMaybe<Array<Scalars['date']['input']>>;
+};
+
 export type Fn_Bootstrap_System_Args = {
   p_admin_email?: InputMaybe<Scalars['String']['input']>;
   p_admin_first_name?: InputMaybe<Scalars['String']['input']>;
@@ -2919,6 +3656,10 @@ export type Fn_Bootstrap_System_Args = {
 /** mutation root */
 export type Mutation_Root = {
   __typename?: 'mutation_root';
+  /** delete data from the table: "app_user" */
+  delete_app_user?: Maybe<App_User_Mutation_Response>;
+  /** delete single row from the table: "app_user" */
+  delete_app_user_by_pk?: Maybe<App_User>;
   /** delete data from the table: "app_user_v" */
   delete_app_user_v?: Maybe<App_User_V_Mutation_Response>;
   /** delete data from the table: "bootstrap_event" */
@@ -2975,8 +3716,22 @@ export type Mutation_Root = {
   delete_user_capability_override?: Maybe<User_Capability_Override_Mutation_Response>;
   /** delete single row from the table: "user_capability_override" */
   delete_user_capability_override_by_pk?: Maybe<User_Capability_Override>;
+  /** delete data from the table: "user_profile" */
+  delete_user_profile?: Maybe<User_Profile_Mutation_Response>;
+  /** delete single row from the table: "user_profile" */
+  delete_user_profile_by_pk?: Maybe<User_Profile>;
+  /** delete data from the table: "user_provider_identifier" */
+  delete_user_provider_identifier?: Maybe<User_Provider_Identifier_Mutation_Response>;
+  /** delete single row from the table: "user_provider_identifier" */
+  delete_user_provider_identifier_by_pk?: Maybe<User_Provider_Identifier>;
+  /** delete data from the table: "user_provider_identifier_v" */
+  delete_user_provider_identifier_v?: Maybe<User_Provider_Identifier_V_Mutation_Response>;
   /** execute VOLATILE function "fn_bootstrap_system" which returns "bootstrap_event" */
   fn_bootstrap_system: Array<Bootstrap_Event>;
+  /** insert data into the table: "app_user" */
+  insert_app_user?: Maybe<App_User_Mutation_Response>;
+  /** insert a single row into the table: "app_user" */
+  insert_app_user_one?: Maybe<App_User>;
   /** insert data into the table: "app_user_v" */
   insert_app_user_v?: Maybe<App_User_V_Mutation_Response>;
   /** insert a single row into the table: "app_user_v" */
@@ -3045,6 +3800,24 @@ export type Mutation_Root = {
   insert_user_capability_override_one?: Maybe<User_Capability_Override>;
   /** insert a single row into the table: "user" */
   insert_user_one?: Maybe<User>;
+  /** insert data into the table: "user_profile" */
+  insert_user_profile?: Maybe<User_Profile_Mutation_Response>;
+  /** insert a single row into the table: "user_profile" */
+  insert_user_profile_one?: Maybe<User_Profile>;
+  /** insert data into the table: "user_provider_identifier" */
+  insert_user_provider_identifier?: Maybe<User_Provider_Identifier_Mutation_Response>;
+  /** insert a single row into the table: "user_provider_identifier" */
+  insert_user_provider_identifier_one?: Maybe<User_Provider_Identifier>;
+  /** insert data into the table: "user_provider_identifier_v" */
+  insert_user_provider_identifier_v?: Maybe<User_Provider_Identifier_V_Mutation_Response>;
+  /** insert a single row into the table: "user_provider_identifier_v" */
+  insert_user_provider_identifier_v_one?: Maybe<User_Provider_Identifier_V>;
+  /** update data of the table: "app_user" */
+  update_app_user?: Maybe<App_User_Mutation_Response>;
+  /** update single row of the table: "app_user" */
+  update_app_user_by_pk?: Maybe<App_User>;
+  /** update multiples rows of table: "app_user" */
+  update_app_user_many?: Maybe<Array<Maybe<App_User_Mutation_Response>>>;
   /** update data of the table: "app_user_v" */
   update_app_user_v?: Maybe<App_User_V_Mutation_Response>;
   /** update multiples rows of table: "app_user_v" */
@@ -3135,6 +3908,34 @@ export type Mutation_Root = {
   update_user_capability_override_many?: Maybe<Array<Maybe<User_Capability_Override_Mutation_Response>>>;
   /** update multiples rows of table: "user" */
   update_user_many?: Maybe<Array<Maybe<User_Mutation_Response>>>;
+  /** update data of the table: "user_profile" */
+  update_user_profile?: Maybe<User_Profile_Mutation_Response>;
+  /** update single row of the table: "user_profile" */
+  update_user_profile_by_pk?: Maybe<User_Profile>;
+  /** update multiples rows of table: "user_profile" */
+  update_user_profile_many?: Maybe<Array<Maybe<User_Profile_Mutation_Response>>>;
+  /** update data of the table: "user_provider_identifier" */
+  update_user_provider_identifier?: Maybe<User_Provider_Identifier_Mutation_Response>;
+  /** update single row of the table: "user_provider_identifier" */
+  update_user_provider_identifier_by_pk?: Maybe<User_Provider_Identifier>;
+  /** update multiples rows of table: "user_provider_identifier" */
+  update_user_provider_identifier_many?: Maybe<Array<Maybe<User_Provider_Identifier_Mutation_Response>>>;
+  /** update data of the table: "user_provider_identifier_v" */
+  update_user_provider_identifier_v?: Maybe<User_Provider_Identifier_V_Mutation_Response>;
+  /** update multiples rows of table: "user_provider_identifier_v" */
+  update_user_provider_identifier_v_many?: Maybe<Array<Maybe<User_Provider_Identifier_V_Mutation_Response>>>;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_App_UserArgs = {
+  where: App_User_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_App_User_By_PkArgs = {
+  id: Scalars['uuid']['input'];
 };
 
 
@@ -3310,6 +4111,36 @@ export type Mutation_RootDelete_User_Capability_Override_By_PkArgs = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_User_ProfileArgs = {
+  where: User_Profile_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_User_Profile_By_PkArgs = {
+  user_id: Scalars['uuid']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_User_Provider_IdentifierArgs = {
+  where: User_Provider_Identifier_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_User_Provider_Identifier_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_User_Provider_Identifier_VArgs = {
+  where: User_Provider_Identifier_V_Bool_Exp;
+};
+
+
+/** mutation root */
 export type Mutation_RootFn_Bootstrap_SystemArgs = {
   args: Fn_Bootstrap_System_Args;
   distinct_on?: InputMaybe<Array<Bootstrap_Event_Select_Column>>;
@@ -3317,6 +4148,20 @@ export type Mutation_RootFn_Bootstrap_SystemArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   order_by?: InputMaybe<Array<Bootstrap_Event_Order_By>>;
   where?: InputMaybe<Bootstrap_Event_Bool_Exp>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_App_UserArgs = {
+  objects: Array<App_User_Insert_Input>;
+  on_conflict?: InputMaybe<App_User_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_App_User_OneArgs = {
+  object: App_User_Insert_Input;
+  on_conflict?: InputMaybe<App_User_On_Conflict>;
 };
 
 
@@ -3543,6 +4388,68 @@ export type Mutation_RootInsert_User_Capability_Override_OneArgs = {
 export type Mutation_RootInsert_User_OneArgs = {
   object: User_Insert_Input;
   on_conflict?: InputMaybe<User_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_User_ProfileArgs = {
+  objects: Array<User_Profile_Insert_Input>;
+  on_conflict?: InputMaybe<User_Profile_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_User_Profile_OneArgs = {
+  object: User_Profile_Insert_Input;
+  on_conflict?: InputMaybe<User_Profile_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_User_Provider_IdentifierArgs = {
+  objects: Array<User_Provider_Identifier_Insert_Input>;
+  on_conflict?: InputMaybe<User_Provider_Identifier_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_User_Provider_Identifier_OneArgs = {
+  object: User_Provider_Identifier_Insert_Input;
+  on_conflict?: InputMaybe<User_Provider_Identifier_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_User_Provider_Identifier_VArgs = {
+  objects: Array<User_Provider_Identifier_V_Insert_Input>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_User_Provider_Identifier_V_OneArgs = {
+  object: User_Provider_Identifier_V_Insert_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_App_UserArgs = {
+  _inc?: InputMaybe<App_User_Inc_Input>;
+  _set?: InputMaybe<App_User_Set_Input>;
+  where: App_User_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_App_User_By_PkArgs = {
+  _inc?: InputMaybe<App_User_Inc_Input>;
+  _set?: InputMaybe<App_User_Set_Input>;
+  pk_columns: App_User_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_App_User_ManyArgs = {
+  updates: Array<App_User_Updates>;
 };
 
 
@@ -3865,6 +4772,62 @@ export type Mutation_RootUpdate_User_Capability_Override_ManyArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_User_ManyArgs = {
   updates: Array<User_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_ProfileArgs = {
+  _set?: InputMaybe<User_Profile_Set_Input>;
+  where: User_Profile_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Profile_By_PkArgs = {
+  _set?: InputMaybe<User_Profile_Set_Input>;
+  pk_columns: User_Profile_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Profile_ManyArgs = {
+  updates: Array<User_Profile_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Provider_IdentifierArgs = {
+  _inc?: InputMaybe<User_Provider_Identifier_Inc_Input>;
+  _set?: InputMaybe<User_Provider_Identifier_Set_Input>;
+  where: User_Provider_Identifier_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Provider_Identifier_By_PkArgs = {
+  _inc?: InputMaybe<User_Provider_Identifier_Inc_Input>;
+  _set?: InputMaybe<User_Provider_Identifier_Set_Input>;
+  pk_columns: User_Provider_Identifier_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Provider_Identifier_ManyArgs = {
+  updates: Array<User_Provider_Identifier_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Provider_Identifier_VArgs = {
+  _inc?: InputMaybe<User_Provider_Identifier_V_Inc_Input>;
+  _set?: InputMaybe<User_Provider_Identifier_V_Set_Input>;
+  where: User_Provider_Identifier_V_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_User_Provider_Identifier_V_ManyArgs = {
+  updates: Array<User_Provider_Identifier_V_Updates>;
 };
 
 /** columns and relationships of "operatory" */
@@ -4449,6 +5412,12 @@ export type Override_Effect_Comparison_Exp = {
 
 export type Query_Root = {
   __typename?: 'query_root';
+  /** fetch data from the table: "app_user" */
+  app_user: Array<App_User>;
+  /** fetch aggregated fields from the table: "app_user" */
+  app_user_aggregate: App_User_Aggregate;
+  /** fetch data from the table: "app_user" using primary key columns */
+  app_user_by_pk?: Maybe<App_User>;
   /** fetch data from the table: "app_user_v" */
   app_user_v: Array<App_User_V>;
   /** fetch aggregated fields from the table: "app_user_v" */
@@ -4501,6 +5470,10 @@ export type Query_Root = {
   clinic_user_v: Array<Clinic_User_V>;
   /** fetch aggregated fields from the table: "clinic_user_v" */
   clinic_user_v_aggregate: Clinic_User_V_Aggregate;
+  /** fetch data from the table: "clinic_user_with_profile_v" */
+  clinic_user_with_profile_v: Array<Clinic_User_With_Profile_V>;
+  /** fetch aggregated fields from the table: "clinic_user_with_profile_v" */
+  clinic_user_with_profile_v_aggregate: Clinic_User_With_Profile_V_Aggregate;
   /** fetch data from the table: "clinic_v" */
   clinic_v: Array<Clinic_V>;
   /** fetch aggregated fields from the table: "clinic_v" */
@@ -4543,6 +5516,45 @@ export type Query_Root = {
   user_capability_override_aggregate: User_Capability_Override_Aggregate;
   /** fetch data from the table: "user_capability_override" using primary key columns */
   user_capability_override_by_pk?: Maybe<User_Capability_Override>;
+  /** fetch data from the table: "user_profile" */
+  user_profile: Array<User_Profile>;
+  /** fetch aggregated fields from the table: "user_profile" */
+  user_profile_aggregate: User_Profile_Aggregate;
+  /** fetch data from the table: "user_profile" using primary key columns */
+  user_profile_by_pk?: Maybe<User_Profile>;
+  /** fetch data from the table: "user_provider_identifier" */
+  user_provider_identifier: Array<User_Provider_Identifier>;
+  /** fetch aggregated fields from the table: "user_provider_identifier" */
+  user_provider_identifier_aggregate: User_Provider_Identifier_Aggregate;
+  /** fetch data from the table: "user_provider_identifier" using primary key columns */
+  user_provider_identifier_by_pk?: Maybe<User_Provider_Identifier>;
+  /** fetch data from the table: "user_provider_identifier_v" */
+  user_provider_identifier_v: Array<User_Provider_Identifier_V>;
+  /** fetch aggregated fields from the table: "user_provider_identifier_v" */
+  user_provider_identifier_v_aggregate: User_Provider_Identifier_V_Aggregate;
+};
+
+
+export type Query_RootApp_UserArgs = {
+  distinct_on?: InputMaybe<Array<App_User_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<App_User_Order_By>>;
+  where?: InputMaybe<App_User_Bool_Exp>;
+};
+
+
+export type Query_RootApp_User_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<App_User_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<App_User_Order_By>>;
+  where?: InputMaybe<App_User_Bool_Exp>;
+};
+
+
+export type Query_RootApp_User_By_PkArgs = {
+  id: Scalars['uuid']['input'];
 };
 
 
@@ -4757,6 +5769,24 @@ export type Query_RootClinic_User_V_AggregateArgs = {
 };
 
 
+export type Query_RootClinic_User_With_Profile_VArgs = {
+  distinct_on?: InputMaybe<Array<Clinic_User_With_Profile_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Clinic_User_With_Profile_V_Order_By>>;
+  where?: InputMaybe<Clinic_User_With_Profile_V_Bool_Exp>;
+};
+
+
+export type Query_RootClinic_User_With_Profile_V_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Clinic_User_With_Profile_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Clinic_User_With_Profile_V_Order_By>>;
+  where?: InputMaybe<Clinic_User_With_Profile_V_Bool_Exp>;
+};
+
+
 export type Query_RootClinic_VArgs = {
   distinct_on?: InputMaybe<Array<Clinic_V_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -4925,6 +5955,70 @@ export type Query_RootUser_Capability_Override_AggregateArgs = {
 export type Query_RootUser_Capability_Override_By_PkArgs = {
   capability_key: Scalars['String']['input'];
   clinic_user_id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootUser_ProfileArgs = {
+  distinct_on?: InputMaybe<Array<User_Profile_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Profile_Order_By>>;
+  where?: InputMaybe<User_Profile_Bool_Exp>;
+};
+
+
+export type Query_RootUser_Profile_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<User_Profile_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Profile_Order_By>>;
+  where?: InputMaybe<User_Profile_Bool_Exp>;
+};
+
+
+export type Query_RootUser_Profile_By_PkArgs = {
+  user_id: Scalars['uuid']['input'];
+};
+
+
+export type Query_RootUser_Provider_IdentifierArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+};
+
+
+export type Query_RootUser_Provider_Identifier_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+};
+
+
+export type Query_RootUser_Provider_Identifier_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootUser_Provider_Identifier_VArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_V_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_V_Bool_Exp>;
+};
+
+
+export type Query_RootUser_Provider_Identifier_V_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_V_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_V_Bool_Exp>;
 };
 
 /** columns and relationships of "role" */
@@ -5619,6 +6713,14 @@ export type Smallint_Comparison_Exp = {
 
 export type Subscription_Root = {
   __typename?: 'subscription_root';
+  /** fetch data from the table: "app_user" */
+  app_user: Array<App_User>;
+  /** fetch aggregated fields from the table: "app_user" */
+  app_user_aggregate: App_User_Aggregate;
+  /** fetch data from the table: "app_user" using primary key columns */
+  app_user_by_pk?: Maybe<App_User>;
+  /** fetch data from the table in a streaming manner: "app_user" */
+  app_user_stream: Array<App_User>;
   /** fetch data from the table: "app_user_v" */
   app_user_v: Array<App_User_V>;
   /** fetch aggregated fields from the table: "app_user_v" */
@@ -5691,6 +6793,12 @@ export type Subscription_Root = {
   clinic_user_v_aggregate: Clinic_User_V_Aggregate;
   /** fetch data from the table in a streaming manner: "clinic_user_v" */
   clinic_user_v_stream: Array<Clinic_User_V>;
+  /** fetch data from the table: "clinic_user_with_profile_v" */
+  clinic_user_with_profile_v: Array<Clinic_User_With_Profile_V>;
+  /** fetch aggregated fields from the table: "clinic_user_with_profile_v" */
+  clinic_user_with_profile_v_aggregate: Clinic_User_With_Profile_V_Aggregate;
+  /** fetch data from the table in a streaming manner: "clinic_user_with_profile_v" */
+  clinic_user_with_profile_v_stream: Array<Clinic_User_With_Profile_V>;
   /** fetch data from the table: "clinic_v" */
   clinic_v: Array<Clinic_V>;
   /** fetch aggregated fields from the table: "clinic_v" */
@@ -5747,8 +6855,60 @@ export type Subscription_Root = {
   user_capability_override_by_pk?: Maybe<User_Capability_Override>;
   /** fetch data from the table in a streaming manner: "user_capability_override" */
   user_capability_override_stream: Array<User_Capability_Override>;
+  /** fetch data from the table: "user_profile" */
+  user_profile: Array<User_Profile>;
+  /** fetch aggregated fields from the table: "user_profile" */
+  user_profile_aggregate: User_Profile_Aggregate;
+  /** fetch data from the table: "user_profile" using primary key columns */
+  user_profile_by_pk?: Maybe<User_Profile>;
+  /** fetch data from the table in a streaming manner: "user_profile" */
+  user_profile_stream: Array<User_Profile>;
+  /** fetch data from the table: "user_provider_identifier" */
+  user_provider_identifier: Array<User_Provider_Identifier>;
+  /** fetch aggregated fields from the table: "user_provider_identifier" */
+  user_provider_identifier_aggregate: User_Provider_Identifier_Aggregate;
+  /** fetch data from the table: "user_provider_identifier" using primary key columns */
+  user_provider_identifier_by_pk?: Maybe<User_Provider_Identifier>;
+  /** fetch data from the table in a streaming manner: "user_provider_identifier" */
+  user_provider_identifier_stream: Array<User_Provider_Identifier>;
+  /** fetch data from the table: "user_provider_identifier_v" */
+  user_provider_identifier_v: Array<User_Provider_Identifier_V>;
+  /** fetch aggregated fields from the table: "user_provider_identifier_v" */
+  user_provider_identifier_v_aggregate: User_Provider_Identifier_V_Aggregate;
+  /** fetch data from the table in a streaming manner: "user_provider_identifier_v" */
+  user_provider_identifier_v_stream: Array<User_Provider_Identifier_V>;
   /** fetch data from the table in a streaming manner: "user" */
   user_stream: Array<User>;
+};
+
+
+export type Subscription_RootApp_UserArgs = {
+  distinct_on?: InputMaybe<Array<App_User_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<App_User_Order_By>>;
+  where?: InputMaybe<App_User_Bool_Exp>;
+};
+
+
+export type Subscription_RootApp_User_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<App_User_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<App_User_Order_By>>;
+  where?: InputMaybe<App_User_Bool_Exp>;
+};
+
+
+export type Subscription_RootApp_User_By_PkArgs = {
+  id: Scalars['uuid']['input'];
+};
+
+
+export type Subscription_RootApp_User_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<App_User_Stream_Cursor_Input>>;
+  where?: InputMaybe<App_User_Bool_Exp>;
 };
 
 
@@ -6033,6 +7193,31 @@ export type Subscription_RootClinic_User_V_StreamArgs = {
 };
 
 
+export type Subscription_RootClinic_User_With_Profile_VArgs = {
+  distinct_on?: InputMaybe<Array<Clinic_User_With_Profile_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Clinic_User_With_Profile_V_Order_By>>;
+  where?: InputMaybe<Clinic_User_With_Profile_V_Bool_Exp>;
+};
+
+
+export type Subscription_RootClinic_User_With_Profile_V_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Clinic_User_With_Profile_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Clinic_User_With_Profile_V_Order_By>>;
+  where?: InputMaybe<Clinic_User_With_Profile_V_Bool_Exp>;
+};
+
+
+export type Subscription_RootClinic_User_With_Profile_V_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Clinic_User_With_Profile_V_Stream_Cursor_Input>>;
+  where?: InputMaybe<Clinic_User_With_Profile_V_Bool_Exp>;
+};
+
+
 export type Subscription_RootClinic_VArgs = {
   distinct_on?: InputMaybe<Array<Clinic_V_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -6250,6 +7435,91 @@ export type Subscription_RootUser_Capability_Override_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<User_Capability_Override_Stream_Cursor_Input>>;
   where?: InputMaybe<User_Capability_Override_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_ProfileArgs = {
+  distinct_on?: InputMaybe<Array<User_Profile_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Profile_Order_By>>;
+  where?: InputMaybe<User_Profile_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Profile_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<User_Profile_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Profile_Order_By>>;
+  where?: InputMaybe<User_Profile_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Profile_By_PkArgs = {
+  user_id: Scalars['uuid']['input'];
+};
+
+
+export type Subscription_RootUser_Profile_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<User_Profile_Stream_Cursor_Input>>;
+  where?: InputMaybe<User_Profile_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Provider_IdentifierArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Provider_Identifier_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Provider_Identifier_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootUser_Provider_Identifier_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<User_Provider_Identifier_Stream_Cursor_Input>>;
+  where?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Provider_Identifier_VArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_V_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_V_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Provider_Identifier_V_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<User_Provider_Identifier_V_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<User_Provider_Identifier_V_Order_By>>;
+  where?: InputMaybe<User_Provider_Identifier_V_Bool_Exp>;
+};
+
+
+export type Subscription_RootUser_Provider_Identifier_V_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<User_Provider_Identifier_V_Stream_Cursor_Input>>;
+  where?: InputMaybe<User_Provider_Identifier_V_Bool_Exp>;
 };
 
 
@@ -6626,6 +7896,833 @@ export type User_Pk_Columns_Input = {
   id: Scalars['uuid']['input'];
 };
 
+/** columns and relationships of "user_profile" */
+export type User_Profile = {
+  __typename?: 'user_profile';
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  is_active: Scalars['Boolean']['output'];
+  license_no?: Maybe<Scalars['String']['output']>;
+  scheduler_color?: Maybe<Scalars['String']['output']>;
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id: Scalars['uuid']['output'];
+  user_kind: Scalars['String']['output'];
+};
+
+/** aggregated selection of "user_profile" */
+export type User_Profile_Aggregate = {
+  __typename?: 'user_profile_aggregate';
+  aggregate?: Maybe<User_Profile_Aggregate_Fields>;
+  nodes: Array<User_Profile>;
+};
+
+/** aggregate fields of "user_profile" */
+export type User_Profile_Aggregate_Fields = {
+  __typename?: 'user_profile_aggregate_fields';
+  count: Scalars['Int']['output'];
+  max?: Maybe<User_Profile_Max_Fields>;
+  min?: Maybe<User_Profile_Min_Fields>;
+};
+
+
+/** aggregate fields of "user_profile" */
+export type User_Profile_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<User_Profile_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "user_profile". All fields are combined with a logical 'AND'. */
+export type User_Profile_Bool_Exp = {
+  _and?: InputMaybe<Array<User_Profile_Bool_Exp>>;
+  _not?: InputMaybe<User_Profile_Bool_Exp>;
+  _or?: InputMaybe<Array<User_Profile_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  license_no?: InputMaybe<String_Comparison_Exp>;
+  scheduler_color?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+  user_id?: InputMaybe<Uuid_Comparison_Exp>;
+  user_kind?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "user_profile" */
+export type User_Profile_Constraint =
+  /** unique or primary key constraint on columns "user_id" */
+  | 'user_profile_pkey';
+
+/** input type for inserting data into table "user_profile" */
+export type User_Profile_Insert_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_no?: InputMaybe<Scalars['String']['input']>;
+  scheduler_color?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+  user_kind?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type User_Profile_Max_Fields = {
+  __typename?: 'user_profile_max_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  license_no?: Maybe<Scalars['String']['output']>;
+  scheduler_color?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+  user_kind?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type User_Profile_Min_Fields = {
+  __typename?: 'user_profile_min_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  license_no?: Maybe<Scalars['String']['output']>;
+  scheduler_color?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+  user_kind?: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "user_profile" */
+export type User_Profile_Mutation_Response = {
+  __typename?: 'user_profile_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<User_Profile>;
+};
+
+/** on_conflict condition type for table "user_profile" */
+export type User_Profile_On_Conflict = {
+  constraint: User_Profile_Constraint;
+  update_columns?: Array<User_Profile_Update_Column>;
+  where?: InputMaybe<User_Profile_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "user_profile". */
+export type User_Profile_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  license_no?: InputMaybe<Order_By>;
+  scheduler_color?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+  user_kind?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: user_profile */
+export type User_Profile_Pk_Columns_Input = {
+  user_id: Scalars['uuid']['input'];
+};
+
+/** select columns of table "user_profile" */
+export type User_Profile_Select_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'license_no'
+  /** column name */
+  | 'scheduler_color'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'user_id'
+  /** column name */
+  | 'user_kind';
+
+/** input type for updating data in table "user_profile" */
+export type User_Profile_Set_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_no?: InputMaybe<Scalars['String']['input']>;
+  scheduler_color?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+  user_kind?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Streaming cursor of the table "user_profile" */
+export type User_Profile_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: User_Profile_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type User_Profile_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_no?: InputMaybe<Scalars['String']['input']>;
+  scheduler_color?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+  user_kind?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** update columns of table "user_profile" */
+export type User_Profile_Update_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'license_no'
+  /** column name */
+  | 'scheduler_color'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'user_id'
+  /** column name */
+  | 'user_kind';
+
+export type User_Profile_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<User_Profile_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: User_Profile_Bool_Exp;
+};
+
+/** columns and relationships of "user_provider_identifier" */
+export type User_Provider_Identifier = {
+  __typename?: 'user_provider_identifier';
+  /** An object relationship */
+  clinic_user?: Maybe<Clinic_User>;
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  effective_from?: Maybe<Scalars['date']['output']>;
+  effective_to?: Maybe<Scalars['date']['output']>;
+  id: Scalars['bigint']['output'];
+  identifier_kind: Scalars['String']['output'];
+  identifier_value: Scalars['String']['output'];
+  is_active: Scalars['Boolean']['output'];
+  license_type: Scalars['String']['output'];
+  province_code: Scalars['String']['output'];
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id: Scalars['uuid']['output'];
+};
+
+/** aggregated selection of "user_provider_identifier" */
+export type User_Provider_Identifier_Aggregate = {
+  __typename?: 'user_provider_identifier_aggregate';
+  aggregate?: Maybe<User_Provider_Identifier_Aggregate_Fields>;
+  nodes: Array<User_Provider_Identifier>;
+};
+
+/** aggregate fields of "user_provider_identifier" */
+export type User_Provider_Identifier_Aggregate_Fields = {
+  __typename?: 'user_provider_identifier_aggregate_fields';
+  avg?: Maybe<User_Provider_Identifier_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<User_Provider_Identifier_Max_Fields>;
+  min?: Maybe<User_Provider_Identifier_Min_Fields>;
+  stddev?: Maybe<User_Provider_Identifier_Stddev_Fields>;
+  stddev_pop?: Maybe<User_Provider_Identifier_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<User_Provider_Identifier_Stddev_Samp_Fields>;
+  sum?: Maybe<User_Provider_Identifier_Sum_Fields>;
+  var_pop?: Maybe<User_Provider_Identifier_Var_Pop_Fields>;
+  var_samp?: Maybe<User_Provider_Identifier_Var_Samp_Fields>;
+  variance?: Maybe<User_Provider_Identifier_Variance_Fields>;
+};
+
+
+/** aggregate fields of "user_provider_identifier" */
+export type User_Provider_Identifier_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<User_Provider_Identifier_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type User_Provider_Identifier_Avg_Fields = {
+  __typename?: 'user_provider_identifier_avg_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "user_provider_identifier". All fields are combined with a logical 'AND'. */
+export type User_Provider_Identifier_Bool_Exp = {
+  _and?: InputMaybe<Array<User_Provider_Identifier_Bool_Exp>>;
+  _not?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+  _or?: InputMaybe<Array<User_Provider_Identifier_Bool_Exp>>;
+  clinic_user?: InputMaybe<Clinic_User_Bool_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  effective_from?: InputMaybe<Date_Comparison_Exp>;
+  effective_to?: InputMaybe<Date_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  identifier_kind?: InputMaybe<String_Comparison_Exp>;
+  identifier_value?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  license_type?: InputMaybe<String_Comparison_Exp>;
+  province_code?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+  user_id?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "user_provider_identifier" */
+export type User_Provider_Identifier_Constraint =
+  /** unique or primary key constraint on columns "license_type", "user_id", "identifier_kind", "province_code" */
+  | 'idx_user_provider_identifier_unique_active'
+  /** unique or primary key constraint on columns "id" */
+  | 'user_provider_identifier_pkey';
+
+/** input type for incrementing numeric columns in table "user_provider_identifier" */
+export type User_Provider_Identifier_Inc_Input = {
+  id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "user_provider_identifier" */
+export type User_Provider_Identifier_Insert_Input = {
+  clinic_user?: InputMaybe<Clinic_User_Obj_Rel_Insert_Input>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  effective_from?: InputMaybe<Scalars['date']['input']>;
+  effective_to?: InputMaybe<Scalars['date']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  identifier_kind?: InputMaybe<Scalars['String']['input']>;
+  identifier_value?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_type?: InputMaybe<Scalars['String']['input']>;
+  province_code?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type User_Provider_Identifier_Max_Fields = {
+  __typename?: 'user_provider_identifier_max_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  effective_from?: Maybe<Scalars['date']['output']>;
+  effective_to?: Maybe<Scalars['date']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  identifier_kind?: Maybe<Scalars['String']['output']>;
+  identifier_value?: Maybe<Scalars['String']['output']>;
+  license_type?: Maybe<Scalars['String']['output']>;
+  province_code?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type User_Provider_Identifier_Min_Fields = {
+  __typename?: 'user_provider_identifier_min_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  effective_from?: Maybe<Scalars['date']['output']>;
+  effective_to?: Maybe<Scalars['date']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  identifier_kind?: Maybe<Scalars['String']['output']>;
+  identifier_value?: Maybe<Scalars['String']['output']>;
+  license_type?: Maybe<Scalars['String']['output']>;
+  province_code?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "user_provider_identifier" */
+export type User_Provider_Identifier_Mutation_Response = {
+  __typename?: 'user_provider_identifier_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<User_Provider_Identifier>;
+};
+
+/** on_conflict condition type for table "user_provider_identifier" */
+export type User_Provider_Identifier_On_Conflict = {
+  constraint: User_Provider_Identifier_Constraint;
+  update_columns?: Array<User_Provider_Identifier_Update_Column>;
+  where?: InputMaybe<User_Provider_Identifier_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "user_provider_identifier". */
+export type User_Provider_Identifier_Order_By = {
+  clinic_user?: InputMaybe<Clinic_User_Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  effective_from?: InputMaybe<Order_By>;
+  effective_to?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  identifier_kind?: InputMaybe<Order_By>;
+  identifier_value?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  license_type?: InputMaybe<Order_By>;
+  province_code?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: user_provider_identifier */
+export type User_Provider_Identifier_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** select columns of table "user_provider_identifier" */
+export type User_Provider_Identifier_Select_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'effective_from'
+  /** column name */
+  | 'effective_to'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'identifier_kind'
+  /** column name */
+  | 'identifier_value'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'license_type'
+  /** column name */
+  | 'province_code'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'user_id';
+
+/** input type for updating data in table "user_provider_identifier" */
+export type User_Provider_Identifier_Set_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  effective_from?: InputMaybe<Scalars['date']['input']>;
+  effective_to?: InputMaybe<Scalars['date']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  identifier_kind?: InputMaybe<Scalars['String']['input']>;
+  identifier_value?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_type?: InputMaybe<Scalars['String']['input']>;
+  province_code?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type User_Provider_Identifier_Stddev_Fields = {
+  __typename?: 'user_provider_identifier_stddev_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type User_Provider_Identifier_Stddev_Pop_Fields = {
+  __typename?: 'user_provider_identifier_stddev_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type User_Provider_Identifier_Stddev_Samp_Fields = {
+  __typename?: 'user_provider_identifier_stddev_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "user_provider_identifier" */
+export type User_Provider_Identifier_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: User_Provider_Identifier_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type User_Provider_Identifier_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  effective_from?: InputMaybe<Scalars['date']['input']>;
+  effective_to?: InputMaybe<Scalars['date']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  identifier_kind?: InputMaybe<Scalars['String']['input']>;
+  identifier_value?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_type?: InputMaybe<Scalars['String']['input']>;
+  province_code?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type User_Provider_Identifier_Sum_Fields = {
+  __typename?: 'user_provider_identifier_sum_fields';
+  id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "user_provider_identifier" */
+export type User_Provider_Identifier_Update_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'effective_from'
+  /** column name */
+  | 'effective_to'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'identifier_kind'
+  /** column name */
+  | 'identifier_value'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'license_type'
+  /** column name */
+  | 'province_code'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'user_id';
+
+export type User_Provider_Identifier_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<User_Provider_Identifier_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<User_Provider_Identifier_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: User_Provider_Identifier_Bool_Exp;
+};
+
+/** columns and relationships of "user_provider_identifier_v" */
+export type User_Provider_Identifier_V = {
+  __typename?: 'user_provider_identifier_v';
+  /** An object relationship */
+  clinic_user?: Maybe<Clinic_User>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  effective_from?: Maybe<Scalars['date']['output']>;
+  effective_to?: Maybe<Scalars['date']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  identifier_kind?: Maybe<Scalars['String']['output']>;
+  identifier_value?: Maybe<Scalars['String']['output']>;
+  is_active?: Maybe<Scalars['Boolean']['output']>;
+  license_type?: Maybe<Scalars['String']['output']>;
+  province_code?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregated selection of "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Aggregate = {
+  __typename?: 'user_provider_identifier_v_aggregate';
+  aggregate?: Maybe<User_Provider_Identifier_V_Aggregate_Fields>;
+  nodes: Array<User_Provider_Identifier_V>;
+};
+
+/** aggregate fields of "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Aggregate_Fields = {
+  __typename?: 'user_provider_identifier_v_aggregate_fields';
+  avg?: Maybe<User_Provider_Identifier_V_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<User_Provider_Identifier_V_Max_Fields>;
+  min?: Maybe<User_Provider_Identifier_V_Min_Fields>;
+  stddev?: Maybe<User_Provider_Identifier_V_Stddev_Fields>;
+  stddev_pop?: Maybe<User_Provider_Identifier_V_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<User_Provider_Identifier_V_Stddev_Samp_Fields>;
+  sum?: Maybe<User_Provider_Identifier_V_Sum_Fields>;
+  var_pop?: Maybe<User_Provider_Identifier_V_Var_Pop_Fields>;
+  var_samp?: Maybe<User_Provider_Identifier_V_Var_Samp_Fields>;
+  variance?: Maybe<User_Provider_Identifier_V_Variance_Fields>;
+};
+
+
+/** aggregate fields of "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<User_Provider_Identifier_V_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type User_Provider_Identifier_V_Avg_Fields = {
+  __typename?: 'user_provider_identifier_v_avg_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "user_provider_identifier_v". All fields are combined with a logical 'AND'. */
+export type User_Provider_Identifier_V_Bool_Exp = {
+  _and?: InputMaybe<Array<User_Provider_Identifier_V_Bool_Exp>>;
+  _not?: InputMaybe<User_Provider_Identifier_V_Bool_Exp>;
+  _or?: InputMaybe<Array<User_Provider_Identifier_V_Bool_Exp>>;
+  clinic_user?: InputMaybe<Clinic_User_Bool_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  effective_from?: InputMaybe<Date_Comparison_Exp>;
+  effective_to?: InputMaybe<Date_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  identifier_kind?: InputMaybe<String_Comparison_Exp>;
+  identifier_value?: InputMaybe<String_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  license_type?: InputMaybe<String_Comparison_Exp>;
+  province_code?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+  user_id?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** input type for incrementing numeric columns in table "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Inc_Input = {
+  id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Insert_Input = {
+  clinic_user?: InputMaybe<Clinic_User_Obj_Rel_Insert_Input>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  effective_from?: InputMaybe<Scalars['date']['input']>;
+  effective_to?: InputMaybe<Scalars['date']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  identifier_kind?: InputMaybe<Scalars['String']['input']>;
+  identifier_value?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_type?: InputMaybe<Scalars['String']['input']>;
+  province_code?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type User_Provider_Identifier_V_Max_Fields = {
+  __typename?: 'user_provider_identifier_v_max_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  effective_from?: Maybe<Scalars['date']['output']>;
+  effective_to?: Maybe<Scalars['date']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  identifier_kind?: Maybe<Scalars['String']['output']>;
+  identifier_value?: Maybe<Scalars['String']['output']>;
+  license_type?: Maybe<Scalars['String']['output']>;
+  province_code?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type User_Provider_Identifier_V_Min_Fields = {
+  __typename?: 'user_provider_identifier_v_min_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  effective_from?: Maybe<Scalars['date']['output']>;
+  effective_to?: Maybe<Scalars['date']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  identifier_kind?: Maybe<Scalars['String']['output']>;
+  identifier_value?: Maybe<Scalars['String']['output']>;
+  license_type?: Maybe<Scalars['String']['output']>;
+  province_code?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  user_id?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Mutation_Response = {
+  __typename?: 'user_provider_identifier_v_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<User_Provider_Identifier_V>;
+};
+
+/** Ordering options when selecting data from "user_provider_identifier_v". */
+export type User_Provider_Identifier_V_Order_By = {
+  clinic_user?: InputMaybe<Clinic_User_Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  effective_from?: InputMaybe<Order_By>;
+  effective_to?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  identifier_kind?: InputMaybe<Order_By>;
+  identifier_value?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  license_type?: InputMaybe<Order_By>;
+  province_code?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  user_id?: InputMaybe<Order_By>;
+};
+
+/** select columns of table "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Select_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'effective_from'
+  /** column name */
+  | 'effective_to'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'identifier_kind'
+  /** column name */
+  | 'identifier_value'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'license_type'
+  /** column name */
+  | 'province_code'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'user_id';
+
+/** input type for updating data in table "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Set_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  effective_from?: InputMaybe<Scalars['date']['input']>;
+  effective_to?: InputMaybe<Scalars['date']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  identifier_kind?: InputMaybe<Scalars['String']['input']>;
+  identifier_value?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_type?: InputMaybe<Scalars['String']['input']>;
+  province_code?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type User_Provider_Identifier_V_Stddev_Fields = {
+  __typename?: 'user_provider_identifier_v_stddev_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type User_Provider_Identifier_V_Stddev_Pop_Fields = {
+  __typename?: 'user_provider_identifier_v_stddev_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type User_Provider_Identifier_V_Stddev_Samp_Fields = {
+  __typename?: 'user_provider_identifier_v_stddev_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "user_provider_identifier_v" */
+export type User_Provider_Identifier_V_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: User_Provider_Identifier_V_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type User_Provider_Identifier_V_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  effective_from?: InputMaybe<Scalars['date']['input']>;
+  effective_to?: InputMaybe<Scalars['date']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  identifier_kind?: InputMaybe<Scalars['String']['input']>;
+  identifier_value?: InputMaybe<Scalars['String']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  license_type?: InputMaybe<Scalars['String']['input']>;
+  province_code?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  user_id?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type User_Provider_Identifier_V_Sum_Fields = {
+  __typename?: 'user_provider_identifier_v_sum_fields';
+  id?: Maybe<Scalars['bigint']['output']>;
+};
+
+export type User_Provider_Identifier_V_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<User_Provider_Identifier_V_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<User_Provider_Identifier_V_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: User_Provider_Identifier_V_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type User_Provider_Identifier_V_Var_Pop_Fields = {
+  __typename?: 'user_provider_identifier_v_var_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type User_Provider_Identifier_V_Var_Samp_Fields = {
+  __typename?: 'user_provider_identifier_v_var_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type User_Provider_Identifier_V_Variance_Fields = {
+  __typename?: 'user_provider_identifier_v_variance_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_pop on columns */
+export type User_Provider_Identifier_Var_Pop_Fields = {
+  __typename?: 'user_provider_identifier_var_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type User_Provider_Identifier_Var_Samp_Fields = {
+  __typename?: 'user_provider_identifier_var_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type User_Provider_Identifier_Variance_Fields = {
+  __typename?: 'user_provider_identifier_variance_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
 /** select columns of table "user" */
 export type User_Select_Column =
   /** column name */
@@ -6697,6 +8794,13 @@ export type Uuid_Comparison_Exp = {
   _neq?: InputMaybe<Scalars['uuid']['input']>;
   _nin?: InputMaybe<Array<Scalars['uuid']['input']>>;
 };
+
+export type GetUserEffectiveCapabilitiesQueryVariables = Exact<{
+  clinicUserId: Scalars['bigint']['input'];
+}>;
+
+
+export type GetUserEffectiveCapabilitiesQuery = { __typename?: 'query_root', clinic_user_effective_capabilities_v: Array<{ __typename?: 'clinic_user_effective_capabilities_v', capability_key?: string | null, clinic_user_id?: number | null }> };
 
 export type GetClinicQueryVariables = Exact<{
   clinicId: Scalars['bigint']['input'];
@@ -6842,7 +8946,193 @@ export type GetAppUserQueryVariables = Exact<{
 
 export type GetAppUserQuery = { __typename?: 'query_root', app_user_v: Array<{ __typename?: 'app_user_v', id?: string | null, email?: string | null, first_name?: string | null, last_name?: string | null, is_active?: boolean | null }> };
 
+export type UpdateUserProfileMutationVariables = Exact<{
+  userId: Scalars['uuid']['input'];
+  userKind?: InputMaybe<Scalars['String']['input']>;
+  licenseNo?: InputMaybe<Scalars['String']['input']>;
+  schedulerColor?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
 
+
+export type UpdateUserProfileMutation = { __typename?: 'mutation_root', update_user_profile?: { __typename?: 'user_profile_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'user_profile', user_id: string, user_kind: string, license_no?: string | null, scheduler_color?: string | null, is_active: boolean }> } | null };
+
+export type UpdateClinicUserMembershipMutationVariables = Exact<{
+  clinicId: Scalars['bigint']['input'];
+  userId: Scalars['uuid']['input'];
+  jobTitle?: InputMaybe<Scalars['String']['input']>;
+  isSchedulable?: InputMaybe<Scalars['Boolean']['input']>;
+  providerKind?: InputMaybe<Scalars['String']['input']>;
+  defaultOperatoryId?: InputMaybe<Scalars['bigint']['input']>;
+  schedulerColor?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type UpdateClinicUserMembershipMutation = { __typename?: 'mutation_root', update_clinic_user?: { __typename?: 'clinic_user_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'clinic_user', id: number, clinic_id: number, user_id: string, job_title?: string | null, is_schedulable: boolean, provider_kind?: string | null, default_operatory_id?: number | null, scheduler_color?: string | null, is_active: boolean }> } | null };
+
+export type CreateRoleMutationVariables = Exact<{
+  clinicId: Scalars['bigint']['input'];
+  name: Scalars['String']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type CreateRoleMutation = { __typename?: 'mutation_root', insert_role_one?: { __typename?: 'role', id: number, clinic_id: number, name: string, description?: string | null, is_active: boolean } | null };
+
+export type UpdateRoleMutationVariables = Exact<{
+  roleId: Scalars['bigint']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type UpdateRoleMutation = { __typename?: 'mutation_root', update_role_by_pk?: { __typename?: 'role', id: number, name: string, description?: string | null, is_active: boolean } | null };
+
+export type AddCapabilityToRoleMutationVariables = Exact<{
+  roleId: Scalars['bigint']['input'];
+  capabilityKey: Scalars['String']['input'];
+}>;
+
+
+export type AddCapabilityToRoleMutation = { __typename?: 'mutation_root', insert_role_capability_one?: { __typename?: 'role_capability', role_id: number, capability_key: string } | null };
+
+export type RemoveCapabilityFromRoleMutationVariables = Exact<{
+  roleId: Scalars['bigint']['input'];
+  capabilityKey: Scalars['String']['input'];
+}>;
+
+
+export type RemoveCapabilityFromRoleMutation = { __typename?: 'mutation_root', delete_role_capability?: { __typename?: 'role_capability_mutation_response', affected_rows: number } | null };
+
+export type AssignRoleToUserMutationVariables = Exact<{
+  clinicUserId: Scalars['bigint']['input'];
+  roleId: Scalars['bigint']['input'];
+}>;
+
+
+export type AssignRoleToUserMutation = { __typename?: 'mutation_root', insert_clinic_user_role_one?: { __typename?: 'clinic_user_role', clinic_user_id: number, role_id: number } | null };
+
+export type RemoveRoleFromUserMutationVariables = Exact<{
+  clinicUserId: Scalars['bigint']['input'];
+  roleId: Scalars['bigint']['input'];
+}>;
+
+
+export type RemoveRoleFromUserMutation = { __typename?: 'mutation_root', delete_clinic_user_role?: { __typename?: 'clinic_user_role_mutation_response', affected_rows: number } | null };
+
+export type CreateProviderIdentifierMutationVariables = Exact<{
+  userId: Scalars['uuid']['input'];
+  identifierKind: Scalars['String']['input'];
+  provinceCode: Scalars['String']['input'];
+  licenseType: Scalars['String']['input'];
+  identifierValue: Scalars['String']['input'];
+  effectiveFrom?: InputMaybe<Scalars['date']['input']>;
+  effectiveTo?: InputMaybe<Scalars['date']['input']>;
+  isActive: Scalars['Boolean']['input'];
+}>;
+
+
+export type CreateProviderIdentifierMutation = { __typename?: 'mutation_root', insert_user_provider_identifier_one?: { __typename?: 'user_provider_identifier', id: number, user_id: string, identifier_kind: string, province_code: string, license_type: string, identifier_value: string, effective_from?: any | null, effective_to?: any | null, is_active: boolean } | null };
+
+export type UpdateProviderIdentifierMutationVariables = Exact<{
+  id: Scalars['bigint']['input'];
+  provinceCode?: InputMaybe<Scalars['String']['input']>;
+  licenseType?: InputMaybe<Scalars['String']['input']>;
+  identifierValue?: InputMaybe<Scalars['String']['input']>;
+  effectiveFrom?: InputMaybe<Scalars['date']['input']>;
+  effectiveTo?: InputMaybe<Scalars['date']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type UpdateProviderIdentifierMutation = { __typename?: 'mutation_root', update_user_provider_identifier_by_pk?: { __typename?: 'user_provider_identifier', id: number, province_code: string, license_type: string, identifier_value: string, effective_from?: any | null, effective_to?: any | null, is_active: boolean } | null };
+
+export type DeleteProviderIdentifierMutationVariables = Exact<{
+  id: Scalars['bigint']['input'];
+}>;
+
+
+export type DeleteProviderIdentifierMutation = { __typename?: 'mutation_root', delete_user_provider_identifier_by_pk?: { __typename?: 'user_provider_identifier', id: number } | null };
+
+export type GetUserProfileQueryVariables = Exact<{
+  userId: Scalars['uuid']['input'];
+}>;
+
+
+export type GetUserProfileQuery = { __typename?: 'query_root', user_profile: Array<{ __typename?: 'user_profile', user_id: string, user_kind: string, license_no?: string | null, scheduler_color?: string | null, is_active: boolean }> };
+
+export type GetClinicUserWithProfileQueryVariables = Exact<{
+  clinicId: Scalars['bigint']['input'];
+}>;
+
+
+export type GetClinicUserWithProfileQuery = { __typename?: 'query_root', clinic_user_with_profile_v: Array<{ __typename?: 'clinic_user_with_profile_v', clinic_user_id?: number | null, clinic_id?: number | null, user_id?: string | null, job_title?: string | null, is_schedulable?: boolean | null, provider_kind?: string | null, default_operatory_id?: number | null, clinic_scheduler_color?: string | null, joined_at?: string | null, clinic_membership_active?: boolean | null, email?: string | null, first_name?: string | null, last_name?: string | null, user_account_active?: boolean | null, user_kind?: string | null, license_no?: string | null, global_scheduler_color?: string | null, profile_active?: boolean | null }> };
+
+export type GetClinicUserWithProfileByUserIdQueryVariables = Exact<{
+  clinicId: Scalars['bigint']['input'];
+  userId: Scalars['uuid']['input'];
+}>;
+
+
+export type GetClinicUserWithProfileByUserIdQuery = { __typename?: 'query_root', clinic_user_with_profile_v: Array<{ __typename?: 'clinic_user_with_profile_v', clinic_user_id?: number | null, clinic_id?: number | null, user_id?: string | null, job_title?: string | null, is_schedulable?: boolean | null, provider_kind?: string | null, default_operatory_id?: number | null, clinic_scheduler_color?: string | null, joined_at?: string | null, clinic_membership_active?: boolean | null, email?: string | null, first_name?: string | null, last_name?: string | null, user_account_active?: boolean | null, user_kind?: string | null, license_no?: string | null, global_scheduler_color?: string | null, profile_active?: boolean | null }> };
+
+export type GetUserProviderIdentifiersQueryVariables = Exact<{
+  userId: Scalars['uuid']['input'];
+}>;
+
+
+export type GetUserProviderIdentifiersQuery = { __typename?: 'query_root', user_provider_identifier_v: Array<{ __typename?: 'user_provider_identifier_v', id?: number | null, user_id?: string | null, identifier_kind?: string | null, province_code?: string | null, license_type?: string | null, identifier_value?: string | null, effective_from?: any | null, effective_to?: any | null, is_active?: boolean | null, created_at?: string | null, updated_at?: string | null }> };
+
+
+export const GetUserEffectiveCapabilitiesDocument = gql`
+    query GetUserEffectiveCapabilities($clinicUserId: bigint!) {
+  clinic_user_effective_capabilities_v(
+    where: {clinic_user_id: {_eq: $clinicUserId}}
+  ) {
+    capability_key
+    clinic_user_id
+  }
+}
+    `;
+
+/**
+ * __useGetUserEffectiveCapabilitiesQuery__
+ *
+ * To run a query within a React component, call `useGetUserEffectiveCapabilitiesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserEffectiveCapabilitiesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserEffectiveCapabilitiesQuery({
+ *   variables: {
+ *      clinicUserId: // value for 'clinicUserId'
+ *   },
+ * });
+ */
+export function useGetUserEffectiveCapabilitiesQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables> & ({ variables: GetUserEffectiveCapabilitiesQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>(GetUserEffectiveCapabilitiesDocument, options);
+      }
+export function useGetUserEffectiveCapabilitiesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>(GetUserEffectiveCapabilitiesDocument, options);
+        }
+// @ts-ignore
+export function useGetUserEffectiveCapabilitiesSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>;
+export function useGetUserEffectiveCapabilitiesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserEffectiveCapabilitiesQuery | undefined, GetUserEffectiveCapabilitiesQueryVariables>;
+export function useGetUserEffectiveCapabilitiesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>(GetUserEffectiveCapabilitiesDocument, options);
+        }
+export type GetUserEffectiveCapabilitiesQueryHookResult = ReturnType<typeof useGetUserEffectiveCapabilitiesQuery>;
+export type GetUserEffectiveCapabilitiesLazyQueryHookResult = ReturnType<typeof useGetUserEffectiveCapabilitiesLazyQuery>;
+export type GetUserEffectiveCapabilitiesSuspenseQueryHookResult = ReturnType<typeof useGetUserEffectiveCapabilitiesSuspenseQuery>;
+export type GetUserEffectiveCapabilitiesQueryResult = ApolloReactCommon.QueryResult<GetUserEffectiveCapabilitiesQuery, GetUserEffectiveCapabilitiesQueryVariables>;
 export const GetClinicDocument = gql`
     query GetClinic($clinicId: bigint!) {
   clinic_v(where: {id: {_eq: $clinicId}}) {
@@ -7769,3 +10059,691 @@ export type GetAppUserQueryHookResult = ReturnType<typeof useGetAppUserQuery>;
 export type GetAppUserLazyQueryHookResult = ReturnType<typeof useGetAppUserLazyQuery>;
 export type GetAppUserSuspenseQueryHookResult = ReturnType<typeof useGetAppUserSuspenseQuery>;
 export type GetAppUserQueryResult = ApolloReactCommon.QueryResult<GetAppUserQuery, GetAppUserQueryVariables>;
+export const UpdateUserProfileDocument = gql`
+    mutation UpdateUserProfile($userId: uuid!, $userKind: String, $licenseNo: String, $schedulerColor: String, $isActive: Boolean) {
+  update_user_profile(
+    where: {user_id: {_eq: $userId}}
+    _set: {user_kind: $userKind, license_no: $licenseNo, scheduler_color: $schedulerColor, is_active: $isActive}
+  ) {
+    affected_rows
+    returning {
+      user_id
+      user_kind
+      license_no
+      scheduler_color
+      is_active
+    }
+  }
+}
+    `;
+export type UpdateUserProfileMutationFn = ApolloReactCommon.MutationFunction<UpdateUserProfileMutation, UpdateUserProfileMutationVariables>;
+
+/**
+ * __useUpdateUserProfileMutation__
+ *
+ * To run a mutation, you first call `useUpdateUserProfileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateUserProfileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateUserProfileMutation, { data, loading, error }] = useUpdateUserProfileMutation({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *      userKind: // value for 'userKind'
+ *      licenseNo: // value for 'licenseNo'
+ *      schedulerColor: // value for 'schedulerColor'
+ *      isActive: // value for 'isActive'
+ *   },
+ * });
+ */
+export function useUpdateUserProfileMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateUserProfileMutation, UpdateUserProfileMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateUserProfileMutation, UpdateUserProfileMutationVariables>(UpdateUserProfileDocument, options);
+      }
+export type UpdateUserProfileMutationHookResult = ReturnType<typeof useUpdateUserProfileMutation>;
+export type UpdateUserProfileMutationResult = ApolloReactCommon.MutationResult<UpdateUserProfileMutation>;
+export type UpdateUserProfileMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateUserProfileMutation, UpdateUserProfileMutationVariables>;
+export const UpdateClinicUserMembershipDocument = gql`
+    mutation UpdateClinicUserMembership($clinicId: bigint!, $userId: uuid!, $jobTitle: String, $isSchedulable: Boolean, $providerKind: String, $defaultOperatoryId: bigint, $schedulerColor: String, $isActive: Boolean) {
+  update_clinic_user(
+    where: {clinic_id: {_eq: $clinicId}, user_id: {_eq: $userId}}
+    _set: {job_title: $jobTitle, is_schedulable: $isSchedulable, provider_kind: $providerKind, default_operatory_id: $defaultOperatoryId, scheduler_color: $schedulerColor, is_active: $isActive}
+  ) {
+    affected_rows
+    returning {
+      id
+      clinic_id
+      user_id
+      job_title
+      is_schedulable
+      provider_kind
+      default_operatory_id
+      scheduler_color
+      is_active
+    }
+  }
+}
+    `;
+export type UpdateClinicUserMembershipMutationFn = ApolloReactCommon.MutationFunction<UpdateClinicUserMembershipMutation, UpdateClinicUserMembershipMutationVariables>;
+
+/**
+ * __useUpdateClinicUserMembershipMutation__
+ *
+ * To run a mutation, you first call `useUpdateClinicUserMembershipMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateClinicUserMembershipMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateClinicUserMembershipMutation, { data, loading, error }] = useUpdateClinicUserMembershipMutation({
+ *   variables: {
+ *      clinicId: // value for 'clinicId'
+ *      userId: // value for 'userId'
+ *      jobTitle: // value for 'jobTitle'
+ *      isSchedulable: // value for 'isSchedulable'
+ *      providerKind: // value for 'providerKind'
+ *      defaultOperatoryId: // value for 'defaultOperatoryId'
+ *      schedulerColor: // value for 'schedulerColor'
+ *      isActive: // value for 'isActive'
+ *   },
+ * });
+ */
+export function useUpdateClinicUserMembershipMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateClinicUserMembershipMutation, UpdateClinicUserMembershipMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateClinicUserMembershipMutation, UpdateClinicUserMembershipMutationVariables>(UpdateClinicUserMembershipDocument, options);
+      }
+export type UpdateClinicUserMembershipMutationHookResult = ReturnType<typeof useUpdateClinicUserMembershipMutation>;
+export type UpdateClinicUserMembershipMutationResult = ApolloReactCommon.MutationResult<UpdateClinicUserMembershipMutation>;
+export type UpdateClinicUserMembershipMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateClinicUserMembershipMutation, UpdateClinicUserMembershipMutationVariables>;
+export const CreateRoleDocument = gql`
+    mutation CreateRole($clinicId: bigint!, $name: String!, $description: String, $isActive: Boolean) {
+  insert_role_one(
+    object: {clinic_id: $clinicId, name: $name, description: $description, is_active: $isActive}
+  ) {
+    id
+    clinic_id
+    name
+    description
+    is_active
+  }
+}
+    `;
+export type CreateRoleMutationFn = ApolloReactCommon.MutationFunction<CreateRoleMutation, CreateRoleMutationVariables>;
+
+/**
+ * __useCreateRoleMutation__
+ *
+ * To run a mutation, you first call `useCreateRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createRoleMutation, { data, loading, error }] = useCreateRoleMutation({
+ *   variables: {
+ *      clinicId: // value for 'clinicId'
+ *      name: // value for 'name'
+ *      description: // value for 'description'
+ *      isActive: // value for 'isActive'
+ *   },
+ * });
+ */
+export function useCreateRoleMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateRoleMutation, CreateRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreateRoleMutation, CreateRoleMutationVariables>(CreateRoleDocument, options);
+      }
+export type CreateRoleMutationHookResult = ReturnType<typeof useCreateRoleMutation>;
+export type CreateRoleMutationResult = ApolloReactCommon.MutationResult<CreateRoleMutation>;
+export type CreateRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateRoleMutation, CreateRoleMutationVariables>;
+export const UpdateRoleDocument = gql`
+    mutation UpdateRole($roleId: bigint!, $name: String, $description: String, $isActive: Boolean) {
+  update_role_by_pk(
+    pk_columns: {id: $roleId}
+    _set: {name: $name, description: $description, is_active: $isActive}
+  ) {
+    id
+    name
+    description
+    is_active
+  }
+}
+    `;
+export type UpdateRoleMutationFn = ApolloReactCommon.MutationFunction<UpdateRoleMutation, UpdateRoleMutationVariables>;
+
+/**
+ * __useUpdateRoleMutation__
+ *
+ * To run a mutation, you first call `useUpdateRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateRoleMutation, { data, loading, error }] = useUpdateRoleMutation({
+ *   variables: {
+ *      roleId: // value for 'roleId'
+ *      name: // value for 'name'
+ *      description: // value for 'description'
+ *      isActive: // value for 'isActive'
+ *   },
+ * });
+ */
+export function useUpdateRoleMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateRoleMutation, UpdateRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateRoleMutation, UpdateRoleMutationVariables>(UpdateRoleDocument, options);
+      }
+export type UpdateRoleMutationHookResult = ReturnType<typeof useUpdateRoleMutation>;
+export type UpdateRoleMutationResult = ApolloReactCommon.MutationResult<UpdateRoleMutation>;
+export type UpdateRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateRoleMutation, UpdateRoleMutationVariables>;
+export const AddCapabilityToRoleDocument = gql`
+    mutation AddCapabilityToRole($roleId: bigint!, $capabilityKey: String!) {
+  insert_role_capability_one(
+    object: {role_id: $roleId, capability_key: $capabilityKey}
+  ) {
+    role_id
+    capability_key
+  }
+}
+    `;
+export type AddCapabilityToRoleMutationFn = ApolloReactCommon.MutationFunction<AddCapabilityToRoleMutation, AddCapabilityToRoleMutationVariables>;
+
+/**
+ * __useAddCapabilityToRoleMutation__
+ *
+ * To run a mutation, you first call `useAddCapabilityToRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddCapabilityToRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addCapabilityToRoleMutation, { data, loading, error }] = useAddCapabilityToRoleMutation({
+ *   variables: {
+ *      roleId: // value for 'roleId'
+ *      capabilityKey: // value for 'capabilityKey'
+ *   },
+ * });
+ */
+export function useAddCapabilityToRoleMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<AddCapabilityToRoleMutation, AddCapabilityToRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<AddCapabilityToRoleMutation, AddCapabilityToRoleMutationVariables>(AddCapabilityToRoleDocument, options);
+      }
+export type AddCapabilityToRoleMutationHookResult = ReturnType<typeof useAddCapabilityToRoleMutation>;
+export type AddCapabilityToRoleMutationResult = ApolloReactCommon.MutationResult<AddCapabilityToRoleMutation>;
+export type AddCapabilityToRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<AddCapabilityToRoleMutation, AddCapabilityToRoleMutationVariables>;
+export const RemoveCapabilityFromRoleDocument = gql`
+    mutation RemoveCapabilityFromRole($roleId: bigint!, $capabilityKey: String!) {
+  delete_role_capability(
+    where: {role_id: {_eq: $roleId}, capability_key: {_eq: $capabilityKey}}
+  ) {
+    affected_rows
+  }
+}
+    `;
+export type RemoveCapabilityFromRoleMutationFn = ApolloReactCommon.MutationFunction<RemoveCapabilityFromRoleMutation, RemoveCapabilityFromRoleMutationVariables>;
+
+/**
+ * __useRemoveCapabilityFromRoleMutation__
+ *
+ * To run a mutation, you first call `useRemoveCapabilityFromRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveCapabilityFromRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeCapabilityFromRoleMutation, { data, loading, error }] = useRemoveCapabilityFromRoleMutation({
+ *   variables: {
+ *      roleId: // value for 'roleId'
+ *      capabilityKey: // value for 'capabilityKey'
+ *   },
+ * });
+ */
+export function useRemoveCapabilityFromRoleMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<RemoveCapabilityFromRoleMutation, RemoveCapabilityFromRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<RemoveCapabilityFromRoleMutation, RemoveCapabilityFromRoleMutationVariables>(RemoveCapabilityFromRoleDocument, options);
+      }
+export type RemoveCapabilityFromRoleMutationHookResult = ReturnType<typeof useRemoveCapabilityFromRoleMutation>;
+export type RemoveCapabilityFromRoleMutationResult = ApolloReactCommon.MutationResult<RemoveCapabilityFromRoleMutation>;
+export type RemoveCapabilityFromRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<RemoveCapabilityFromRoleMutation, RemoveCapabilityFromRoleMutationVariables>;
+export const AssignRoleToUserDocument = gql`
+    mutation AssignRoleToUser($clinicUserId: bigint!, $roleId: bigint!) {
+  insert_clinic_user_role_one(
+    object: {clinic_user_id: $clinicUserId, role_id: $roleId}
+  ) {
+    clinic_user_id
+    role_id
+  }
+}
+    `;
+export type AssignRoleToUserMutationFn = ApolloReactCommon.MutationFunction<AssignRoleToUserMutation, AssignRoleToUserMutationVariables>;
+
+/**
+ * __useAssignRoleToUserMutation__
+ *
+ * To run a mutation, you first call `useAssignRoleToUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAssignRoleToUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [assignRoleToUserMutation, { data, loading, error }] = useAssignRoleToUserMutation({
+ *   variables: {
+ *      clinicUserId: // value for 'clinicUserId'
+ *      roleId: // value for 'roleId'
+ *   },
+ * });
+ */
+export function useAssignRoleToUserMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<AssignRoleToUserMutation, AssignRoleToUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<AssignRoleToUserMutation, AssignRoleToUserMutationVariables>(AssignRoleToUserDocument, options);
+      }
+export type AssignRoleToUserMutationHookResult = ReturnType<typeof useAssignRoleToUserMutation>;
+export type AssignRoleToUserMutationResult = ApolloReactCommon.MutationResult<AssignRoleToUserMutation>;
+export type AssignRoleToUserMutationOptions = ApolloReactCommon.BaseMutationOptions<AssignRoleToUserMutation, AssignRoleToUserMutationVariables>;
+export const RemoveRoleFromUserDocument = gql`
+    mutation RemoveRoleFromUser($clinicUserId: bigint!, $roleId: bigint!) {
+  delete_clinic_user_role(
+    where: {clinic_user_id: {_eq: $clinicUserId}, role_id: {_eq: $roleId}}
+  ) {
+    affected_rows
+  }
+}
+    `;
+export type RemoveRoleFromUserMutationFn = ApolloReactCommon.MutationFunction<RemoveRoleFromUserMutation, RemoveRoleFromUserMutationVariables>;
+
+/**
+ * __useRemoveRoleFromUserMutation__
+ *
+ * To run a mutation, you first call `useRemoveRoleFromUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveRoleFromUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeRoleFromUserMutation, { data, loading, error }] = useRemoveRoleFromUserMutation({
+ *   variables: {
+ *      clinicUserId: // value for 'clinicUserId'
+ *      roleId: // value for 'roleId'
+ *   },
+ * });
+ */
+export function useRemoveRoleFromUserMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<RemoveRoleFromUserMutation, RemoveRoleFromUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<RemoveRoleFromUserMutation, RemoveRoleFromUserMutationVariables>(RemoveRoleFromUserDocument, options);
+      }
+export type RemoveRoleFromUserMutationHookResult = ReturnType<typeof useRemoveRoleFromUserMutation>;
+export type RemoveRoleFromUserMutationResult = ApolloReactCommon.MutationResult<RemoveRoleFromUserMutation>;
+export type RemoveRoleFromUserMutationOptions = ApolloReactCommon.BaseMutationOptions<RemoveRoleFromUserMutation, RemoveRoleFromUserMutationVariables>;
+export const CreateProviderIdentifierDocument = gql`
+    mutation CreateProviderIdentifier($userId: uuid!, $identifierKind: String!, $provinceCode: String!, $licenseType: String!, $identifierValue: String!, $effectiveFrom: date, $effectiveTo: date, $isActive: Boolean!) {
+  insert_user_provider_identifier_one(
+    object: {user_id: $userId, identifier_kind: $identifierKind, province_code: $provinceCode, license_type: $licenseType, identifier_value: $identifierValue, effective_from: $effectiveFrom, effective_to: $effectiveTo, is_active: $isActive}
+  ) {
+    id
+    user_id
+    identifier_kind
+    province_code
+    license_type
+    identifier_value
+    effective_from
+    effective_to
+    is_active
+  }
+}
+    `;
+export type CreateProviderIdentifierMutationFn = ApolloReactCommon.MutationFunction<CreateProviderIdentifierMutation, CreateProviderIdentifierMutationVariables>;
+
+/**
+ * __useCreateProviderIdentifierMutation__
+ *
+ * To run a mutation, you first call `useCreateProviderIdentifierMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateProviderIdentifierMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createProviderIdentifierMutation, { data, loading, error }] = useCreateProviderIdentifierMutation({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *      identifierKind: // value for 'identifierKind'
+ *      provinceCode: // value for 'provinceCode'
+ *      licenseType: // value for 'licenseType'
+ *      identifierValue: // value for 'identifierValue'
+ *      effectiveFrom: // value for 'effectiveFrom'
+ *      effectiveTo: // value for 'effectiveTo'
+ *      isActive: // value for 'isActive'
+ *   },
+ * });
+ */
+export function useCreateProviderIdentifierMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateProviderIdentifierMutation, CreateProviderIdentifierMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreateProviderIdentifierMutation, CreateProviderIdentifierMutationVariables>(CreateProviderIdentifierDocument, options);
+      }
+export type CreateProviderIdentifierMutationHookResult = ReturnType<typeof useCreateProviderIdentifierMutation>;
+export type CreateProviderIdentifierMutationResult = ApolloReactCommon.MutationResult<CreateProviderIdentifierMutation>;
+export type CreateProviderIdentifierMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateProviderIdentifierMutation, CreateProviderIdentifierMutationVariables>;
+export const UpdateProviderIdentifierDocument = gql`
+    mutation UpdateProviderIdentifier($id: bigint!, $provinceCode: String, $licenseType: String, $identifierValue: String, $effectiveFrom: date, $effectiveTo: date, $isActive: Boolean) {
+  update_user_provider_identifier_by_pk(
+    pk_columns: {id: $id}
+    _set: {province_code: $provinceCode, license_type: $licenseType, identifier_value: $identifierValue, effective_from: $effectiveFrom, effective_to: $effectiveTo, is_active: $isActive}
+  ) {
+    id
+    province_code
+    license_type
+    identifier_value
+    effective_from
+    effective_to
+    is_active
+  }
+}
+    `;
+export type UpdateProviderIdentifierMutationFn = ApolloReactCommon.MutationFunction<UpdateProviderIdentifierMutation, UpdateProviderIdentifierMutationVariables>;
+
+/**
+ * __useUpdateProviderIdentifierMutation__
+ *
+ * To run a mutation, you first call `useUpdateProviderIdentifierMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateProviderIdentifierMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateProviderIdentifierMutation, { data, loading, error }] = useUpdateProviderIdentifierMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      provinceCode: // value for 'provinceCode'
+ *      licenseType: // value for 'licenseType'
+ *      identifierValue: // value for 'identifierValue'
+ *      effectiveFrom: // value for 'effectiveFrom'
+ *      effectiveTo: // value for 'effectiveTo'
+ *      isActive: // value for 'isActive'
+ *   },
+ * });
+ */
+export function useUpdateProviderIdentifierMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateProviderIdentifierMutation, UpdateProviderIdentifierMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateProviderIdentifierMutation, UpdateProviderIdentifierMutationVariables>(UpdateProviderIdentifierDocument, options);
+      }
+export type UpdateProviderIdentifierMutationHookResult = ReturnType<typeof useUpdateProviderIdentifierMutation>;
+export type UpdateProviderIdentifierMutationResult = ApolloReactCommon.MutationResult<UpdateProviderIdentifierMutation>;
+export type UpdateProviderIdentifierMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateProviderIdentifierMutation, UpdateProviderIdentifierMutationVariables>;
+export const DeleteProviderIdentifierDocument = gql`
+    mutation DeleteProviderIdentifier($id: bigint!) {
+  delete_user_provider_identifier_by_pk(id: $id) {
+    id
+  }
+}
+    `;
+export type DeleteProviderIdentifierMutationFn = ApolloReactCommon.MutationFunction<DeleteProviderIdentifierMutation, DeleteProviderIdentifierMutationVariables>;
+
+/**
+ * __useDeleteProviderIdentifierMutation__
+ *
+ * To run a mutation, you first call `useDeleteProviderIdentifierMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteProviderIdentifierMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteProviderIdentifierMutation, { data, loading, error }] = useDeleteProviderIdentifierMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteProviderIdentifierMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteProviderIdentifierMutation, DeleteProviderIdentifierMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeleteProviderIdentifierMutation, DeleteProviderIdentifierMutationVariables>(DeleteProviderIdentifierDocument, options);
+      }
+export type DeleteProviderIdentifierMutationHookResult = ReturnType<typeof useDeleteProviderIdentifierMutation>;
+export type DeleteProviderIdentifierMutationResult = ApolloReactCommon.MutationResult<DeleteProviderIdentifierMutation>;
+export type DeleteProviderIdentifierMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteProviderIdentifierMutation, DeleteProviderIdentifierMutationVariables>;
+export const GetUserProfileDocument = gql`
+    query GetUserProfile($userId: uuid!) {
+  user_profile(where: {user_id: {_eq: $userId}}) {
+    user_id
+    user_kind
+    license_no
+    scheduler_color
+    is_active
+  }
+}
+    `;
+
+/**
+ * __useGetUserProfileQuery__
+ *
+ * To run a query within a React component, call `useGetUserProfileQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserProfileQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserProfileQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetUserProfileQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetUserProfileQuery, GetUserProfileQueryVariables> & ({ variables: GetUserProfileQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetUserProfileQuery, GetUserProfileQueryVariables>(GetUserProfileDocument, options);
+      }
+export function useGetUserProfileLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetUserProfileQuery, GetUserProfileQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetUserProfileQuery, GetUserProfileQueryVariables>(GetUserProfileDocument, options);
+        }
+// @ts-ignore
+export function useGetUserProfileSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetUserProfileQuery, GetUserProfileQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserProfileQuery, GetUserProfileQueryVariables>;
+export function useGetUserProfileSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserProfileQuery, GetUserProfileQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserProfileQuery | undefined, GetUserProfileQueryVariables>;
+export function useGetUserProfileSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserProfileQuery, GetUserProfileQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetUserProfileQuery, GetUserProfileQueryVariables>(GetUserProfileDocument, options);
+        }
+export type GetUserProfileQueryHookResult = ReturnType<typeof useGetUserProfileQuery>;
+export type GetUserProfileLazyQueryHookResult = ReturnType<typeof useGetUserProfileLazyQuery>;
+export type GetUserProfileSuspenseQueryHookResult = ReturnType<typeof useGetUserProfileSuspenseQuery>;
+export type GetUserProfileQueryResult = ApolloReactCommon.QueryResult<GetUserProfileQuery, GetUserProfileQueryVariables>;
+export const GetClinicUserWithProfileDocument = gql`
+    query GetClinicUserWithProfile($clinicId: bigint!) {
+  clinic_user_with_profile_v(where: {clinic_id: {_eq: $clinicId}}) {
+    clinic_user_id
+    clinic_id
+    user_id
+    job_title
+    is_schedulable
+    provider_kind
+    default_operatory_id
+    clinic_scheduler_color
+    joined_at
+    clinic_membership_active
+    email
+    first_name
+    last_name
+    user_account_active
+    user_kind
+    license_no
+    global_scheduler_color
+    profile_active
+  }
+}
+    `;
+
+/**
+ * __useGetClinicUserWithProfileQuery__
+ *
+ * To run a query within a React component, call `useGetClinicUserWithProfileQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetClinicUserWithProfileQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetClinicUserWithProfileQuery({
+ *   variables: {
+ *      clinicId: // value for 'clinicId'
+ *   },
+ * });
+ */
+export function useGetClinicUserWithProfileQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables> & ({ variables: GetClinicUserWithProfileQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>(GetClinicUserWithProfileDocument, options);
+      }
+export function useGetClinicUserWithProfileLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>(GetClinicUserWithProfileDocument, options);
+        }
+// @ts-ignore
+export function useGetClinicUserWithProfileSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>;
+export function useGetClinicUserWithProfileSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetClinicUserWithProfileQuery | undefined, GetClinicUserWithProfileQueryVariables>;
+export function useGetClinicUserWithProfileSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>(GetClinicUserWithProfileDocument, options);
+        }
+export type GetClinicUserWithProfileQueryHookResult = ReturnType<typeof useGetClinicUserWithProfileQuery>;
+export type GetClinicUserWithProfileLazyQueryHookResult = ReturnType<typeof useGetClinicUserWithProfileLazyQuery>;
+export type GetClinicUserWithProfileSuspenseQueryHookResult = ReturnType<typeof useGetClinicUserWithProfileSuspenseQuery>;
+export type GetClinicUserWithProfileQueryResult = ApolloReactCommon.QueryResult<GetClinicUserWithProfileQuery, GetClinicUserWithProfileQueryVariables>;
+export const GetClinicUserWithProfileByUserIdDocument = gql`
+    query GetClinicUserWithProfileByUserId($clinicId: bigint!, $userId: uuid!) {
+  clinic_user_with_profile_v(
+    where: {clinic_id: {_eq: $clinicId}, user_id: {_eq: $userId}}
+  ) {
+    clinic_user_id
+    clinic_id
+    user_id
+    job_title
+    is_schedulable
+    provider_kind
+    default_operatory_id
+    clinic_scheduler_color
+    joined_at
+    clinic_membership_active
+    email
+    first_name
+    last_name
+    user_account_active
+    user_kind
+    license_no
+    global_scheduler_color
+    profile_active
+  }
+}
+    `;
+
+/**
+ * __useGetClinicUserWithProfileByUserIdQuery__
+ *
+ * To run a query within a React component, call `useGetClinicUserWithProfileByUserIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetClinicUserWithProfileByUserIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetClinicUserWithProfileByUserIdQuery({
+ *   variables: {
+ *      clinicId: // value for 'clinicId'
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetClinicUserWithProfileByUserIdQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables> & ({ variables: GetClinicUserWithProfileByUserIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>(GetClinicUserWithProfileByUserIdDocument, options);
+      }
+export function useGetClinicUserWithProfileByUserIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>(GetClinicUserWithProfileByUserIdDocument, options);
+        }
+// @ts-ignore
+export function useGetClinicUserWithProfileByUserIdSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>;
+export function useGetClinicUserWithProfileByUserIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetClinicUserWithProfileByUserIdQuery | undefined, GetClinicUserWithProfileByUserIdQueryVariables>;
+export function useGetClinicUserWithProfileByUserIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>(GetClinicUserWithProfileByUserIdDocument, options);
+        }
+export type GetClinicUserWithProfileByUserIdQueryHookResult = ReturnType<typeof useGetClinicUserWithProfileByUserIdQuery>;
+export type GetClinicUserWithProfileByUserIdLazyQueryHookResult = ReturnType<typeof useGetClinicUserWithProfileByUserIdLazyQuery>;
+export type GetClinicUserWithProfileByUserIdSuspenseQueryHookResult = ReturnType<typeof useGetClinicUserWithProfileByUserIdSuspenseQuery>;
+export type GetClinicUserWithProfileByUserIdQueryResult = ApolloReactCommon.QueryResult<GetClinicUserWithProfileByUserIdQuery, GetClinicUserWithProfileByUserIdQueryVariables>;
+export const GetUserProviderIdentifiersDocument = gql`
+    query GetUserProviderIdentifiers($userId: uuid!) {
+  user_provider_identifier_v(
+    where: {user_id: {_eq: $userId}}
+    order_by: {created_at: desc}
+  ) {
+    id
+    user_id
+    identifier_kind
+    province_code
+    license_type
+    identifier_value
+    effective_from
+    effective_to
+    is_active
+    created_at
+    updated_at
+  }
+}
+    `;
+
+/**
+ * __useGetUserProviderIdentifiersQuery__
+ *
+ * To run a query within a React component, call `useGetUserProviderIdentifiersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserProviderIdentifiersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserProviderIdentifiersQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetUserProviderIdentifiersQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables> & ({ variables: GetUserProviderIdentifiersQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>(GetUserProviderIdentifiersDocument, options);
+      }
+export function useGetUserProviderIdentifiersLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>(GetUserProviderIdentifiersDocument, options);
+        }
+// @ts-ignore
+export function useGetUserProviderIdentifiersSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>;
+export function useGetUserProviderIdentifiersSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetUserProviderIdentifiersQuery | undefined, GetUserProviderIdentifiersQueryVariables>;
+export function useGetUserProviderIdentifiersSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>(GetUserProviderIdentifiersDocument, options);
+        }
+export type GetUserProviderIdentifiersQueryHookResult = ReturnType<typeof useGetUserProviderIdentifiersQuery>;
+export type GetUserProviderIdentifiersLazyQueryHookResult = ReturnType<typeof useGetUserProviderIdentifiersLazyQuery>;
+export type GetUserProviderIdentifiersSuspenseQueryHookResult = ReturnType<typeof useGetUserProviderIdentifiersSuspenseQuery>;
+export type GetUserProviderIdentifiersQueryResult = ApolloReactCommon.QueryResult<GetUserProviderIdentifiersQuery, GetUserProviderIdentifiersQueryVariables>;

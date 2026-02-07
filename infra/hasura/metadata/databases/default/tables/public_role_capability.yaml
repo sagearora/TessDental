@@ -1,6 +1,28 @@
 table:
   name: role_capability
   schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _exists:
+          _table:
+            name: clinic_user_effective_capabilities_v
+            schema: public
+          _where:
+            _and:
+              - clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - _or:
+                  - capability_key:
+                      _eq: users.manage
+                  - capability_key:
+                      _eq: system.admin
+      columns:
+        - role_id
+        - capability_key
 select_permissions:
   - role: clinic_user
     permission:
@@ -8,6 +30,22 @@ select_permissions:
         - role_id
         - capability_key
       filter: {}
-insert_permissions: []
-update_permissions: []
-delete_permissions: []
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _exists:
+          _table:
+            name: clinic_user_effective_capabilities_v
+            schema: public
+          _where:
+            _and:
+              - clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - _or:
+                  - capability_key:
+                      _eq: users.manage
+                  - capability_key:
+                      _eq: system.admin

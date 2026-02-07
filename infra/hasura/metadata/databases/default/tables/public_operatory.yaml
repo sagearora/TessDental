@@ -1,6 +1,34 @@
 table:
   name: operatory
   schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: clinic.manage
+                      - capability_key:
+                          _eq: system.admin
+      columns:
+        - clinic_id
+        - name
+        - is_bookable
+        - is_active
+        - color
 select_permissions:
   - role: clinic_user
     permission:
@@ -18,36 +46,55 @@ select_permissions:
       filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id
-insert_permissions:
-  - role: clinic_user
-    permission:
-      check:
-        clinic_id:
-          _eq: X-Hasura-Clinic-Id
-      columns:
-        - clinic_id
-        - name
-        - is_bookable
-        - is_active
-        - color
-      backend_only: false
 update_permissions:
   - role: clinic_user
     permission:
-      filter:
-        clinic_id:
-          _eq: X-Hasura-Clinic-Id
       columns:
         - name
         - is_bookable
         - is_active
         - color
-      check:
+      filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: clinic.manage
+                      - capability_key:
+                          _eq: system.admin
 delete_permissions:
   - role: clinic_user
     permission:
       filter:
-        clinic_id:
-          _eq: X-Hasura-Clinic-Id
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: clinic.manage
+                      - capability_key:
+                          _eq: system.admin

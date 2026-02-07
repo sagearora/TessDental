@@ -1,5 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { Settings, Users, LayoutDashboard, Shield, FileText } from 'lucide-react'
+import { useState } from 'react'
+import { NavLink, useLocation, Outlet } from 'react-router-dom'
+import { Settings, Users, LayoutDashboard, Shield, FileText, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Header } from './Header'
 
@@ -16,13 +17,17 @@ const navigation = [
   },
   {
     name: 'User Management',
-    href: '/admin/users',
     icon: Users,
-  },
-  {
-    name: 'Role Management',
-    href: '/admin/roles',
-    icon: Shield,
+    children: [
+      {
+        name: 'Users',
+        href: '/admin/users',
+      },
+      {
+        name: 'Roles & Permissions',
+        href: '/admin/roles',
+      },
+    ],
   },
   {
     name: 'Audit My Data',
@@ -32,6 +37,21 @@ const navigation = [
 ]
 
 export function AdminLayout() {
+  const location = useLocation()
+  const [expandedSections, setExpandedSections] = useState<string[]>(() => {
+    // Auto-expand User Management if we're on a user management page
+    if (location.pathname.startsWith('/admin/users') || location.pathname.startsWith('/admin/roles')) {
+      return ['User Management']
+    }
+    return []
+  })
+
+  const toggleSection = (sectionName: string) => {
+    setExpandedSections((prev) =>
+      prev.includes(sectionName) ? prev.filter((s) => s !== sectionName) : [...prev, sectionName]
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -40,6 +60,56 @@ export function AdminLayout() {
         <aside className="w-64 min-h-[calc(100vh-4rem)] bg-white border-r border-gray-200">
           <nav className="p-4 space-y-1">
             {navigation.map((item) => {
+              if (item.children) {
+                const isExpanded = expandedSections.includes(item.name)
+                const isActive = item.children.some((child) => location.pathname === child.href)
+                const Icon = item.icon
+
+                return (
+                  <div key={item.name}>
+                    <button
+                      onClick={() => toggleSection(item.name)}
+                      className={cn(
+                        'w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-5 w-5" />
+                        {item.name}
+                      </div>
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </button>
+                    {isExpanded && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.children.map((child) => (
+                          <NavLink
+                            key={child.href}
+                            to={child.href}
+                            className={({ isActive }) =>
+                              cn(
+                                'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                                isActive
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              )
+                            }
+                          >
+                            {child.name}
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
               const Icon = item.icon
               return (
                 <NavLink

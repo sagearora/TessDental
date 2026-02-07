@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PhoneInput } from '@/components/ui/phone-input'
-import { useUpdateClinicMutation, useGetClinicQuery } from '@/gql/generated'
+import { useGetClinicQuery, useUpdateClinicMutation } from '@/gql/generated'
+import { getErrorMessage } from '@/utils/errorHandling'
 
 interface EditClinicDialogProps {
   clinicId: number
@@ -101,7 +102,7 @@ export function EditClinicDialog({ clinicId, open, onOpenChange, onSuccess }: Ed
       onSuccess?.()
       onOpenChange(false)
     } catch (err: any) {
-      setError(err.message || 'Failed to update clinic information')
+      setError(getErrorMessage(err, 'Failed to update clinic information'))
     }
   }
 

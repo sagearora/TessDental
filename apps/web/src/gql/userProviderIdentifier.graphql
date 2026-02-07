@@ -1,0 +1,15 @@
+query GetUserProviderIdentifiers($userId: uuid!) {
+  user_provider_identifier_v(where: { user_id: { _eq: $userId } }, order_by: { created_at: desc }) {
+    id
+    user_id
+    identifier_kind
+    province_code
+    license_type
+    identifier_value
+    effective_from
+    effective_to
+    is_active
+    created_at
+    updated_at
+  }
+}

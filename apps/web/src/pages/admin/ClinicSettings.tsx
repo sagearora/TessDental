@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Settings, Building2, Clock, Stethoscope, Edit, Phone, Mail, Globe, MapPin, FileText } from 'lucide-react'
+import { Building2, Clock, Stethoscope, Edit, Phone, Mail, Globe, MapPin, FileText } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useGetUserClinicsQuery } from '@/gql/generated'
+import { useGetUserClinicsQuery, useGetUserEffectiveCapabilitiesQuery } from '@/gql/generated'
 import { OperatoryManagement } from '@/components/admin/OperatoryManagement'
 import { EditClinicDialog } from '@/components/admin/EditClinicDialog'
 import { ClinicHours } from '@/components/admin/ClinicHours'
@@ -32,45 +32,7 @@ function formatAddress(clinic: any): string {
   return parts.length > 0 ? parts.join(', ') : 'Not provided'
 }
 
-function formatTime(time: string | null | undefined): string {
-  if (!time) return ''
-  // Convert HH:MM:SS to HH:MM format
-  return time.substring(0, 5)
-}
 
-function formatClinicHoursSummary(hours: any[]): string {
-  if (!hours || hours.length === 0) return 'Not set'
-  
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const activeDays = hours
-    .filter((h) => {
-      const open = h.open_time
-      const close = h.close_time
-      return !h.is_closed && open && close
-    })
-    .map((h) => {
-      return {
-        day: dayNames[h.day_of_week],
-        open: formatTime(h.open_time),
-        close: formatTime(h.close_time),
-      }
-    })
-
-  if (activeDays.length === 0) return 'Closed all week'
-
-  // Group consecutive days with same hours
-  if (activeDays.length === 7 && activeDays.every((d) => d.open === activeDays[0].open && d.close === activeDays[0].close)) {
-    return `Mon-Sun: ${activeDays[0].open} - ${activeDays[0].close}`
-  }
-
-  // Simple summary for now
-  const firstDay = activeDays[0]
-  const lastDay = activeDays[activeDays.length - 1]
-  if (activeDays.length === 1) {
-    return `${firstDay.day}: ${firstDay.open} - ${firstDay.close}`
-  }
-  return `${firstDay.day}-${lastDay.day}: ${firstDay.open} - ${firstDay.close}`
-}
 
 export function ClinicSettings() {
   const { session } = useAuth()
@@ -78,14 +40,29 @@ export function ClinicSettings() {
     skip: !session,
   })
 
-  const { data: hoursData, refetch: refetchHours } = useGetClinicHoursQuery({
-    ...(session?.clinicId ? { variables: { clinicId: session.clinicId } } : {}),
+  const { refetch: refetchHours } = useGetClinicHoursQuery({
+    variables: { clinicId: session?.clinicId || 0 },
     skip: !session?.clinicId,
   })
 
-  const currentClinic = clinicsData?.clinic_user_v?.find(
-    (cu) => cu.clinic_id === session?.clinicId
-  )?.clinic
+  const currentClinicUser = clinicsData?.clinic_user_v?.find(
+    (cu) => cu.clinic_id === session?.clinicId && cu.user_id === session?.user?.id
+  )
+  const currentClinic = currentClinicUser?.clinic
+
+  // Check for clinic.manage capability
+  const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
+    variables: { clinicUserId: currentClinicUser?.id || 0 },
+    skip: !currentClinicUser?.id,
+  })
+
+  const capabilities = new Set(
+    capabilitiesData?.clinic_user_effective_capabilities_v
+      ?.map((c) => c.capability_key)
+      .filter((key): key is string => key !== null && key !== undefined) || []
+  )
+  
+  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic.manage') || capabilities.has('system.admin'))
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
@@ -106,15 +83,13 @@ export function ClinicSettings() {
       {/* Clinic Information Banner */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-blue-600" />
-              <CardTitle>Clinic Information</CardTitle>
-            </div>
-            <Button onClick={() => setIsEditDialogOpen(true)} variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+          <div className="flex items-center justify-end">
+            {hasClinicManageCapability && (
+              <Button onClick={() => setIsEditDialogOpen(true)} variant="outline" size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -242,7 +217,7 @@ export function ClinicSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Stethoscope className="h-5 w-5 text-blue-600" />
-            <CardTitle>Operatory Management</CardTitle>
+            <CardTitle>Operatories</CardTitle>
           </div>
           <CardDescription>Manage operatories for your clinic</CardDescription>
         </CardHeader>

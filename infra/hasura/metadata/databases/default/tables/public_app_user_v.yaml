@@ -11,8 +11,8 @@ select_permissions:
         - last_name
         - is_active
         - created_at
+        - created_by
         - updated_at
+        - updated_by
+        - current_clinic_id
       filter: {}
-insert_permissions: []
-update_permissions: []
-delete_permissions: []

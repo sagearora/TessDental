@@ -1,7 +1,3 @@
 table:
   name: user_capability_override
   schema: public
-select_permissions: []
-insert_permissions: []
-update_permissions: []
-delete_permissions: []

@@ -24,6 +24,3 @@ select_permissions:
       filter:
         id:
           _eq: X-Hasura-Clinic-Id
-insert_permissions: []
-update_permissions: []
-delete_permissions: []

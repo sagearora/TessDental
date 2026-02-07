@@ -1,6 +1,37 @@
 table:
   name: clinic_hours
   schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: clinic.manage
+                      - capability_key:
+                          _eq: system.admin
+      columns:
+        - clinic_id
+        - day_of_week
+        - is_closed
+        - open_time
+        - close_time
+        - appointment_start
+        - appointment_end
+        - is_active
 select_permissions:
   - role: clinic_user
     permission:
@@ -21,28 +52,9 @@ select_permissions:
       filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id
-insert_permissions:
-  - role: clinic_user
-    permission:
-      check:
-        clinic_id:
-          _eq: X-Hasura-Clinic-Id
-      columns:
-        - clinic_id
-        - day_of_week
-        - is_closed
-        - open_time
-        - close_time
-        - appointment_start
-        - appointment_end
-        - is_active
-      backend_only: false
 update_permissions:
   - role: clinic_user
     permission:
-      filter:
-        clinic_id:
-          _eq: X-Hasura-Clinic-Id
       columns:
         - is_closed
         - open_time
@@ -50,12 +62,47 @@ update_permissions:
         - appointment_start
         - appointment_end
         - is_active
-      check:
+      filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: clinic.manage
+                      - capability_key:
+                          _eq: system.admin
 delete_permissions:
   - role: clinic_user
     permission:
       filter:
-        clinic_id:
-          _eq: X-Hasura-Clinic-Id
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: clinic.manage
+                      - capability_key:
+                          _eq: system.admin

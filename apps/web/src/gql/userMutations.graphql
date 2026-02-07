@@ -1,0 +1,220 @@
+# User Profile Mutations
+mutation UpdateUserProfile(
+  $userId: uuid!
+  $userKind: String
+  $licenseNo: String
+  $schedulerColor: String
+  $isActive: Boolean
+) {
+  update_user_profile(
+    where: { user_id: { _eq: $userId } }
+    _set: {
+      user_kind: $userKind
+      license_no: $licenseNo
+      scheduler_color: $schedulerColor
+      is_active: $isActive
+    }
+  ) {
+    affected_rows
+    returning {
+      user_id
+      user_kind
+      license_no
+      scheduler_color
+      is_active
+    }
+  }
+}
+
+# Clinic User Membership Mutations
+mutation UpdateClinicUserMembership(
+  $clinicId: bigint!
+  $userId: uuid!
+  $jobTitle: String
+  $isSchedulable: Boolean
+  $providerKind: String
+  $defaultOperatoryId: bigint
+  $schedulerColor: String
+  $isActive: Boolean
+) {
+  update_clinic_user(
+    where: { clinic_id: { _eq: $clinicId }, user_id: { _eq: $userId } }
+    _set: {
+      job_title: $jobTitle
+      is_schedulable: $isSchedulable
+      provider_kind: $providerKind
+      default_operatory_id: $defaultOperatoryId
+      scheduler_color: $schedulerColor
+      is_active: $isActive
+    }
+  ) {
+    affected_rows
+    returning {
+      id
+      clinic_id
+      user_id
+      job_title
+      is_schedulable
+      provider_kind
+      default_operatory_id
+      scheduler_color
+      is_active
+    }
+  }
+}
+
+# Role Mutations
+mutation CreateRole(
+  $clinicId: bigint!
+  $name: String!
+  $description: String
+  $isActive: Boolean
+) {
+  insert_role_one(
+    object: {
+      clinic_id: $clinicId
+      name: $name
+      description: $description
+      is_active: $isActive
+    }
+  ) {
+    id
+    clinic_id
+    name
+    description
+    is_active
+  }
+}
+
+mutation UpdateRole(
+  $roleId: bigint!
+  $name: String
+  $description: String
+  $isActive: Boolean
+) {
+  update_role_by_pk(
+    pk_columns: { id: $roleId }
+    _set: { name: $name, description: $description, is_active: $isActive }
+  ) {
+    id
+    name
+    description
+    is_active
+  }
+}
+
+# Role Capability Mutations
+mutation AddCapabilityToRole($roleId: bigint!, $capabilityKey: String!) {
+  insert_role_capability_one(
+    object: { role_id: $roleId, capability_key: $capabilityKey }
+  ) {
+    role_id
+    capability_key
+  }
+}
+
+mutation RemoveCapabilityFromRole($roleId: bigint!, $capabilityKey: String!) {
+  delete_role_capability(
+    where: {
+      role_id: { _eq: $roleId }
+      capability_key: { _eq: $capabilityKey }
+    }
+  ) {
+    affected_rows
+  }
+}
+
+# User Role Assignment Mutations
+mutation AssignRoleToUser($clinicUserId: bigint!, $roleId: bigint!) {
+  insert_clinic_user_role_one(
+    object: {
+      clinic_user_id: $clinicUserId
+      role_id: $roleId
+    }
+  ) {
+    clinic_user_id
+    role_id
+  }
+}
+
+mutation RemoveRoleFromUser($clinicUserId: bigint!, $roleId: bigint!) {
+  delete_clinic_user_role(
+    where: {
+      clinic_user_id: { _eq: $clinicUserId }
+      role_id: { _eq: $roleId }
+    }
+  ) {
+    affected_rows
+  }
+}
+
+# Provider Identifier Mutations
+mutation CreateProviderIdentifier(
+  $userId: uuid!
+  $identifierKind: String!
+  $provinceCode: String!
+  $licenseType: String!
+  $identifierValue: String!
+  $effectiveFrom: date
+  $effectiveTo: date
+  $isActive: Boolean!
+) {
+  insert_user_provider_identifier_one(
+    object: {
+      user_id: $userId
+      identifier_kind: $identifierKind
+      province_code: $provinceCode
+      license_type: $licenseType
+      identifier_value: $identifierValue
+      effective_from: $effectiveFrom
+      effective_to: $effectiveTo
+      is_active: $isActive
+    }
+  ) {
+    id
+    user_id
+    identifier_kind
+    province_code
+    license_type
+    identifier_value
+    effective_from
+    effective_to
+    is_active
+  }
+}
+
+mutation UpdateProviderIdentifier(
+  $id: bigint!
+  $provinceCode: String
+  $licenseType: String
+  $identifierValue: String
+  $effectiveFrom: date
+  $effectiveTo: date
+  $isActive: Boolean
+) {
+  update_user_provider_identifier_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      province_code: $provinceCode
+      license_type: $licenseType
+      identifier_value: $identifierValue
+      effective_from: $effectiveFrom
+      effective_to: $effectiveTo
+      is_active: $isActive
+    }
+  ) {
+    id
+    province_code
+    license_type
+    identifier_value
+    effective_from
+    effective_to
+    is_active
+  }
+}
+
+mutation DeleteProviderIdentifier($id: bigint!) {
+  delete_user_provider_identifier_by_pk(id: $id) {
+    id
+  }
+}

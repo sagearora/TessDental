@@ -1,7 +1,78 @@
 table:
   name: clinic_user
   schema: public
-select_permissions: []
-insert_permissions: []
-update_permissions: []
-delete_permissions: []
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      columns:
+        - clinic_id
+        - user_id
+        - job_title
+        - is_schedulable
+        - provider_kind
+        - default_operatory_id
+        - scheduler_color
+        - joined_at
+        - is_active
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - user_id
+        - job_title
+        - is_schedulable
+        - provider_kind
+        - default_operatory_id
+        - scheduler_color
+        - joined_at
+        - is_active
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - job_title
+        - is_schedulable
+        - provider_kind
+        - default_operatory_id
+        - scheduler_color
+        - is_active
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: users.manage
+                      - capability_key:
+                          _eq: system.admin
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id

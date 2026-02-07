@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button'
-import { useGetClinicHoursQuery } from '@/gql/generated'
+import { useGetClinicHoursQuery, useGetUserClinicsQuery, useGetUserEffectiveCapabilitiesQuery } from '@/gql/generated'
 import { Edit } from 'lucide-react'
 import { EditClinicHoursDialog } from './EditClinicHoursDialog'
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface ClinicHoursProps {
   clinicId: number
@@ -35,11 +36,33 @@ function formatTimeTo12Hour(time: string | null | undefined): string {
 }
 
 export function ClinicHours({ clinicId, onSuccess }: ClinicHoursProps) {
+  const { session } = useAuth()
   const { data, loading, refetch } = useGetClinicHoursQuery({
     variables: { clinicId },
     skip: !clinicId || clinicId === 0,
     notifyOnNetworkStatusChange: false,
   })
+
+  const { data: clinicsData } = useGetUserClinicsQuery({
+    skip: !session,
+  })
+
+  const currentClinicUser = clinicsData?.clinic_user_v?.find(
+    (cu) => cu.clinic_id === session?.clinicId && cu.user_id === session?.user?.id
+  )
+
+  const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
+    variables: { clinicUserId: currentClinicUser?.id || 0 },
+    skip: !currentClinicUser?.id,
+  })
+
+  const capabilities = new Set(
+    capabilitiesData?.clinic_user_effective_capabilities_v
+      ?.map((c) => c.capability_key)
+      .filter((key): key is string => key !== null && key !== undefined) || []
+  )
+
+  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic.manage') || capabilities.has('system.admin'))
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
@@ -57,12 +80,14 @@ export function ClinicHours({ clinicId, onSuccess }: ClinicHoursProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button type="button" onClick={() => setIsEditDialogOpen(true)} variant="outline" size="sm">
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Hours
-        </Button>
-      </div>
+      {hasClinicManageCapability && (
+        <div className="flex justify-end">
+          <Button type="button" onClick={() => setIsEditDialogOpen(true)} variant="outline" size="sm">
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Hours
+          </Button>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">

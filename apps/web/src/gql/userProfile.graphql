@@ -1,0 +1,57 @@
+query GetUserProfile($userId: uuid!) {
+  user_profile(where: { user_id: { _eq: $userId } }) {
+    user_id
+    user_kind
+    license_no
+    scheduler_color
+    is_active
+  }
+}
+
+query GetClinicUserWithProfile($clinicId: bigint!) {
+  clinic_user_with_profile_v(where: { clinic_id: { _eq: $clinicId } }) {
+    clinic_user_id
+    clinic_id
+    user_id
+    job_title
+    is_schedulable
+    provider_kind
+    default_operatory_id
+    clinic_scheduler_color
+    joined_at
+    clinic_membership_active
+    email
+    first_name
+    last_name
+    user_account_active
+    user_kind
+    license_no
+    global_scheduler_color
+    profile_active
+  }
+}
+
+query GetClinicUserWithProfileByUserId($clinicId: bigint!, $userId: uuid!) {
+  clinic_user_with_profile_v(
+    where: { clinic_id: { _eq: $clinicId }, user_id: { _eq: $userId } }
+  ) {
+    clinic_user_id
+    clinic_id
+    user_id
+    job_title
+    is_schedulable
+    provider_kind
+    default_operatory_id
+    clinic_scheduler_color
+    joined_at
+    clinic_membership_active
+    email
+    first_name
+    last_name
+    user_account_active
+    user_kind
+    license_no
+    global_scheduler_color
+    profile_active
+  }
+}

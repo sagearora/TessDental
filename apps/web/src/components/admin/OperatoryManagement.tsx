@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plus, Edit, Trash2, X, Check } from 'lucide-react'
-import { useGetOperatoriesQuery, useCreateOperatoryMutation, useUpdateOperatoryMutation, useDeleteOperatoryMutation } from '@/gql/generated'
+import { useGetOperatoriesQuery, useCreateOperatoryMutation, useUpdateOperatoryMutation, useDeleteOperatoryMutation, useGetUserClinicsQuery, useGetUserEffectiveCapabilitiesQuery } from '@/gql/generated'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface OperatoryManagementProps {
   clinicId: number
@@ -16,6 +17,7 @@ interface OperatoryFormData {
 }
 
 export function OperatoryManagement({ clinicId }: OperatoryManagementProps) {
+  const { session } = useAuth()
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState<OperatoryFormData>({
@@ -29,6 +31,27 @@ export function OperatoryManagement({ clinicId }: OperatoryManagementProps) {
     variables: { clinicId },
     skip: !clinicId,
   })
+
+  const { data: clinicsData } = useGetUserClinicsQuery({
+    skip: !session,
+  })
+
+  const currentClinicUser = clinicsData?.clinic_user_v?.find(
+    (cu) => cu.clinic_id === session?.clinicId && cu.user_id === session?.user?.id
+  )
+
+  const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
+    variables: { clinicUserId: currentClinicUser?.id || 0 },
+    skip: !currentClinicUser?.id,
+  })
+
+  const capabilities = new Set(
+    capabilitiesData?.clinic_user_effective_capabilities_v
+      ?.map((c) => c.capability_key)
+      .filter((key): key is string => key !== null && key !== undefined) || []
+  )
+
+  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic.manage') || capabilities.has('system.admin'))
 
   const [createOperatory] = useCreateOperatoryMutation()
   const [updateOperatory] = useUpdateOperatoryMutation()
@@ -156,10 +179,12 @@ export function OperatoryManagement({ clinicId }: OperatoryManagementProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-gray-900">Operatories</h4>
-        <Button variant="outline" size="sm" onClick={handleStartAdd}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Operatory
-        </Button>
+        {hasClinicManageCapability && (
+          <Button variant="outline" size="sm" onClick={handleStartAdd}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Operatory
+          </Button>
+        )}
       </div>
 
       {/* Add/Edit Form */}
@@ -275,22 +300,24 @@ export function OperatoryManagement({ clinicId }: OperatoryManagementProps) {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleStartEdit(operatory)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(operatory.id!)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {hasClinicManageCapability && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStartEdit(operatory)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(operatory.id!)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )
           })}

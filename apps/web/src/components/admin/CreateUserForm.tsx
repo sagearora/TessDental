@@ -17,6 +17,8 @@ export function CreateUserForm({ clinicId, roles, onSuccess, onCancel }: CreateU
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [userKind, setUserKind] = useState<'staff' | 'dentist' | 'hygienist' | 'assistant' | 'manager'>('staff')
+  const [licenseNo, setLicenseNo] = useState('')
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -68,6 +70,8 @@ export function CreateUserForm({ clinicId, roles, onSuccess, onCancel }: CreateU
         lastName: lastName || undefined,
         clinicId,
         roleIds: selectedRoleIds.length > 0 ? selectedRoleIds : undefined,
+        userKind,
+        licenseNo: licenseNo || undefined,
       })
       onSuccess()
     } catch (err: any) {
@@ -159,6 +163,38 @@ export function CreateUserForm({ clinicId, roles, onSuccess, onCancel }: CreateU
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Optional"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label htmlFor="userKind" className="text-sm font-medium text-gray-700">
+            User Kind
+          </label>
+          <select
+            id="userKind"
+            value={userKind}
+            onChange={(e) => setUserKind(e.target.value as typeof userKind)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="staff">Staff</option>
+            <option value="dentist">Dentist</option>
+            <option value="hygienist">Hygienist</option>
+            <option value="assistant">Assistant</option>
+            <option value="manager">Manager</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="licenseNo" className="text-sm font-medium text-gray-700">
+            License Number
+          </label>
+          <Input
+            id="licenseNo"
+            value={licenseNo}
+            onChange={(e) => setLicenseNo(e.target.value)}
+            placeholder="e.g., RCSDO12345"
           />
         </div>
       </div>

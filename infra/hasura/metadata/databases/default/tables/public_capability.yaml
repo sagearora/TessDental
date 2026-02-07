@@ -12,6 +12,3 @@ select_permissions:
       filter:
         is_deprecated:
           _eq: false
-insert_permissions: []
-update_permissions: []
-delete_permissions: []
