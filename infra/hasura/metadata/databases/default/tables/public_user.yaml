@@ -1,0 +1,7 @@
+table:
+  name: user
+  schema: public
+select_permissions: []
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

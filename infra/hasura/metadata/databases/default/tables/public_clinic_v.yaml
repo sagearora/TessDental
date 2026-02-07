@@ -1,0 +1,29 @@
+table:
+  name: clinic_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - name
+        - timezone
+        - is_active
+        - phone
+        - fax
+        - website
+        - email
+        - address_street
+        - address_unit
+        - address_city
+        - address_province
+        - address_postal
+        - billing_number
+        - created_at
+        - updated_at
+      filter:
+        id:
+          _eq: X-Hasura-Clinic-Id
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

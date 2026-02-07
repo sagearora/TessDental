@@ -1,0 +1,24 @@
+{
+  "name": "tessdental",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "infra:up": "docker compose -f infra/compose/docker-compose.yml --env-file infra/compose/.env up -d",
+    "infra:down": "docker compose -f infra/compose/docker-compose.yml --env-file infra/compose/.env down",
+    "infra:logs": "docker compose -f infra/compose/docker-compose.yml --env-file infra/compose/.env logs -f",
+    "hasura:console": "hasura console --project infra/hasura --endpoint http://localhost:8080 --admin-secret $HASURA_GRAPHQL_ADMIN_SECRET",
+    "hasura:metadata:export": "hasura metadata export --project infra/hasura",
+    "hasura:metadata:apply": "hasura metadata apply --project infra/hasura",
+    "hasura:migrate:apply": "hasura migrate apply --project infra/hasura --database-name default",
+    "hasura:migrate:down": "hasura migrate apply --down 1 --project infra/hasura --database-name default",
+    "hasura:migrate:down:all": "hasura migrate apply --down all --project infra/hasura --database-name default",
+    "hasura:migrate:status": "hasura migrate status --project infra/hasura --database-name default",
+    "hasura:metadata:ic": "hasura metadata ic list --project infra/hasura",
+    "hasura:seed:apply": "hasura seed apply --project infra/hasura --all-databases",
+    "dev:web": "pnpm -C apps/web dev",
+    "dev": "pnpm infra:up && pnpm dev:web",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm -C apps/web test:e2e",
+    "init:cli": "pnpm -C tools/init install && pnpm -C tools/init dev"
+  }
+}

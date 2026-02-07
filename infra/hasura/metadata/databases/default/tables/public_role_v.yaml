@@ -1,0 +1,18 @@
+table:
+  name: role_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - name
+        - description
+        - is_active
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

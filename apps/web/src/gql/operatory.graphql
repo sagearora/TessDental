@@ -1,0 +1,59 @@
+query GetOperatories($clinicId: bigint!) {
+  operatory_v(where: { clinic_id: { _eq: $clinicId } }, order_by: { name: asc }) {
+    id
+    clinic_id
+    name
+    is_bookable
+    is_active
+    color
+    created_at
+    updated_at
+  }
+}
+
+mutation CreateOperatory($clinicId: bigint!, $name: String!, $isBookable: Boolean!, $isActive: Boolean!, $color: String!) {
+  insert_operatory_one(
+    object: {
+      clinic_id: $clinicId
+      name: $name
+      is_bookable: $isBookable
+      is_active: $isActive
+      color: $color
+    }
+  ) {
+    id
+    clinic_id
+    name
+    is_bookable
+    is_active
+    color
+    created_at
+    updated_at
+  }
+}
+
+mutation UpdateOperatory($id: bigint!, $name: String, $isBookable: Boolean, $isActive: Boolean, $color: String) {
+  update_operatory_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      name: $name
+      is_bookable: $isBookable
+      is_active: $isActive
+      color: $color
+    }
+  ) {
+    id
+    clinic_id
+    name
+    is_bookable
+    is_active
+    color
+    updated_at
+  }
+}
+
+mutation DeleteOperatory($id: bigint!) {
+  delete_operatory_by_pk(id: $id) {
+    id
+  }
+}

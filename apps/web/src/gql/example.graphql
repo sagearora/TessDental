@@ -1,0 +1,92 @@
+# Query to get the current logged-in user
+# Permissions should be configured so users can only see their own record
+# The filter will automatically use X-Hasura-User-Id from the JWT token
+query GetCurrentUser {
+  app_user_v {
+    id
+    email
+    first_name
+    last_name
+    is_active
+    created_at
+    updated_at
+  }
+}
+
+# Query to get current user with clinic information
+# Permissions should filter by X-Hasura-User-Id and X-Hasura-Clinic-Id
+query GetCurrentUserWithClinic {
+  app_user_v {
+    id
+    email
+    first_name
+    last_name
+    is_active
+    created_at
+    updated_at
+    current_clinic_id
+  }
+  clinic_user_v(where: { is_active: { _eq: true } }) {
+    id
+    clinic_id
+    user_id
+    joined_at
+  }
+  clinic_v {
+    id
+    name
+    timezone
+    phone
+    fax
+    website
+    email
+    address_street
+    address_unit
+    address_city
+    address_province
+    address_postal
+    billing_number
+    is_active
+  }
+}
+
+# Mutation to update current clinic for user
+mutation UpdateCurrentClinic($userId: uuid!, $clinicId: bigint!) {
+  update_app_user_v(
+    where: { id: { _eq: $userId } }
+    _set: { current_clinic_id: $clinicId }
+  ) {
+    affected_rows
+    returning {
+      id
+      current_clinic_id
+    }
+  }
+}
+
+# Query to get user's clinics
+query GetUserClinics {
+  clinic_user_v(where: { is_active: { _eq: true } }) {
+    id
+    clinic_id
+    user_id
+    is_active
+    joined_at
+    clinic {
+      id
+      name
+      timezone
+      phone
+      fax
+      website
+      email
+      address_street
+      address_unit
+      address_city
+      address_province
+      address_postal
+      billing_number
+      is_active
+    }
+  }
+}

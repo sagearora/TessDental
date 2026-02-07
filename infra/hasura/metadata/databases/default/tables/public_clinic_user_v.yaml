@@ -1,0 +1,27 @@
+table:
+  name: clinic_user_v
+  schema: public
+object_relationships:
+  - name: clinic
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: clinic_v
+        column_mapping:
+          clinic_id: id
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - user_id
+        - is_active
+        - joined_at
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

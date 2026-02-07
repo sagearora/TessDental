@@ -1,0 +1,45 @@
+query GetClinicHours($clinicId: bigint!) {
+  clinic_hours(
+    where: { clinic_id: { _eq: $clinicId }, is_active: { _eq: true } }
+    order_by: { day_of_week: asc }
+  ) {
+    id
+    clinic_id
+    day_of_week
+    is_closed
+    open_time
+    close_time
+    appointment_start
+    appointment_end
+    is_active
+  }
+}
+
+mutation UpsertClinicHours($hours: [clinic_hours_insert_input!]!) {
+  insert_clinic_hours(
+    objects: $hours
+    on_conflict: {
+      constraint: clinic_hours_clinic_id_day_of_week_key
+      update_columns: [is_closed, open_time, close_time, appointment_start, appointment_end, is_active]
+    }
+  ) {
+    affected_rows
+    returning {
+      id
+      clinic_id
+      day_of_week
+      is_closed
+      open_time
+      close_time
+      appointment_start
+      appointment_end
+      is_active
+    }
+  }
+}
+
+mutation DeleteClinicHours($clinicId: bigint!) {
+  delete_clinic_hours(where: { clinic_id: { _eq: $clinicId } }) {
+    affected_rows
+  }
+}

@@ -1,0 +1,23 @@
+table:
+  name: operatory_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - name
+        - is_bookable
+        - is_active
+        - color
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

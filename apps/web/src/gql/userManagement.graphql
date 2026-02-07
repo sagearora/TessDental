@@ -1,0 +1,51 @@
+query GetRoles($clinicId: bigint!) {
+  role_v(where: { clinic_id: { _eq: $clinicId }, is_active: { _eq: true } }) {
+    id
+    name
+    description
+    clinic_id
+    is_active
+  }
+}
+
+query GetCapabilities {
+  capability(where: { is_deprecated: { _eq: false } }) {
+    key
+    description
+    module
+  }
+}
+
+query GetRoleCapabilities($roleId: bigint!) {
+  role_capability(where: { role_id: { _eq: $roleId } }) {
+    capability_key
+    role_id
+  }
+}
+
+query GetUserRoles($clinicUserId: bigint!) {
+  clinic_user_role(where: { clinic_user_id: { _eq: $clinicUserId } }) {
+    role_id
+    clinic_user_id
+  }
+}
+
+query GetAppUsers {
+  app_user_v {
+    id
+    email
+    first_name
+    last_name
+    is_active
+  }
+}
+
+query GetAppUser($userId: uuid!) {
+  app_user_v(where: { id: { _eq: $userId } }) {
+    id
+    email
+    first_name
+    last_name
+    is_active
+  }
+}

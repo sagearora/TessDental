@@ -1,0 +1,17 @@
+table:
+  name: capability
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - key
+        - description
+        - module
+        - is_deprecated
+      filter:
+        is_deprecated:
+          _eq: false
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

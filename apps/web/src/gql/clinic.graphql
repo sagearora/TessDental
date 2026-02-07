@@ -1,0 +1,73 @@
+query GetClinic($clinicId: bigint!) {
+  clinic_v(where: { id: { _eq: $clinicId } }) {
+    id
+    name
+    timezone
+    phone
+    fax
+    website
+    email
+    address_street
+    address_unit
+    address_city
+    address_province
+    address_postal
+    billing_number
+    is_active
+    created_at
+    updated_at
+  }
+}
+
+mutation UpdateClinic(
+  $clinicId: bigint!
+  $name: String
+  $timezone: String
+  $phone: String
+  $fax: String
+  $website: String
+  $email: String
+  $addressStreet: String
+  $addressUnit: String
+  $addressCity: String
+  $addressProvince: String
+  $addressPostal: String
+  $billingNumber: String
+) {
+  update_clinic(
+    where: { id: { _eq: $clinicId } }
+    _set: {
+      name: $name
+      timezone: $timezone
+      phone: $phone
+      fax: $fax
+      website: $website
+      email: $email
+      address_street: $addressStreet
+      address_unit: $addressUnit
+      address_city: $addressCity
+      address_province: $addressProvince
+      address_postal: $addressPostal
+      billing_number: $billingNumber
+    }
+  ) {
+    affected_rows
+    returning {
+      id
+      name
+      timezone
+      phone
+      fax
+      website
+      email
+      address_street
+      address_unit
+      address_city
+      address_province
+      address_postal
+      billing_number
+      is_active
+      updated_at
+    }
+  }
+}

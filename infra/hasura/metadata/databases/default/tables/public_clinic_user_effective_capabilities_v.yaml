@@ -1,0 +1,7 @@
+table:
+  name: clinic_user_effective_capabilities_v
+  schema: public
+select_permissions: []
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

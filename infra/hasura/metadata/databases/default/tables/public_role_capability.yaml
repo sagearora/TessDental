@@ -1,0 +1,13 @@
+table:
+  name: role_capability
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - role_id
+        - capability_key
+      filter: {}
+insert_permissions: []
+update_permissions: []
+delete_permissions: []

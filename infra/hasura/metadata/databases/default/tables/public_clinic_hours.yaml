@@ -1,0 +1,61 @@
+table:
+  name: clinic_hours
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - day_of_week
+        - is_closed
+        - open_time
+        - close_time
+        - appointment_start
+        - appointment_end
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+        - is_active
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      columns:
+        - clinic_id
+        - day_of_week
+        - is_closed
+        - open_time
+        - close_time
+        - appointment_start
+        - appointment_end
+        - is_active
+      backend_only: false
+update_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      columns:
+        - is_closed
+        - open_time
+        - close_time
+        - appointment_start
+        - appointment_end
+        - is_active
+      check:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
