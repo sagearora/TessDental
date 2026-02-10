@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { Header } from './components/Header'
 import { AdminLayout } from './components/AdminLayout'
+import { DefaultLayout } from './components/DefaultLayout'
 import { Login } from './pages/Login'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { ClinicSettings } from './pages/admin/ClinicSettings'
@@ -11,6 +12,11 @@ import { UserManagement } from './pages/admin/UserManagement'
 import { UserDetailPage } from './pages/admin/UserDetailPage'
 import { RoleManagement } from './pages/admin/RoleManagement'
 import { AuditExport } from './pages/admin/AuditExport'
+import { PatientFieldConfig } from './pages/admin/PatientFieldConfig'
+import { ReferralSourceManagement } from './pages/admin/ReferralSourceManagement'
+import { PersonsTable } from './pages/admin/PersonsTable'
+import { PersonProfile } from './pages/profile/PersonProfile'
+import { Imaging } from './pages/Imaging'
 import { apolloClient } from './apollo/client'
 
 function AppPage() {
@@ -55,7 +61,21 @@ function AppRoutes() {
         <Route path="users" element={<UserManagement />} />
         <Route path="users/:userId" element={<UserDetailPage />} />
         <Route path="roles" element={<RoleManagement />} />
+        <Route path="patients" element={<Navigate to="/admin/patients/persons" replace />} />
+        <Route path="patients/persons" element={<PersonsTable />} />
+        <Route path="patients/fields" element={<PatientFieldConfig />} />
+        <Route path="patients/referral-sources" element={<ReferralSourceManagement />} />
         <Route path="audit" element={<AuditExport />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute>
+            <DefaultLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="profile/:personId" element={<PersonProfile />} />
+        <Route path="imaging" element={<Imaging />} />
       </Route>
       <Route
         path="/"

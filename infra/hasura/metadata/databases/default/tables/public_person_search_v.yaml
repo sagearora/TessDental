@@ -1,0 +1,3 @@
+table:
+  name: person_search_v
+  schema: public

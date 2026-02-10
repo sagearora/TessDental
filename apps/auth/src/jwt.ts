@@ -21,7 +21,7 @@ export function signAccessToken(
   clinicId: string | number
 ): string {
   const now = Math.floor(Date.now() / 1000)
-  const expiresIn = 60 * 60 // 1 hour
+  const expiresIn = 4 * 60 * 60 // 4 hours
 
   const claims: JWTClaims = {
     sub: userId,

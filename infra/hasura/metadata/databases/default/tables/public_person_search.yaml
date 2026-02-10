@@ -1,0 +1,23 @@
+table:
+  name: person_search
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - clinic_id
+        - person_id
+        - display_name
+        - dob
+        - chart_no
+        - status
+        - search_text
+        - is_active
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      allow_aggregations: true

@@ -30,7 +30,7 @@ const updateIdentifierSchema = z.object({
 router.post(
   '/:userId/provider-identifiers',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -124,7 +124,7 @@ router.post(
 router.patch(
   '/provider-identifiers/:id',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -257,7 +257,7 @@ router.patch(
 router.delete(
   '/provider-identifiers/:id',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {

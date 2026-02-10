@@ -1,6 +1,7 @@
-query GetUserEffectiveCapabilities($clinicUserId: bigint!) {
-  clinic_user_effective_capabilities_v(where: { clinic_user_id: { _eq: $clinicUserId } }) {
+query GetUserEffectiveCapabilities($clinicId: bigint!, $userId: uuid!) {
+  clinic_user_effective_capabilities_v(where: { clinic_id: { _eq: $clinicId }, user_id: { _eq: $userId } }) {
     capability_key
-    clinic_user_id
+    clinic_id
+    user_id
   }
 }

@@ -1,0 +1,170 @@
+table:
+  name: person
+  schema: public
+object_relationships:
+  - name: billing_address
+    using:
+      foreign_key_constraint_on: billing_address_id
+  - name: household_head
+    using:
+      foreign_key_constraint_on: household_head_id
+  - name: mailing_address
+    using:
+      foreign_key_constraint_on: mailing_address_id
+  - name: patient
+    using:
+      foreign_key_constraint_on:
+        column: person_id
+        table:
+          name: patient
+          schema: public
+  - name: responsible_party
+    using:
+      foreign_key_constraint_on: responsible_party_id
+array_relationships:
+  - name: dependents
+    using:
+      foreign_key_constraint_on:
+        column: responsible_party_id
+        table:
+          name: person
+          schema: public
+  - name: household_members
+    using:
+      foreign_key_constraint_on:
+        column: household_head_id
+        table:
+          name: person
+          schema: public
+  - name: person_contact_point
+    using:
+      foreign_key_constraint_on:
+        column: person_id
+        table:
+          name: person_contact_point
+          schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin
+      columns:
+        - clinic_id
+        - first_name
+        - middle_name
+        - last_name
+        - preferred_name
+        - dob
+        - gender
+        - preferred_language
+        - is_active
+        - responsible_party_id
+        - household_relationship
+        - household_head_id
+        - mailing_address_id
+        - billing_address_id
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - first_name
+        - middle_name
+        - last_name
+        - preferred_name
+        - dob
+        - gender
+        - preferred_language
+        - is_active
+        - responsible_party_id
+        - household_relationship
+        - household_head_id
+        - mailing_address_id
+        - billing_address_id
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      allow_aggregations: true
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - first_name
+        - middle_name
+        - last_name
+        - preferred_name
+        - dob
+        - gender
+        - preferred_language
+        - is_active
+        - responsible_party_id
+        - household_relationship
+        - household_head_id
+        - mailing_address_id
+        - billing_address_id
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin

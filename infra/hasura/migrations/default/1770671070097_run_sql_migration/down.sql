@@ -1,0 +1,37 @@
+-- Could not auto-generate a down migration.
+-- Please write an appropriate down migration for the SQL below:
+-- BEGIN;
+--
+-- -- 1) Remove duplicate person_search trigram index (keep the partial active one)
+-- DROP INDEX IF EXISTS public.idx_person_search_trgm;
+--
+-- -- 2) Remove duplicate imaging_asset study index (keep active-only)
+-- DROP INDEX IF EXISTS public.idx_imaging_asset_study;
+--
+-- -- 3) Remove duplicate person name index (keep active-only)
+-- -- Only drop this if you don't frequently search inactive people by name:
+-- DROP INDEX IF EXISTS public.idx_person_clinic_name;
+--
+-- -- 4) Optional: make chart index partial active if that's your dominant path
+-- -- DROP INDEX IF EXISTS public.idx_person_search_chart;
+-- -- CREATE INDEX idx_person_search_chart_active
+-- --   ON public.person_search (clinic_id, chart_no)
+-- --   WHERE is_active = true AND chart_no IS NOT NULL;
+--
+-- -- 5) Enforce phone_e164 required for phone rows
+-- DO $$
+-- BEGIN
+--   IF NOT EXISTS (
+--     SELECT 1
+--     FROM information_schema.table_constraints
+--     WHERE constraint_schema='public'
+--       AND table_name='person_contact_point'
+--       AND constraint_name='chk_contact_point_phone_e164_required_for_phone'
+--   ) THEN
+--     ALTER TABLE public.person_contact_point
+--       ADD CONSTRAINT chk_contact_point_phone_e164_required_for_phone
+--       CHECK ((kind <> 'phone') OR (phone_e164 IS NOT NULL));
+--   END IF;
+-- END $$;
+--
+-- COMMIT;

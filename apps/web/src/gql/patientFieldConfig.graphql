@@ -1,0 +1,77 @@
+query GetPatientFieldConfig($clinicId: bigint!) {
+  patient_field_config(
+    where: { clinic_id: { _eq: $clinicId }, is_active: { _eq: true } }
+    order_by: { display_order: asc }
+  ) {
+    id
+    clinic_id
+    field_key
+    field_label
+    display_order
+    is_displayed
+    is_required
+    is_active
+  }
+}
+
+mutation UpdatePatientFieldConfig(
+  $id: bigint!
+  $fieldLabel: String
+  $displayOrder: Int
+  $isDisplayed: Boolean
+  $isRequired: Boolean
+) {
+  update_patient_field_config_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      field_label: $fieldLabel
+      display_order: $displayOrder
+      is_displayed: $isDisplayed
+      is_required: $isRequired
+    }
+  ) {
+    id
+    field_key
+    field_label
+    display_order
+    is_displayed
+    is_required
+  }
+}
+
+mutation UpdatePatientFieldConfigOrder($id: bigint!, $displayOrder: Int!) {
+  update_patient_field_config_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      display_order: $displayOrder
+    }
+  ) {
+    id
+    display_order
+  }
+}
+
+mutation UpdatePatientFieldConfigDisplay($id: bigint!, $isDisplayed: Boolean!) {
+  update_patient_field_config_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      is_displayed: $isDisplayed
+    }
+  ) {
+    id
+    is_displayed
+  }
+}
+
+mutation UpdatePatientFieldConfigRequired($id: bigint!, $isRequired: Boolean!) {
+  update_patient_field_config_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      is_required: $isRequired
+    }
+  ) {
+    id
+    is_required
+  }
+}
+

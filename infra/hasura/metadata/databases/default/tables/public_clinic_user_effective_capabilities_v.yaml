@@ -6,7 +6,6 @@ select_permissions:
     permission:
       columns:
         - clinic_id
-        - clinic_user_id
         - capability_key
         - user_id
       filter: {}

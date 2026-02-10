@@ -1,0 +1,100 @@
+query GetPersonProfile($personId: bigint!, $clinicId: bigint!) {
+  person(where: { id: { _eq: $personId }, clinic_id: { _eq: $clinicId } }) {
+    id
+    clinic_id
+    first_name
+    middle_name
+    last_name
+    preferred_name
+    dob
+    gender
+    preferred_language
+    is_active
+    responsible_party_id
+    household_relationship
+    household_head_id
+    household_head {
+      id
+      first_name
+      last_name
+      preferred_name
+    }
+    household_members(where: { is_active: { _eq: true } }) {
+      id
+      first_name
+      last_name
+      preferred_name
+    }
+    responsible_party {
+      id
+      first_name
+      last_name
+      preferred_name
+    }
+    dependents(where: { is_active: { _eq: true } }) {
+      id
+      first_name
+      last_name
+      preferred_name
+      household_relationship
+      patient {
+        person_id
+        chart_no
+      }
+    }
+    created_at
+    created_by
+    updated_at
+    updated_by
+    patient {
+      person_id
+      chart_no
+      status
+      family_doctor_name
+      family_doctor_phone
+      imaging_id
+      is_active
+      patient_referral {
+        referral_kind
+        referral_source {
+          id
+          name
+        }
+        referral_contact_person {
+          id
+          first_name
+          last_name
+        }
+        referral_other_text
+      }
+    }
+    person_contact_point(where: { is_active: { _eq: true } }) {
+      id
+      kind
+      label
+      value
+      is_primary
+    }
+    mailing_address {
+      id
+      line1
+      line2
+      city
+      region
+      postal_code
+      country
+    }
+    billing_address {
+      id
+      line1
+      line2
+      city
+      region
+      postal_code
+      country
+    }
+  }
+  patient_financial(where: { patient_person_id: { _eq: $personId } }) {
+    patient_person_id
+  }
+}

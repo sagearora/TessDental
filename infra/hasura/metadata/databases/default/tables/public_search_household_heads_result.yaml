@@ -1,0 +1,19 @@
+table:
+  name: search_household_heads_result
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - person_id
+        - clinic_id
+        - display_name
+        - first_name
+        - last_name
+        - preferred_name
+        - household_head_id
+        - rank_score
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      allow_aggregations: true

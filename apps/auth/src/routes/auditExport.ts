@@ -44,7 +44,7 @@ router.get(
     // Determine clinic ID
     let clinicId: number
     if (params.clinicId) {
-      // If clinicId override is provided, require system.admin
+      // If clinicId override is provided, require system_admin
       if (!req.claims || !req.auditContext) {
         return res.status(401).json({ error: 'Not authenticated' })
       }
@@ -56,11 +56,11 @@ router.get(
       try {
         const result = await pool.query(
           `SELECT public.fn_has_capability($1, $2, $3) as has_capability`,
-          [overrideClinicId, userId, 'system.admin']
+          [overrideClinicId, userId, 'system_admin']
         )
 
         if (result.rows[0]?.has_capability !== true) {
-          return res.status(403).json({ error: 'Missing system.admin capability for clinic override' })
+          return res.status(403).json({ error: 'Missing system_admin capability for clinic override' })
         }
 
         clinicId = overrideClinicId
@@ -76,8 +76,8 @@ router.get(
       clinicId = Number(req.auditContext.clinicId)
     }
 
-    // Check capability: audit.export OR system.admin
-    await requireCapability(req, res, next, ['audit.export', 'system.admin'])
+    // Check capability: audit_export OR system_admin
+    await requireCapability(req, res, next, ['audit_export', 'system_admin'])
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.claims || !req.auditContext) {
@@ -192,7 +192,7 @@ router.get(
         await auditClient.query(
           `SELECT audit.fn_log($1, $2, $3::text, $4, $5)`,
           [
-            'audit.export',
+            'audit_export',
             'audit.event',
             null,
             JSON.stringify(exportPayload),

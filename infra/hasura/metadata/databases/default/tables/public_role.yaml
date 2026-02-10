@@ -20,9 +20,9 @@ insert_permissions:
                       _eq: X-Hasura-User-Id
                   - _or:
                       - capability_key:
-                          _eq: users.manage
+                          _eq: users_manage
                       - capability_key:
-                          _eq: system.admin
+                          _eq: system_admin
       columns:
         - clinic_id
         - name
@@ -68,6 +68,6 @@ update_permissions:
                       _eq: X-Hasura-User-Id
                   - _or:
                       - capability_key:
-                          _eq: users.manage
+                          _eq: users_manage
                       - capability_key:
-                          _eq: system.admin
+                          _eq: system_admin

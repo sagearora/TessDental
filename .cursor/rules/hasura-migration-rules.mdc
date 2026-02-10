@@ -1,0 +1,124 @@
+---
+name: hasura-migration-rules
+description: use this file when working with .sql files 
+---
+
+# Overview
+
+Hasura migrations are **append-only**.
+Once a migration version has been applied to any database, it becomes **immutable** forever.
+Cursor must **never modify** any migration folder that Hasura reports as already applied.
+
+---
+
+# How Cursor Must Verify Migration State
+
+Before editing *any* file inside:
+
+```
+infra/hasura/migrations/default/*
+```
+
+Cursor must run:
+
+```bash
+pnpm hasura:migrate:status
+```
+
+Cursor must parse the output and determine which migration versions are marked:
+
+* `Present` (exists locally)
+* `Applied` (already executed on DB)
+
+---
+
+# Hard Rule (Non-Negotiable)
+
+## If a migration version is marked as Applied:
+
+Cursor is forbidden from modifying:
+
+* `up.sql`
+* `down.sql`
+* `metadata.yaml`
+* any other file in that migration folder
+
+Even if the migration has a bug.
+
+Even if the SQL is incorrect.
+
+Even if the user asks.
+
+---
+
+# Correct Workflow for Schema Changes
+
+If a schema change is required and the previous migration is applied:
+
+✅ Cursor must create a **new migration version folder** (new timestamp) and put changes there.
+
+Examples of valid fixes:
+
+* `ALTER TABLE ...`
+* `CREATE OR REPLACE FUNCTION ...`
+* `DROP VIEW ...; CREATE VIEW ...`
+* `ALTER TYPE ... ADD VALUE ...`
+
+---
+
+# What Cursor Must Do When Fixing Mistakes
+
+If an applied migration contains wrong SQL:
+
+❌ Cursor must NOT edit that migration.
+
+✅ Cursor must create a new migration:
+
+* `*_fix_*`
+* `*_patch_*`
+* `*_hotfix_*`
+* `*_alter_*`
+
+That corrects the database state moving forward.
+
+---
+
+# When Cursor Is Allowed To Edit an Existing Migration
+
+Only if `pnpm hasura:migrate:status` confirms the migration is:
+
+* Present locally
+* NOT applied
+
+In that case, it is safe to modify.
+
+---
+
+# Cursor Output Rule
+
+Cursor must never tell the user:
+
+> “apply migrations now”
+
+unless Cursor has confirmed:
+
+1. it created a **new migration version**, OR
+2. it only modified migrations that are **not applied**, verified via status
+
+---
+
+# Cursor Definition of Done (Migration Safety)
+
+Before committing or instructing the user to run `hasura migrate apply`, Cursor must confirm:
+
+* no applied migration folders were modified
+* new changes are in a fresh migration folder
+* `pnpm hasura:migrate:status` still shows consistency
+
+---
+
+# Summary Statement Cursor Must Follow Internally
+
+> Always check migration status first.
+> Never modify applied migrations.
+> Always fix forward using a new migration.

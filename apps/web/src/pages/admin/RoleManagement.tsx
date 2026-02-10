@@ -113,7 +113,7 @@ export function RoleManagement() {
                         <Button
                           variant={isSelected ? 'default' : 'outline'}
                           size="sm"
-                          onClick={() => setSelectedRoleId(isSelected ? null : role.id)}
+                          onClick={() => setSelectedRoleId(isSelected ? null : (role.id || null))}
                         >
                           <Settings className="h-4 w-4 mr-2" />
                           {isSelected ? 'Hide Capabilities' : 'Manage Capabilities'}
@@ -125,7 +125,7 @@ export function RoleManagement() {
                     {isSelected && (
                       <div className="mt-4 pt-4 border-t">
                         <RoleCapabilityManager
-                          roleId={role.id}
+                          roleId={role.id || 0}
                           clinicId={session?.clinicId || 0}
                           onUpdate={async () => {
                             await refetch()

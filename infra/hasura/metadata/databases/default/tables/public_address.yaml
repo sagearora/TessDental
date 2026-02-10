@@ -1,0 +1,136 @@
+table:
+  name: address
+  schema: public
+array_relationships:
+  - name: persons_billing
+    using:
+      manual_configuration:
+        column_mapping:
+          id: billing_address_id
+        insertion_order: null
+        remote_table:
+          name: person
+          schema: public
+  - name: persons_mailing
+    using:
+      manual_configuration:
+        column_mapping:
+          id: mailing_address_id
+        insertion_order: null
+        remote_table:
+          name: person
+          schema: public
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _exists:
+          _table:
+            name: clinic_user_effective_capabilities_v
+            schema: public
+          _where:
+            _and:
+              - clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - _or:
+                  - capability_key:
+                      _eq: patient_manage
+                  - capability_key:
+                      _eq: system_admin
+      columns:
+        - line1
+        - line2
+        - city
+        - region
+        - postal_code
+        - country
+        - is_active
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - line1
+        - line2
+        - city
+        - region
+        - postal_code
+        - country
+        - is_active
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        _or:
+          - persons_mailing:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - persons_billing:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+      allow_aggregations: true
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - line1
+        - line2
+        - city
+        - region
+        - postal_code
+        - country
+        - is_active
+      filter:
+        _or:
+          - persons_mailing:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - persons_billing:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+      check:
+        _exists:
+          _table:
+            name: clinic_user_effective_capabilities_v
+            schema: public
+          _where:
+            _and:
+              - clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - _or:
+                  - capability_key:
+                      _eq: patient_manage
+                  - capability_key:
+                      _eq: system_admin
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _and:
+          - _or:
+              - persons_mailing:
+                  clinic_id:
+                    _eq: X-Hasura-Clinic-Id
+              - persons_billing:
+                  clinic_id:
+                    _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin

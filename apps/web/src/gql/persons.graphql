@@ -1,0 +1,41 @@
+query GetPersons($limit: Int, $offset: Int, $orderBy: [person_order_by!], $where: person_bool_exp!) {
+  person(
+    where: $where
+    limit: $limit
+    offset: $offset
+    order_by: $orderBy
+  ) {
+    id
+    clinic_id
+    first_name
+    last_name
+    preferred_name
+    dob
+    gender
+    preferred_language
+    is_active
+    created_at
+    created_by
+    updated_at
+    updated_by
+    patient {
+      patient_referral {
+        referral_kind
+        referral_source {
+          name
+        }
+        referral_contact_person {
+          id
+          first_name
+          last_name
+        }
+        referral_other_text
+      }
+    }
+  }
+  person_aggregate(where: $where) {
+    aggregate {
+      count
+    }
+  }
+}

@@ -1,0 +1,48 @@
+table:
+  name: patient_profile_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - person_id
+        - clinic_id
+        - first_name
+        - middle_name
+        - last_name
+        - preferred_name
+        - dob
+        - gender
+        - preferred_language
+        - person_is_active
+        - patient_person_id
+        - chart_no
+        - patient_status
+        - family_doctor_name
+        - family_doctor_phone
+        - imaging_id
+        - patient_is_active
+        - responsible_party_id
+        - household_relationship
+        - effective_responsible_party_person_id
+        - responsible_party_first_name
+        - responsible_party_last_name
+        - household_head_id
+        - mailing_address_id
+        - billing_address_id
+        - mailing_line1
+        - mailing_line2
+        - mailing_city
+        - mailing_region
+        - mailing_postal_code
+        - mailing_country
+        - billing_line1
+        - billing_line2
+        - billing_city
+        - billing_region
+        - billing_postal_code
+        - billing_country
+        - contact_points
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id

@@ -1,14 +1,11 @@
 table:
   name: capability
   schema: public
+is_enum: true
 select_permissions:
   - role: clinic_user
     permission:
       columns:
-        - key
-        - description
-        - module
-        - is_deprecated
-      filter:
-        is_deprecated:
-          _eq: false
+        - value
+        - comment
+      filter: {}

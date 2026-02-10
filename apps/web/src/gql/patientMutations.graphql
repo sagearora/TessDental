@@ -1,0 +1,134 @@
+mutation CreatePerson(
+  $clinicId: bigint!
+  $firstName: String!
+  $lastName: String!
+  $preferredName: String
+  $dob: date
+  $gender: String
+  $preferredLanguage: String
+) {
+  insert_person_one(
+    object: {
+      clinic_id: $clinicId
+      first_name: $firstName
+      last_name: $lastName
+      preferred_name: $preferredName
+      dob: $dob
+      gender: $gender
+      preferred_language: $preferredLanguage
+    }
+  ) {
+    id
+    clinic_id
+    first_name
+    last_name
+  }
+}
+
+mutation CreatePatient(
+  $personId: bigint!
+  $chartNo: String
+  $status: String!
+  $familyDoctorName: String
+  $familyDoctorPhone: String
+  $imagingId: String
+) {
+  insert_patient_one(
+    object: {
+      person_id: $personId
+      chart_no: $chartNo
+      status: $status
+      family_doctor_name: $familyDoctorName
+      family_doctor_phone: $familyDoctorPhone
+      imaging_id: $imagingId
+    }
+  ) {
+    person_id
+    chart_no
+    status
+  }
+}
+
+mutation UpdatePersonFirstName($id: bigint!, $firstName: String!) {
+  update_person_by_pk(pk_columns: { id: $id }, _set: { first_name: $firstName }) {
+    id
+    first_name
+  }
+}
+
+mutation UpdatePersonLastName($id: bigint!, $lastName: String!) {
+  update_person_by_pk(pk_columns: { id: $id }, _set: { last_name: $lastName }) {
+    id
+    last_name
+  }
+}
+
+mutation UpdatePersonPreferredName($id: bigint!, $preferredName: String) {
+  update_person_by_pk(pk_columns: { id: $id }, _set: { preferred_name: $preferredName }) {
+    id
+    preferred_name
+  }
+}
+
+mutation UpdatePersonMiddleName($id: bigint!, $middleName: String) {
+  update_person_by_pk(pk_columns: { id: $id }, _set: { middle_name: $middleName }) {
+    id
+    middle_name
+  }
+}
+
+mutation UpdatePersonDob($id: bigint!, $dob: date) {
+  update_person_by_pk(pk_columns: { id: $id }, _set: { dob: $dob }) {
+    id
+    dob
+  }
+}
+
+mutation UpdatePersonPreferredLanguage($id: bigint!, $preferredLanguage: String) {
+  update_person_by_pk(pk_columns: { id: $id }, _set: { preferred_language: $preferredLanguage }) {
+    id
+    preferred_language
+  }
+}
+
+mutation UpdatePatientChartNo($personId: bigint!, $chartNo: String) {
+  update_patient_by_pk(pk_columns: { person_id: $personId }, _set: { chart_no: $chartNo }) {
+    person_id
+    chart_no
+  }
+}
+
+mutation UpdatePatientStatus($personId: bigint!, $status: String!) {
+  update_patient_by_pk(pk_columns: { person_id: $personId }, _set: { status: $status }) {
+    person_id
+    status
+  }
+}
+
+mutation UpdatePatientFamilyDoctorName($personId: bigint!, $familyDoctorName: String) {
+  update_patient_by_pk(pk_columns: { person_id: $personId }, _set: { family_doctor_name: $familyDoctorName }) {
+    person_id
+    family_doctor_name
+  }
+}
+
+mutation UpdatePatientFamilyDoctorPhone($personId: bigint!, $familyDoctorPhone: String) {
+  update_patient_by_pk(pk_columns: { person_id: $personId }, _set: { family_doctor_phone: $familyDoctorPhone }) {
+    person_id
+    family_doctor_phone
+  }
+}
+
+mutation UpdatePatientImagingId($personId: bigint!, $imagingId: String) {
+  update_patient_by_pk(pk_columns: { person_id: $personId }, _set: { imaging_id: $imagingId }) {
+    person_id
+    imaging_id
+  }
+}
+
+query GetPatientStatusEnum {
+  patient_status_enum(order_by: { value: asc }) {
+    value
+    comment
+  }
+}

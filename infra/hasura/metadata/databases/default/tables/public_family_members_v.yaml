@@ -1,0 +1,20 @@
+table:
+  name: family_members_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - clinic_id
+        - person_id
+        - family_root_person_id
+        - first_name
+        - last_name
+        - preferred_name
+        - dob
+        - responsible_party_id
+        - household_relationship
+        - is_patient
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id

@@ -1,0 +1,100 @@
+# Create an address record
+mutation CreateAddress(
+  $line1: String!
+  $line2: String
+  $city: String!
+  $region: String!
+  $postalCode: String!
+  $country: String
+) {
+  insert_address_one(
+    object: {
+      line1: $line1
+      line2: $line2
+      city: $city
+      region: $region
+      postal_code: $postalCode
+      country: $country
+      is_active: true
+    }
+  ) {
+    id
+    line1
+    line2
+    city
+    region
+    postal_code
+    country
+  }
+}
+
+# Update person's mailing address
+mutation UpdatePersonMailingAddress($personId: bigint!, $addressId: bigint) {
+  update_person_by_pk(
+    pk_columns: { id: $personId }
+    _set: { mailing_address_id: $addressId }
+  ) {
+    id
+    mailing_address_id
+    mailing_address {
+      id
+      line1
+      line2
+      city
+      region
+      postal_code
+      country
+    }
+  }
+}
+
+# Update person's billing address
+mutation UpdatePersonBillingAddress($personId: bigint!, $addressId: bigint) {
+  update_person_by_pk(
+    pk_columns: { id: $personId }
+    _set: { billing_address_id: $addressId }
+  ) {
+    id
+    billing_address_id
+    billing_address {
+      id
+      line1
+      line2
+      city
+      region
+      postal_code
+      country
+    }
+  }
+}
+
+# Update an existing address
+mutation UpdateAddress(
+  $addressId: bigint!
+  $line1: String
+  $line2: String
+  $city: String
+  $region: String
+  $postalCode: String
+  $country: String
+) {
+  update_address_by_pk(
+    pk_columns: { id: $addressId }
+    _set: {
+      line1: $line1
+      line2: $line2
+      city: $city
+      region: $region
+      postal_code: $postalCode
+      country: $country
+    }
+  ) {
+    id
+    line1
+    line2
+    city
+    region
+    postal_code
+    country
+  }
+}

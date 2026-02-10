@@ -7,6 +7,7 @@ import {
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient as createWsClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
+import { refreshTokensIfNeeded } from "@/lib/authTokens";
 
 function getToken(): string | null {
   return localStorage.getItem("accessToken");
@@ -17,7 +18,15 @@ const hasuraWsUrl = import.meta.env.VITE_HASURA_WS_URL || hasuraUrl.replace(/^ht
 
 const httpLink = new HttpLink({
   uri: hasuraUrl,
-  fetch: (uri, options) => {
+  fetch: async (uri, options) => {
+    // Keep the access token fresh on user activity (GraphQL operations).
+    try {
+      await refreshTokensIfNeeded();
+    } catch {
+      // If refresh fails, we'll send the request without a token and let
+      // downstream auth handling/logouts react to unauthorized responses.
+    }
+
     const token = getToken();
     const headers = new Headers(options?.headers ?? {});
     headers.set("Content-Type", "application/json");

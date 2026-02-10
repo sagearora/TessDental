@@ -1,0 +1,13 @@
+table:
+  name: family_group_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - person_id
+        - clinic_id
+        - family_root_person_id
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id

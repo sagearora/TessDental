@@ -1,0 +1,38 @@
+query LegacySearchPatients($clinicId: bigint!, $searchText: String, $phoneDigits: String, $limit: Int!) {
+  person(
+    where: {
+      clinic_id: { _eq: $clinicId }
+      is_active: { _eq: true }
+      _or: [
+        { first_name: { _ilike: $searchText } }
+        { last_name: { _ilike: $searchText } }
+        { middle_name: { _ilike: $searchText } }
+        { preferred_name: { _ilike: $searchText } }
+        { patient: { chart_no: { _ilike: $searchText } } }
+      ]
+    }
+    limit: $limit
+    order_by: [
+      { last_name: asc }
+      { first_name: asc }
+    ]
+  ) {
+    id
+    clinic_id
+    first_name
+    last_name
+    preferred_name
+    dob
+    patient {
+      chart_no
+      status
+    }
+    person_contact_point(
+      where: { kind: { _eq: "phone" }, is_active: { _eq: true } }
+      order_by: { is_primary: desc }
+      limit: 1
+    ) {
+      value
+    }
+  }
+}

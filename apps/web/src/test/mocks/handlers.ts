@@ -1,5 +1,4 @@
 import { http, HttpResponse } from 'msw'
-import { USERS_COUNT_QUERY, INSERT_ADMIN_USER_MUTATION } from '@/api/queries'
 
 export const handlers = [
   http.post('http://localhost:8080/v1/graphql', async ({ request }) => {

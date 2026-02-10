@@ -24,7 +24,7 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
   )
   const allCapabilities = allCapsData?.capability || []
   const availableCapabilities = allCapabilities.filter(
-    (cap) => !assignedCapabilityKeys.has(cap.key)
+    (cap) => !assignedCapabilityKeys.has(cap.value as string)
   )
 
   const handleAddCapability = async () => {
@@ -34,7 +34,7 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
     setIsAdding(true)
 
     try {
-      await addCapabilityToRole(clinicId, roleId, selectedCapability)
+      await addCapabilityToRole(clinicId, roleId, selectedCapability as any) // capability_enum type
       setSelectedCapability('')
       await refetch()
       onUpdate()
@@ -49,7 +49,7 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
     setError(null)
 
     try {
-      await removeCapabilityFromRole(clinicId, roleId, capabilityKey)
+      await removeCapabilityFromRole(clinicId, roleId, capabilityKey as any) // capability_enum type
       await refetch()
       onUpdate()
     } catch (err: any) {
@@ -62,17 +62,11 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
   }
 
   const assignedCapabilities = allCapabilities.filter((cap) =>
-    assignedCapabilityKeys.has(cap.key)
+    assignedCapabilityKeys.has(cap.value as string)
   )
 
-  // Group by module
-  const assignedByModule = assignedCapabilities.reduce((acc, cap) => {
-    if (!acc[cap.module]) {
-      acc[cap.module] = []
-    }
-    acc[cap.module].push(cap)
-    return acc
-  }, {} as Record<string, typeof assignedCapabilities>)
+  // Group all together since module field doesn't exist in capability table
+  const assignedByModule = { 'all': assignedCapabilities }
 
   return (
     <div className="space-y-4">
@@ -95,12 +89,12 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
               <div className="flex flex-wrap gap-2">
                 {moduleCaps.map((cap) => (
                   <div
-                    key={cap.key}
+                    key={cap.value}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md"
                   >
-                    <span className="text-sm text-blue-900">{cap.key}</span>
+                    <span className="text-sm text-blue-900">{cap.value}</span>
                     <button
-                      onClick={() => handleRemoveCapability(cap.key)}
+                      onClick={() => handleRemoveCapability(cap.value)}
                       className="text-blue-600 hover:text-blue-800 text-xs"
                       type="button"
                     >
@@ -128,8 +122,8 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
             >
               <option value="">Select a capability...</option>
               {availableCapabilities.map((cap) => (
-                <option key={cap.key} value={cap.key}>
-                  {cap.key} - {cap.description}
+                <option key={cap.value} value={cap.value}>
+                  {cap.value} - {cap.comment || ''}
                 </option>
               ))}
             </select>

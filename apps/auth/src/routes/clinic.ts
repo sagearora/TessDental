@@ -24,7 +24,7 @@ const updateClinicSchema = z.object({
 router.patch(
   '/:clinicId',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'clinic.manage')
+    requireCapability(req, res, next, 'clinic_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {

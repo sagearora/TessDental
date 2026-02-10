@@ -31,9 +31,9 @@ insert_permissions:
                       _eq: X-Hasura-User-Id
                   - _or:
                       - capability_key:
-                          _eq: users.manage
+                          _eq: users_manage
                       - capability_key:
-                          _eq: system.admin
+                          _eq: system_admin
       columns:
         - user_id
         - identifier_kind
@@ -96,9 +96,9 @@ update_permissions:
                       _eq: X-Hasura-User-Id
                   - _or:
                       - capability_key:
-                          _eq: users.manage
+                          _eq: users_manage
                       - capability_key:
-                          _eq: system.admin
+                          _eq: system_admin
 delete_permissions:
   - role: clinic_user
     permission:
@@ -119,6 +119,6 @@ delete_permissions:
                       _eq: X-Hasura-User-Id
                   - _or:
                       - capability_key:
-                          _eq: users.manage
+                          _eq: users_manage
                       - capability_key:
-                          _eq: system.admin
+                          _eq: system_admin

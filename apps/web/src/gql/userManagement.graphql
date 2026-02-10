@@ -9,10 +9,9 @@ query GetRoles($clinicId: bigint!) {
 }
 
 query GetCapabilities {
-  capability(where: { is_deprecated: { _eq: false } }) {
-    key
-    description
-    module
+  capability(order_by: { value: asc }) {
+    value
+    comment
   }
 }
 

@@ -67,7 +67,8 @@ begin
   values
     ('system.admin', 'Full administrative access', 'system', false),
     ('clinic.manage', 'Manage clinic settings', 'clinic', false),
-    ('users.manage', 'Manage users, roles, permissions', 'users', false)
+    ('users.manage', 'Manage users, roles, permissions', 'users', false),
+    ('patient.manage', 'Manage patients and contacts', 'patient', false)
   on conflict (key) do update
     set description = excluded.description,
         module = excluded.module,
@@ -78,6 +79,7 @@ begin
     (v_role_id, 'system.admin'),
     (v_role_id, 'clinic.manage'),
     (v_role_id, 'users.manage'),
+    (v_role_id, 'patient.manage'),
     (v_role_id, 'audit.export')
   on conflict do nothing;
 

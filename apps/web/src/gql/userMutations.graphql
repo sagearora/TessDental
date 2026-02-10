@@ -104,7 +104,8 @@ mutation UpdateRole(
 }
 
 # Role Capability Mutations
-mutation AddCapabilityToRole($roleId: bigint!, $capabilityKey: String!) {
+# Note: capability_key is an enum type in Hasura (capability_enum)
+mutation AddCapabilityToRole($roleId: bigint!, $capabilityKey: capability_enum!) {
   insert_role_capability_one(
     object: { role_id: $roleId, capability_key: $capabilityKey }
   ) {
@@ -113,7 +114,7 @@ mutation AddCapabilityToRole($roleId: bigint!, $capabilityKey: String!) {
   }
 }
 
-mutation RemoveCapabilityFromRole($roleId: bigint!, $capabilityKey: String!) {
+mutation RemoveCapabilityFromRole($roleId: bigint!, $capabilityKey: capability_enum!) {
   delete_role_capability(
     where: {
       role_id: { _eq: $roleId }

@@ -15,7 +15,7 @@ const createRoleSchema = z.object({
 router.post(
   '/clinics/:clinicId/roles',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -112,7 +112,7 @@ const updateRoleSchema = z.object({
 router.patch(
   '/clinics/:clinicId/roles/:roleId',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -215,7 +215,7 @@ router.patch(
 router.post(
   '/clinics/:clinicId/roles/:roleId/capabilities',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -271,7 +271,7 @@ router.post(
 router.delete(
   '/clinics/:clinicId/roles/:roleId/capabilities/:capabilityKey',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {

@@ -52,8 +52,11 @@ export function ClinicHours({ clinicId, onSuccess }: ClinicHoursProps) {
   )
 
   const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
-    variables: { clinicUserId: currentClinicUser?.id || 0 },
-    skip: !currentClinicUser?.id,
+    variables: { 
+      clinicId: session?.clinicId || 0,
+      userId: session?.user?.id || '',
+    },
+    skip: !session?.clinicId || !session?.user?.id,
   })
 
   const capabilities = new Set(

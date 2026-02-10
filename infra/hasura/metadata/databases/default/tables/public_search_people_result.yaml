@@ -1,0 +1,16 @@
+table:
+  name: search_people_result
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - person_id
+        - clinic_id
+        - display_name
+        - matched_on
+        - rank_score
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      allow_aggregations: true

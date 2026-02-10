@@ -156,7 +156,7 @@ export function EditUserMembershipForm({
               {operatories
                 .filter((op) => op.is_active && op.is_bookable)
                 .map((op) => (
-                  <option key={op.id} value={op.id}>
+                  <option key={op.id} value={op.id || ''}>
                     {op.name}
                   </option>
                 ))}

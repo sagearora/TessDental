@@ -1,0 +1,175 @@
+# Get family members for a person using the new person-to-person model
+# First get the family root for the person
+query GetFamilyRoot($personId: bigint!) {
+  family_group_v(where: { person_id: { _eq: $personId } }, limit: 1) {
+    family_root_person_id
+  }
+}
+
+# Query family members by querying person table directly
+# This gets all people who have the same family root (responsible_party_id = root OR id = root)
+query GetFamilyMembers($familyRootPersonId: bigint!, $clinicId: bigint!) {
+  # Get the root person
+  rootPerson: person(where: { id: { _eq: $familyRootPersonId }, clinic_id: { _eq: $clinicId } }) {
+    id
+    first_name
+    last_name
+    preferred_name
+    dob
+    household_relationship
+    patient {
+      person_id
+      chart_no
+    }
+  }
+  # Get all dependents (people who point to this root)
+  dependents: person(where: { responsible_party_id: { _eq: $familyRootPersonId }, clinic_id: { _eq: $clinicId }, is_active: { _eq: true } }) {
+    id
+    first_name
+    last_name
+    preferred_name
+    dob
+    household_relationship
+    patient {
+      person_id
+      chart_no
+    }
+  }
+}
+
+# Query household members based on household_head_id
+# If person has household_head_id, get all people with same household_head_id (including the head)
+# If person is a head (household_head_id = null), get all people who point to them
+query GetHouseholdMembers($householdHeadPersonId: bigint!, $clinicId: bigint!) {
+  # Get the household head
+  householdHead: person(where: { id: { _eq: $householdHeadPersonId }, clinic_id: { _eq: $clinicId } }) {
+    id
+    first_name
+    last_name
+    preferred_name
+    dob
+    household_relationship
+    patient {
+      person_id
+      chart_no
+    }
+  }
+  # Get all household members (people who point to this head)
+  householdMembers: person(where: { household_head_id: { _eq: $householdHeadPersonId }, clinic_id: { _eq: $clinicId }, is_active: { _eq: true } }) {
+    id
+    first_name
+    last_name
+    preferred_name
+    dob
+    household_relationship
+    patient {
+      person_id
+      chart_no
+    }
+  }
+}
+
+# Update person's responsible party
+mutation UpdatePersonResponsibleParty($personId: bigint!, $responsiblePartyId: bigint, $householdRelationship: String) {
+  update_person_by_pk(
+    pk_columns: { id: $personId }
+    _set: {
+      responsible_party_id: $responsiblePartyId
+      household_relationship: $householdRelationship
+    }
+  ) {
+    id
+    responsible_party_id
+    household_relationship
+  }
+}
+
+# Query to search for people who could be responsible parties (family roots)
+# Filters for people with responsible_party_id = null (they are roots)
+query SearchFamilyRoots($clinicId: bigint!, $searchTerm: String!) {
+  person(
+    where: {
+      clinic_id: { _eq: $clinicId }
+      is_active: { _eq: true }
+      responsible_party_id: { _is_null: true }
+      _or: [
+        { first_name: { _ilike: $searchTerm } }
+        { last_name: { _ilike: $searchTerm } }
+        { preferred_name: { _ilike: $searchTerm } }
+      ]
+    }
+    limit: 10
+    order_by: { last_name: asc, first_name: asc }
+  ) {
+    id
+    first_name
+    last_name
+    preferred_name
+    responsible_party_id
+    person_contact_point(where: { is_primary: { _eq: true }, is_active: { _eq: true } }, limit: 1) {
+      value
+      kind
+    }
+  }
+}
+
+# Mutation to create or update patient financial record
+# Note: patient_financial table only tracks that a financial record exists for a patient
+# The actual financial details would be in other tables (not yet defined in schema)
+mutation UpsertPatientFinancial($patientPersonId: bigint!) {
+  insert_patient_financial_one(
+    object: {
+      patient_person_id: $patientPersonId
+      is_active: true
+    }
+    on_conflict: {
+      constraint: patient_financial_pkey
+      update_columns: [is_active]
+    }
+  ) {
+    patient_person_id
+    is_active
+  }
+}
+
+# Mutation to update person's household head and relationship
+mutation UpdatePersonHouseholdHead($personId: bigint!, $householdHeadId: bigint, $householdRelationship: String) {
+  update_person_by_pk(
+    pk_columns: { id: $personId }
+    _set: {
+      household_head_id: $householdHeadId
+      household_relationship: $householdRelationship
+    }
+  ) {
+    id
+    household_head_id
+    household_relationship
+    household_head {
+      id
+      first_name
+      last_name
+      preferred_name
+    }
+  }
+}
+
+# Query to search for potential household heads using fn_search_household_heads function
+# Uses trigram search on person_search.search_text and filters for household_head_id IS NULL
+query SearchHouseholdHeads($clinicId: bigint!, $searchTerm: String!, $limit: Int) {
+  fn_search_household_heads(
+    args: {
+      p_clinic_id: $clinicId
+      p_query: $searchTerm
+      p_limit: $limit
+    }
+  ) {
+    person_id
+    clinic_id
+    display_name
+    first_name
+    last_name
+    preferred_name
+    household_head_id
+    rank_score
+  }
+}

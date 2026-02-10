@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useLocation, Outlet } from 'react-router-dom'
-import { Settings, Users, LayoutDashboard, Shield, FileText, ChevronDown, ChevronRight } from 'lucide-react'
+import { Settings, Users, LayoutDashboard, Shield, FileText, ChevronDown, ChevronRight, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Header } from './Header'
 
@@ -30,6 +30,24 @@ const navigation = [
     ],
   },
   {
+    name: 'Patient Management',
+    icon: UserCircle,
+    children: [
+      {
+        name: 'Patient List',
+        href: '/admin/patients/persons',
+      },
+      {
+        name: 'Profile Fields',
+        href: '/admin/patients/fields',
+      },
+      {
+        name: 'Referral Sources',
+        href: '/admin/patients/referral-sources',
+      },
+    ],
+  },
+  {
     name: 'Audit My Data',
     href: '/admin/audit',
     icon: FileText,
@@ -42,6 +60,10 @@ export function AdminLayout() {
     // Auto-expand User Management if we're on a user management page
     if (location.pathname.startsWith('/admin/users') || location.pathname.startsWith('/admin/roles')) {
       return ['User Management']
+    }
+    // Auto-expand Patient Management if we're on a patient management page
+    if (location.pathname.startsWith('/admin/patients')) {
+      return ['Patient Management']
     }
     return []
   })
@@ -57,12 +79,12 @@ export function AdminLayout() {
       <Header />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 min-h-[calc(100vh-4rem)] bg-white border-r border-gray-200">
+        <aside className="w-72 min-h-[calc(100vh-4rem)] bg-white border-r border-gray-200">
           <nav className="p-4 space-y-1">
             {navigation.map((item) => {
               if (item.children) {
                 const isExpanded = expandedSections.includes(item.name)
-                const isActive = item.children.some((child) => location.pathname === child.href)
+                const isActive = item.children.some((child) => location.pathname === child.href || location.pathname.startsWith(child.href))
                 const Icon = item.icon
 
                 return (
@@ -70,20 +92,20 @@ export function AdminLayout() {
                     <button
                       onClick={() => toggleSection(item.name)}
                       className={cn(
-                        'w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                        'w-full flex items-center justify-between gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
                         isActive
                           ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon className="h-5 w-5" />
-                        {item.name}
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Icon className="h-5 w-5 flex-shrink-0" />
+                        <span className="truncate">{item.name}</span>
                       </div>
                       {isExpanded ? (
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4 flex-shrink-0" />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4 flex-shrink-0" />
                       )}
                     </button>
                     {isExpanded && (

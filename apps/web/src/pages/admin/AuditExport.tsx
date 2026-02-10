@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileText, Download, Calendar } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { refreshTokensIfNeeded } from '@/lib/authTokens'
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:4000'
 
@@ -29,6 +30,8 @@ export function AuditExport() {
     setIsExporting(true)
 
     try {
+      await refreshTokensIfNeeded()
+
       const token = localStorage.getItem('accessToken')
       if (!token) {
         alert('No access token found')

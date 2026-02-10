@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { resetApolloClient } from '@/apollo/client'
 import { useUpdateCurrentClinicMutation } from '@/gql/generated'
+import { markTokensRefreshed } from '@/lib/authTokens'
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:4000'
 
@@ -17,6 +18,9 @@ interface Session {
   user: User
   clinicId: number
 }
+
+const SESSION_STARTED_AT_KEY = 'sessionStartedAt'
+const MAX_SESSION_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 interface AuthContextType {
   session: Session | null
@@ -74,28 +78,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Auto-refresh token before expiry
+  // Enforce a hard 24-hour maximum session lifetime on the frontend.
   useEffect(() => {
     if (!session) return
 
-    const refreshInterval = setInterval(() => {
-      const refreshTokenValue = localStorage.getItem('refreshToken')
-      if (refreshTokenValue) {
-        refreshAccessToken(refreshTokenValue)
-          .then(({ accessToken: newToken }) => {
-            localStorage.setItem('accessToken', newToken)
-            resetApolloClient()
-          })
-          .catch(() => {
-            // Refresh failed, logout
-            clearAuth()
-            navigate('/login')
-          })
-      }
-    }, 55 * 60 * 1000) // Refresh every 55 minutes (token expires in 60)
+    const interval = setInterval(() => {
+      const startedAtRaw = localStorage.getItem(SESSION_STARTED_AT_KEY)
+      const startedAt = startedAtRaw ? Number(startedAtRaw) : 0
+      if (!startedAt) return
 
-    return () => clearInterval(refreshInterval)
-  }, [session, navigate])
+      const now = Date.now()
+      if (now - startedAt > MAX_SESSION_MS) {
+        clearInterval(interval)
+        logout()
+      }
+    }, 60 * 1000) // check every minute
+
+    return () => clearInterval(interval)
+  }, [session])
 
   async function fetchSession(): Promise<Session> {
     const token = localStorage.getItem('accessToken')
@@ -135,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function clearAuth() {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem(SESSION_STARTED_AT_KEY)
     setSession(null)
     resetApolloClient()
   }
@@ -165,6 +166,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Store tokens
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('refreshToken', data.refreshToken)
+    localStorage.setItem(SESSION_STARTED_AT_KEY, Date.now().toString())
+    markTokensRefreshed()
 
     // Set session
     setSession({
@@ -209,6 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     localStorage.setItem('accessToken', newToken)
     localStorage.setItem('refreshToken', newRefreshToken)
+    markTokensRefreshed()
     resetApolloClient()
 
     // Fetch updated session
@@ -245,6 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       localStorage.setItem('accessToken', newToken)
       localStorage.setItem('refreshToken', newRefreshToken)
+      markTokensRefreshed()
       resetApolloClient()
 
       // Fetch updated session

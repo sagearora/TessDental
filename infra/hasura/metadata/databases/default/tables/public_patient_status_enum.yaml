@@ -1,0 +1,59 @@
+table:
+  name: patient_status_enum
+  schema: public
+is_enum: true
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _exists:
+          _table:
+            name: clinic_user_effective_capabilities_v
+            schema: public
+          _where:
+            _and:
+              - clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - _or:
+                  - capability_key:
+                      _eq: system_admin
+                  - capability_key:
+                      _eq: patient_manage
+      columns:
+        - value
+        - comment
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - value
+        - comment
+      filter: {}
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - comment
+      filter: {}
+      check:
+        _exists:
+          _table:
+            name: clinic_user_effective_capabilities_v
+            schema: public
+          _where:
+            _and:
+              - clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - _or:
+                  - capability_key:
+                      _eq: system_admin
+                  - capability_key:
+                      _eq: patient_manage
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter: {}

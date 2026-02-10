@@ -1,0 +1,6 @@
+query GetGenderEnum {
+  gender_enum(order_by: { value: asc }) {
+    value
+    comment
+  }
+}

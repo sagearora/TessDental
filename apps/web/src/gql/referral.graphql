@@ -1,0 +1,130 @@
+# Query referral kind enum values
+query GetReferralKindEnum {
+  referral_kind_enum(order_by: { value: asc }) {
+    value
+    comment
+  }
+}
+
+# Query referral sources for a clinic
+query GetReferralSources($clinicId: bigint!) {
+  referral_source(
+    where: { 
+      clinic_id: { _eq: $clinicId }
+      is_active: { _eq: true }
+    }
+    order_by: { name: asc }
+  ) {
+    id
+    name
+    clinic_id
+    is_active
+  }
+}
+
+# Query patient referral
+query GetPatientReferral($patientPersonId: bigint!) {
+  patient_referral(
+    where: { patient_person_id: { _eq: $patientPersonId } }
+    limit: 1
+  ) {
+    patient_person_id
+    referral_kind
+    referral_source_id
+    referral_contact_person_id
+    referral_other_text
+    referral_source {
+      id
+      name
+    }
+    referral_contact_person {
+      id
+      first_name
+      last_name
+    }
+  }
+}
+
+# Mutation: Create referral source
+mutation CreateReferralSource($clinicId: bigint!, $name: String!) {
+  insert_referral_source_one(
+    object: {
+      clinic_id: $clinicId
+      name: $name
+      is_active: true
+    }
+  ) {
+    id
+    name
+    clinic_id
+  }
+}
+
+# Mutation: Update referral source
+mutation UpdateReferralSource($id: bigint!, $name: String, $isActive: Boolean) {
+  update_referral_source_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      name: $name
+      is_active: $isActive
+    }
+  ) {
+    id
+    name
+    is_active
+  }
+}
+
+# Mutation: Delete referral source (soft delete)
+mutation DeleteReferralSource($id: bigint!) {
+  update_referral_source_by_pk(
+    pk_columns: { id: $id }
+    _set: { is_active: false }
+  ) {
+    id
+    is_active
+  }
+}
+
+# Mutation: Create or update patient referral
+mutation UpsertPatientReferral(
+  $patientPersonId: bigint!
+  $referralKind: String!
+  $referralSourceId: bigint
+  $referralContactPersonId: bigint
+  $referralOtherText: String
+) {
+  insert_patient_referral_one(
+    object: {
+      patient_person_id: $patientPersonId
+      referral_kind: $referralKind
+      referral_source_id: $referralSourceId
+      referral_contact_person_id: $referralContactPersonId
+      referral_other_text: $referralOtherText
+      is_active: true
+    }
+    on_conflict: {
+      constraint: patient_referral_pkey
+      update_columns: [
+        referral_kind
+        referral_source_id
+        referral_contact_person_id
+        referral_other_text
+        is_active
+      ]
+    }
+  ) {
+    patient_person_id
+    referral_kind
+    referral_source_id
+    referral_contact_person_id
+    referral_other_text
+  }
+}
+
+# Mutation: Delete patient referral
+mutation DeletePatientReferral($patientPersonId: bigint!) {
+  delete_patient_referral_by_pk(patient_person_id: $patientPersonId) {
+    patient_person_id
+  }
+}

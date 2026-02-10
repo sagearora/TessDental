@@ -19,6 +19,8 @@
     "dev": "pnpm infra:up && pnpm dev:web",
     "test": "pnpm -r test",
     "test:e2e": "pnpm -C apps/web test:e2e",
-    "init:cli": "pnpm -C tools/init install && pnpm -C tools/init dev"
+    "init:cli": "pnpm -C tools/init install && pnpm -C tools/init dev",
+    "schema:export": "./scripts/export-schema.sh",
+    "data:export": "./scripts/export-table-data.sh"
   }
 }

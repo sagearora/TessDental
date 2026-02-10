@@ -55,5 +55,105 @@ services:
       postgres:
         condition: service_healthy
 
+  # --- Local S3-compatible storage for dev ---
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - tess_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Create the bucket automatically on startup
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb -p local/$$MINIO_BUCKET || true &&
+      mc anonymous set none local/$$MINIO_BUCKET || true
+      "
+    restart: "no"
+
+  # --- Imaging API (streams uploads/downloads, writes to S3 or NFS) ---
+  imaging-service:
+    build:
+      context: ../../
+      dockerfile: apps/imaging-service/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      hasura:
+        condition: service_started
+    ports:
+      - "${IMAGING_PORT:-4010}:4010"
+    environment:
+      NODE_ENV: development
+      PORT: 4010
+
+      # Database
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+
+      # JWT verification
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+
+      # Auth / Hasura integration
+      HASURA_GRAPHQL_URL: ${HASURA_GRAPHQL_URL}
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+
+      # Choose backend per env:
+      # dev: "s3" (MinIO)
+      # prod: "nfs" (Synology mount)
+      IMAGING_STORAGE_BACKEND: ${IMAGING_STORAGE_BACKEND}
+
+      # S3/MinIO settings (used when IMAGING_STORAGE_BACKEND=s3)
+      IMAGING_S3_ENDPOINT: ${IMAGING_S3_ENDPOINT}
+      IMAGING_S3_REGION: ${IMAGING_S3_REGION}
+      IMAGING_S3_BUCKET: ${IMAGING_S3_BUCKET}
+      IMAGING_S3_ACCESS_KEY_ID: ${IMAGING_S3_ACCESS_KEY_ID}
+      IMAGING_S3_SECRET_ACCESS_KEY: ${IMAGING_S3_SECRET_ACCESS_KEY}
+      IMAGING_S3_FORCE_PATH_STYLE: ${IMAGING_S3_FORCE_PATH_STYLE}
+
+      # NFS settings (used when IMAGING_STORAGE_BACKEND=nfs)
+      IMAGING_NFS_BASE_DIR: ${IMAGING_NFS_BASE_DIR}
+
+      # Operational
+      IMAGING_MAX_UPLOAD_MB: ${IMAGING_MAX_UPLOAD_MB:-100}
+      IMAGING_THUMBS_ENABLED: ${IMAGING_THUMBS_ENABLED:-true}
+    # For NFS mode, mount the host path that is your Synology NFS mount
+    # (This mount can exist even in dev; it just won't be used if backend=s3)
+    # Note: Volume is optional - only needed when IMAGING_STORAGE_BACKEND=nfs
+    # volumes:
+    #   - ${IMAGING_HOST_MOUNT_DIR:-/mnt/tess-imaging}:${IMAGING_NFS_BASE_DIR:-/data/imaging}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
 volumes:
   tess_pg_data:
+  tess_minio_data:

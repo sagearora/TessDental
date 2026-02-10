@@ -23,7 +23,7 @@ const createUserSchema = z.object({
 router.post(
   '/',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -176,7 +176,7 @@ const updateUserSchema = z.object({
 router.patch(
   '/:userId',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {

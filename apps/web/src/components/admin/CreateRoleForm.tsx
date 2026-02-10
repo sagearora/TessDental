@@ -47,14 +47,9 @@ export function CreateRoleForm({ clinicId, onSuccess, onCancel }: CreateRoleForm
     )
   }
 
-  // Group capabilities by module
-  const capabilitiesByModule = capabilities.reduce((acc, cap) => {
-    if (!acc[cap.module]) {
-      acc[cap.module] = []
-    }
-    acc[cap.module].push(cap)
-    return acc
-  }, {} as Record<string, typeof capabilities>)
+  // Group capabilities - note: capability table only has value and comment, no module
+  // For now, group all together since module field doesn't exist
+  const capabilitiesByModule = { 'all': capabilities }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,17 +93,17 @@ export function CreateRoleForm({ clinicId, onSuccess, onCancel }: CreateRoleForm
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-2">{module}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {moduleCaps.map((cap) => (
-                    <label key={cap.key} className="flex items-start gap-2 cursor-pointer">
+                    <label key={cap.value} className="flex items-start gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={selectedCapabilities.includes(cap.key)}
-                        onChange={() => toggleCapability(cap.key)}
+                        checked={selectedCapabilities.includes(cap.value)}
+                        onChange={() => toggleCapability(cap.value)}
                         className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <div className="flex-1">
-                        <span className="text-sm text-gray-700">{cap.key}</span>
-                        {cap.description && (
-                          <p className="text-xs text-gray-500">{cap.description}</p>
+                        <span className="text-sm text-gray-700">{cap.value}</span>
+                        {cap.comment && (
+                          <p className="text-xs text-gray-500">{cap.comment}</p>
                         )}
                       </div>
                     </label>

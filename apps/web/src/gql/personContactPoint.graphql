@@ -1,0 +1,63 @@
+mutation CreatePersonContactPoint(
+  $personId: bigint!
+  $kind: String!
+  $label: String
+  $value: citext!
+  $phoneE164: String
+  $isPrimary: Boolean
+) {
+  insert_person_contact_point_one(
+    object: {
+      person_id: $personId
+      kind: $kind
+      label: $label
+      value: $value
+      phone_e164: $phoneE164
+      is_primary: $isPrimary
+      is_active: true
+    }
+  ) {
+    id
+    person_id
+    kind
+    label
+    value
+    phone_e164
+    is_primary
+    is_active
+  }
+}
+
+mutation UpdatePersonContactPoint(
+  $id: bigint!
+  $label: String
+  $value: citext
+  $phoneE164: String
+  $isPrimary: Boolean
+) {
+  update_person_contact_point_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      label: $label
+      value: $value
+      phone_e164: $phoneE164
+      is_primary: $isPrimary
+    }
+  ) {
+    id
+    kind
+    label
+    value
+    phone_e164
+    is_primary
+  }
+}
+
+mutation DeletePersonContactPoint($id: bigint!) {
+  update_person_contact_point_by_pk(
+    pk_columns: { id: $id }
+    _set: { is_active: false }
+  ) {
+    id
+  }
+}

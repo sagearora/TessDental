@@ -1,0 +1,87 @@
+# Consolidated mutation to create a patient with all related data in one request
+# Uses nested inserts to create person, patient, and contact points in a single transaction
+# Note: Addresses must be created separately and their IDs passed as mailing_address_id and billing_address_id
+mutation CreatePatientWithRelations(
+  $clinicId: bigint!
+  $firstName: String!
+  $lastName: String!
+  $preferredName: String
+  $dob: date
+  $gender: String
+  $preferredLanguage: String
+  $householdHeadId: bigint
+  $householdRelationship: String
+  $responsiblePartyId: bigint
+  $chartNo: String
+  $status: String!
+  $familyDoctorName: String
+  $familyDoctorPhone: String
+  $imagingId: String
+  $contactPoints: [person_contact_point_insert_input!]!
+  $mailingAddressId: bigint
+  $billingAddressId: bigint
+) {
+  insert_person_one(
+    object: {
+      clinic_id: $clinicId
+      first_name: $firstName
+      last_name: $lastName
+      preferred_name: $preferredName
+      dob: $dob
+      gender: $gender
+      preferred_language: $preferredLanguage
+      household_head_id: $householdHeadId
+      household_relationship: $householdRelationship
+      responsible_party_id: $responsiblePartyId
+      mailing_address_id: $mailingAddressId
+      billing_address_id: $billingAddressId
+      patient: {
+        data: {
+          chart_no: $chartNo
+          status: $status
+          family_doctor_name: $familyDoctorName
+          family_doctor_phone: $familyDoctorPhone
+          imaging_id: $imagingId
+        }
+      }
+      person_contact_point: {
+        data: $contactPoints
+      }
+    }
+  ) {
+    id
+    clinic_id
+    first_name
+    last_name
+    preferred_name
+    household_head_id
+    household_relationship
+    responsible_party_id
+    patient {
+      person_id
+      chart_no
+      status
+    }
+    person_contact_point {
+      id
+      kind
+      value
+    }
+    mailing_address {
+      id
+      line1
+      line2
+      city
+      region
+      postal_code
+    }
+    billing_address {
+      id
+      line1
+      line2
+      city
+      region
+      postal_code
+    }
+  }
+}

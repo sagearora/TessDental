@@ -1,0 +1,25 @@
+query GetPersonAddressIds($personId: bigint!, $clinicId: bigint!) {
+  person(
+    where: { id: { _eq: $personId }, clinic_id: { _eq: $clinicId } }
+    limit: 1
+  ) {
+    id
+    mailing_address_id
+    billing_address_id
+    mailing_address {
+      line1
+      line2
+      city
+      region
+      postal_code
+      country
+    }
+    person_contact_point(where: { is_active: { _eq: true } }) {
+      id
+      kind
+      value
+      is_primary
+    }
+  }
+}
+

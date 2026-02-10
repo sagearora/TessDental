@@ -1,0 +1,22 @@
+table:
+  name: person_with_responsible_party_v
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - first_name
+        - last_name
+        - preferred_name
+        - dob
+        - is_active
+        - responsible_party_id
+        - household_relationship
+        - responsible_party_first_name
+        - responsible_party_last_name
+        - responsible_party_preferred_name
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id

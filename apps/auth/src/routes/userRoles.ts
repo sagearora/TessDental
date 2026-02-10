@@ -9,7 +9,7 @@ const router: Router = Router()
 router.post(
   '/clinics/:clinicId/users/:userId/roles',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -96,7 +96,7 @@ router.post(
 router.delete(
   '/clinics/:clinicId/users/:userId/roles/:roleId',
   async (req: AuthenticatedRequest, res: Response, next) => {
-    requireCapability(req, res, next, 'users.manage')
+    requireCapability(req, res, next, 'users_manage')
   },
   async (req: AuthenticatedRequest, res: Response) => {
     if (!req.auditContext || !req.claims) {
@@ -134,7 +134,7 @@ router.delete(
            WHERE cur.clinic_user_id IN (
              SELECT id FROM public.clinic_user WHERE clinic_id = $1 AND user_id = $2
            )
-           AND rc.capability_key = 'system.admin'`,
+           AND rc.capability_key = 'system_admin'`,
           [clinicId, userId]
         )
 

@@ -1,0 +1,104 @@
+table:
+  name: patient_financial
+  schema: public
+object_relationships:
+  - name: patient
+    using:
+      foreign_key_constraint_on: patient_person_id
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - patient:
+              person:
+                clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin
+      columns:
+        - patient_person_id
+        - is_active
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - patient_person_id
+        - is_active
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      filter:
+        patient:
+          person:
+            clinic_id:
+              _eq: X-Hasura-Clinic-Id
+update_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - is_active
+      filter:
+        patient:
+          person:
+            clinic_id:
+              _eq: X-Hasura-Clinic-Id
+      check:
+        _and:
+          - patient:
+              person:
+                clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _and:
+          - patient:
+              person:
+                clinic_id:
+                  _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: patient_manage
+                      - capability_key:
+                          _eq: system_admin
