@@ -1,5 +1,8 @@
 // app/page.tsx
+"use client"
+
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function Page() {
   return (
@@ -458,19 +461,32 @@ function Testimonials() {
 }
 
 function FinalCTA() {
+  useEffect(() => {
+    // Load Tally embeds after component mounts and script is loaded
+    const loadTally = () => {
+      if (typeof window !== "undefined" && (window as any).Tally) {
+        (window as any).Tally.loadEmbeds();
+      } else {
+        // Retry if Tally is not loaded yet
+        setTimeout(loadTally, 100);
+      }
+    };
+    loadTally();
+  }, []);
+
   return (
     <section id="cta" className="border-t border-slate-200 bg-slate-50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
-        <div>
+      <div className="mx-auto max-w-4xl px-4 py-16">
+        <div className="text-center mb-12">
           <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             See why clinics choose TessDental
           </div>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight">Get a walkthrough of the stack.</h2>
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-slate-600 max-w-2xl mx-auto">
             We will show the deployment model, the analytics layer, and how open source keeps your practice in control.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <Tag>Open source</Tag>
             <Tag>On-prem ready</Tag>
             <Tag>Modern reporting</Tag>
@@ -479,33 +495,17 @@ function FinalCTA() {
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/60">
-          <div className="text-sm font-semibold">Request a demo</div>
-          <div className="mt-1 text-sm text-slate-500">We will follow up with times that work for you.</div>
-
-          <div className="mt-5 space-y-3">
-            <InputLike label="Name" placeholder="Dr. Saj Arora" />
-            <InputLike label="Clinic email" placeholder="you@clinic.com" />
-            <InputLike label="Clinic size" placeholder="1 to 5 providers" />
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href="#"
-              className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              Schedule a demo
-            </a>
-            <a
-              href="https://github.com/sagearora/TessDental"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-            >
-              View GitHub
-            </a>
-          </div>
-
-          <div className="mt-4 text-xs text-slate-500">
-            By requesting a demo, you agree to be contacted about TessDental.
-          </div>
+          <iframe
+            data-tally-src="https://tally.so/embed/EkQ2WN?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+            loading="lazy"
+            width="100%"
+            height="582"
+            frameBorder="0"
+            marginHeight={0}
+            marginWidth={0}
+            title="Get In Touch"
+            className="w-full"
+          />
         </div>
       </div>
     </section>
