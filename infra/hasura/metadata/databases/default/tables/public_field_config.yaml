@@ -1,0 +1,22 @@
+table:
+  name: field_config
+  schema: public
+array_relationships:
+  - name: patient_field_configs
+    using:
+      foreign_key_constraint_on:
+        column: field_config_id
+        table:
+          name: patient_field_config
+          schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - key
+        - label
+        - is_active
+        - created_at
+        - updated_at
+      filter: {}

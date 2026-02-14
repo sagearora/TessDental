@@ -1,6 +1,10 @@
 table:
   name: clinic_user
   schema: public
+object_relationships:
+  - name: person
+    using:
+      foreign_key_constraint_on: current_person_id
 insert_permissions:
   - role: clinic_user
     permission:
@@ -35,6 +39,7 @@ select_permissions:
         - created_by
         - updated_at
         - updated_by
+        - current_person_id
       filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id
@@ -48,28 +53,18 @@ update_permissions:
         - default_operatory_id
         - scheduler_color
         - is_active
+        - current_person_id
       filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id
+        user_id:
+          _eq: X-Hasura-User-Id
       check:
         _and:
           - clinic_id:
               _eq: X-Hasura-Clinic-Id
-          - _exists:
-              _table:
-                name: clinic_user_effective_capabilities_v
-                schema: public
-              _where:
-                _and:
-                  - clinic_id:
-                      _eq: X-Hasura-Clinic-Id
-                  - user_id:
-                      _eq: X-Hasura-User-Id
-                  - _or:
-                      - capability_key:
-                          _eq: users_manage
-                      - capability_key:
-                          _eq: system_admin
+          - user_id:
+              _eq: X-Hasura-User-Id
 delete_permissions:
   - role: clinic_user
     permission:

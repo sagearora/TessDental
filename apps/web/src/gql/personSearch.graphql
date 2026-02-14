@@ -22,11 +22,13 @@ query SearchPatients($where: person_bool_exp!, $limit: Int!) {
       chart_no
     }
     person_contact_point(
-      where: { kind: { _eq: "phone" }, is_active: { _eq: true } }
+      where: { kind: { _in: [cell_phone, home_phone, work_phone] }, is_active: { _eq: true } }
       order_by: { is_primary: desc }
-      limit: 1
     ) {
+      kind
       value
+      phone_last10
+      value_norm
     }
   }
 }

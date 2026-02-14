@@ -34,19 +34,24 @@ export async function requireCapability(
     }
 
     if (!hasCapability) {
-      // Log failed capability check
-      await withAuditContext(req.auditContext, async (client) => {
-        await client.query(
-          `SELECT audit.fn_log($1, $2, $3::text, $4, $5)`,
-          [
-            'capability.check.failed',
-            'capability',
-            Array.isArray(capabilityKey) ? capabilityKey.join('|') : capabilityKey,
-            JSON.stringify({ clinic_id: clinicId, user_id: userId, capability_keys: capabilityKeys }),
-            false,
-          ]
-        )
-      })
+      // Log failed capability check (non-blocking - don't fail the response if audit logging fails)
+      try {
+        await withAuditContext(req.auditContext, async (client) => {
+          await client.query(
+            `SELECT audit.fn_log($1::text, $2::text, $3::text, $4::jsonb, $5::boolean)`,
+            [
+              'capability.check.failed',
+              'capability',
+              Array.isArray(capabilityKey) ? capabilityKey.join('|') : capabilityKey,
+              JSON.stringify({ clinic_id: clinicId, user_id: userId, capability_keys: capabilityKeys }),
+              false,
+            ]
+          )
+        })
+      } catch (auditError) {
+        // Log the audit error but don't fail the response
+        console.error('Failed to log capability check failure:', auditError)
+      }
 
       return res.status(403).json({ 
         error: `Missing required capability: ${Array.isArray(capabilityKey) ? capabilityKey.join(' or ') : capabilityKey}` 

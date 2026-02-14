@@ -70,7 +70,7 @@ query GetHouseholdMembers($householdHeadPersonId: bigint!, $clinicId: bigint!) {
 }
 
 # Update person's responsible party
-mutation UpdatePersonResponsibleParty($personId: bigint!, $responsiblePartyId: bigint, $householdRelationship: String) {
+mutation UpdatePersonResponsibleParty($personId: bigint!, $responsiblePartyId: bigint, $householdRelationship: household_relationship_enum_enum) {
   update_person_by_pk(
     pk_columns: { id: $personId }
     _set: {
@@ -133,7 +133,7 @@ mutation UpsertPatientFinancial($patientPersonId: bigint!) {
 }
 
 # Mutation to update person's household head and relationship
-mutation UpdatePersonHouseholdHead($personId: bigint!, $householdHeadId: bigint, $householdRelationship: String) {
+mutation UpdatePersonHouseholdHead($personId: bigint!, $householdHeadId: bigint, $householdRelationship: household_relationship_enum_enum) {
   update_person_by_pk(
     pk_columns: { id: $personId }
     _set: {

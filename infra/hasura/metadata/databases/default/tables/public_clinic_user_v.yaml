@@ -11,6 +11,15 @@ object_relationships:
         remote_table:
           name: clinic_v
           schema: public
+  - name: person
+    using:
+      manual_configuration:
+        column_mapping:
+          current_person_id: id
+        insertion_order: null
+        remote_table:
+          name: person
+          schema: public
 select_permissions:
   - role: clinic_user
     permission:
@@ -20,6 +29,7 @@ select_permissions:
         - user_id
         - is_active
         - joined_at
+        - current_person_id
       filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id

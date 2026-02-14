@@ -89,7 +89,7 @@ mutation DeleteReferralSource($id: bigint!) {
 # Mutation: Create or update patient referral
 mutation UpsertPatientReferral(
   $patientPersonId: bigint!
-  $referralKind: String!
+  $referralKind: referral_kind_enum_enum!
   $referralSourceId: bigint
   $referralContactPersonId: bigint
   $referralOtherText: String

@@ -7,13 +7,13 @@ mutation CreatePatientWithRelations(
   $lastName: String!
   $preferredName: String
   $dob: date
-  $gender: String
+  $gender: gender_enum_enum
   $preferredLanguage: String
   $householdHeadId: bigint
-  $householdRelationship: String
+  $householdRelationship: household_relationship_enum_enum
   $responsiblePartyId: bigint
   $chartNo: String
-  $status: String!
+  $status: patient_status_enum_enum!
   $familyDoctorName: String
   $familyDoctorPhone: String
   $imagingId: String

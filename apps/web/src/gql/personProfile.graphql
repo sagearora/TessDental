@@ -71,7 +71,6 @@ query GetPersonProfile($personId: bigint!, $clinicId: bigint!) {
     person_contact_point(where: { is_active: { _eq: true } }) {
       id
       kind
-      label
       value
       is_primary
     }

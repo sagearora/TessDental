@@ -1,0 +1,138 @@
+{
+  "searchClinic": {
+    "name": "Search Test Clinic"
+  },
+  "testPersons": [
+    {
+      "firstName": "John",
+      "lastName": "Smith",
+      "middleName": null,
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART001",
+      "contact": {
+        "kind": "cell_phone",
+        "value": "(555) 123-4567",
+        "phoneE164": "+15551234567"
+      },
+      "description": "Basic person with phone - first name search"
+    },
+    {
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "middleName": "Marie",
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART002",
+      "contact": {
+        "kind": "cell_phone",
+        "value": "555-987-6543",
+        "phoneE164": "+15559876543"
+      },
+      "description": "Person with middle name - last name search, middle name search"
+    },
+    {
+      "firstName": "Robert",
+      "lastName": "Johnson",
+      "middleName": null,
+      "preferredName": "Bob",
+      "status": "active",
+      "chartNo": "CHART003",
+      "contact": {
+        "kind": "email",
+        "value": "robert.johnson@example.com",
+        "phoneE164": null
+      },
+      "description": "Person with preferred name and email - preferred name search, email search"
+    },
+    {
+      "firstName": "Alice",
+      "lastName": "Williams",
+      "middleName": null,
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART004",
+      "contact": {
+        "kind": "cell_phone",
+        "value": "4165551234",
+        "phoneE164": "+14165551234"
+      },
+      "description": "Person with unformatted phone - phone exact search"
+    },
+    {
+      "firstName": "Michael",
+      "lastName": "Brown",
+      "middleName": null,
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART005",
+      "contact": {
+        "kind": "email",
+        "value": "michael.brown@example.com",
+        "phoneE164": null
+      },
+      "description": "Person with email - email search"
+    },
+    {
+      "firstName": "Sarah",
+      "lastName": "Davis",
+      "middleName": null,
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART006",
+      "contact": {
+        "kind": "cell_phone",
+        "value": "1-800-555-1234",
+        "phoneE164": "+18005551234"
+      },
+      "description": "Person with phone extension - phone exact search with different format"
+    },
+    {
+      "firstName": "David",
+      "lastName": "Miller",
+      "middleName": null,
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART007",
+      "contact": {
+        "kind": "cell_phone",
+        "value": "555-1234",
+        "phoneE164": "+15551234"
+      },
+      "description": "Person with 7-digit phone - phone partial search"
+    },
+    {
+      "firstName": "Emily",
+      "lastName": "Wilson",
+      "middleName": null,
+      "preferredName": null,
+      "status": "active",
+      "chartNo": "CHART008",
+      "contact": {
+        "kind": "cell_phone",
+        "value": "(555) 999-8888",
+        "phoneE164": "+15559998888"
+      },
+      "description": "Person with chart number - chart number search"
+    }
+  ],
+  "otherClinic": {
+    "name": "Other Clinic",
+    "testPersons": [
+      {
+        "firstName": "John",
+        "lastName": "Smith",
+        "middleName": null,
+        "preferredName": null,
+        "status": "active",
+        "chartNo": "OTHER001",
+        "contact": {
+          "kind": "cell_phone",
+          "value": "(555) 111-2222",
+          "phoneE164": "+15551112222"
+        },
+        "description": "Person in different clinic - should not appear in search results"
+      }
+    ]
+  }
+}

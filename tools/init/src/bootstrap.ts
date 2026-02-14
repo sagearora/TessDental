@@ -1,5 +1,5 @@
-import type { DbPool } from "./db";
-import type { InitInput } from "./validate";
+import type { DbPool } from "./db.js";
+import type { InitInput } from "./validate.js";
 import bcrypt from "bcryptjs";
 
 export type BootstrapRow = {

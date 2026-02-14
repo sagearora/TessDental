@@ -28,7 +28,7 @@ query LegacySearchPatients($clinicId: bigint!, $searchText: String, $phoneDigits
       status
     }
     person_contact_point(
-      where: { kind: { _eq: "phone" }, is_active: { _eq: true } }
+      where: { kind: { _in: [cell_phone, home_phone, work_phone] }, is_active: { _eq: true } }
       order_by: { is_primary: desc }
       limit: 1
     ) {

@@ -1,6 +1,10 @@
 table:
   name: patient_field_config
   schema: public
+object_relationships:
+  - name: field_config
+    using:
+      foreign_key_constraint_on: field_config_id
 insert_permissions:
   - role: clinic_user
     permission:
@@ -25,24 +29,20 @@ insert_permissions:
                           _eq: system_admin
       columns:
         - clinic_id
-        - field_key
-        - field_label
+        - field_config_id
         - display_order
         - is_displayed
         - is_required
-        - is_active
 select_permissions:
   - role: clinic_user
     permission:
       columns:
         - id
         - clinic_id
-        - field_key
-        - field_label
+        - field_config_id
         - display_order
         - is_displayed
         - is_required
-        - is_active
         - created_at
         - created_by
         - updated_at
@@ -54,11 +54,9 @@ update_permissions:
   - role: clinic_user
     permission:
       columns:
-        - field_label
         - display_order
         - is_displayed
         - is_required
-        - is_active
       filter:
         clinic_id:
           _eq: X-Hasura-Clinic-Id

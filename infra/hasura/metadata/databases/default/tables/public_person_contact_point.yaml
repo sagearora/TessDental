@@ -31,7 +31,6 @@ insert_permissions:
       columns:
         - person_id
         - kind
-        - label
         - value
         - value_norm
         - phone_e164
@@ -44,7 +43,6 @@ select_permissions:
         - id
         - person_id
         - kind
-        - label
         - value
         - value_norm
         - phone_last10
@@ -64,7 +62,6 @@ update_permissions:
     permission:
       columns:
         - kind
-        - label
         - value
         - phone_e164
         - is_primary

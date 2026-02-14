@@ -1,5 +1,5 @@
 import { input, password, select, confirm } from "@inquirer/prompts";
-import type { InitInput } from "./validate";
+import type { InitInput } from "./validate.js";
 
 const TIMEZONES = [
   "America/Toronto",
@@ -45,27 +45,30 @@ export async function promptInit(envSummary: Record<string, unknown>): Promise<I
   let pw: string;
   let pwConfirm: string;
   
-  pw = await password({
-    message: "Admin password (min 10 chars):",
-    mask: "*",
-    validate: (value: string) => {
-      if (!value || value.length < 10) {
-        return "Password must be at least 10 characters";
+  // Keep asking for password until they match
+  while (true) {
+    pw = await password({
+      message: "Admin password (min 10 chars):",
+      mask: "*",
+      validate: (value: string) => {
+        if (!value || value.length < 10) {
+          return "Password must be at least 10 characters";
+        }
+        return true;
       }
-      return true;
+    });
+    
+    pwConfirm = await password({
+      message: "Confirm password:",
+      mask: "*"
+    });
+    
+    if (pw === pwConfirm) {
+      break;
     }
-  });
-  
-  pwConfirm = await password({
-    message: "Confirm password:",
-    mask: "*",
-    validate: (value: string) => {
-      if (value !== pw) {
-        return "Passwords do not match";
-      }
-      return true;
-    }
-  });
+    
+    console.log("❌ Passwords do not match. Please try again.\n");
+  }
   
   const clinicName = await input({ message: "Clinic name:" });
 

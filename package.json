@@ -16,11 +16,21 @@
     "hasura:metadata:ic": "hasura metadata ic list --project infra/hasura",
     "hasura:seed:apply": "hasura seed apply --project infra/hasura --all-databases",
     "dev:web": "pnpm -C apps/web dev",
+    "dev:landing": "pnpm -C apps/landing dev",
     "dev": "pnpm infra:up && pnpm dev:web",
     "test": "pnpm -r test",
+    "test:web": "pnpm -C apps/web test",
+    "test:hasura": "pnpm -C apps/hasura-tests test",
+    "test:hasura:setup": "cd apps/hasura-tests && bash scripts/setup-test-infra.sh",
+    "test:hasura:down": "docker compose -f infra/compose/docker-compose.test.yml down -v",
     "test:e2e": "pnpm -C apps/web test:e2e",
-    "init:cli": "pnpm -C tools/init install && pnpm -C tools/init dev",
+    "init:cli": "pnpm -C tools/init install && pnpm -C tools/init start",
+    "seed:patients": "pnpm -C tools/seed install && pnpm -C tools/seed start",
     "schema:export": "./scripts/export-schema.sh",
-    "data:export": "./scripts/export-table-data.sh"
+    "data:export": "./scripts/export-table-data.sh",
+    "auth:build": "docker compose -f infra/compose/docker-compose.yml --env-file infra/compose/.env build --no-cache auth",
+    "auth:restart": "docker compose -f infra/compose/docker-compose.yml --env-file infra/compose/.env up -d auth",
+    "auth:rebuild": "pnpm auth:build && pnpm auth:restart",
+    "auth:logs": "docker compose -f infra/compose/docker-compose.yml --env-file infra/compose/.env logs -f auth"
   }
 }

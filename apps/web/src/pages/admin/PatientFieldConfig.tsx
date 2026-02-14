@@ -5,6 +5,7 @@ import {
   useUpdatePatientFieldConfigOrderMutation,
   useUpdatePatientFieldConfigDisplayMutation,
   useUpdatePatientFieldConfigRequiredMutation,
+  useCreatePatientFieldConfigMutation,
 } from '@/gql/generated'
 import { useAuth } from '@/contexts/AuthContext'
 import { GripVertical } from 'lucide-react'
@@ -25,22 +26,29 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-interface SortableFieldRowProps {
-  field: {
+interface FieldRow {
+  field_config_id: number
+  field_config: {
     id: number
-    field_key: string
-    field_label: string
-    display_order: number
-    is_displayed: boolean
-    is_required: boolean
+    key: string
+    label: string
+    is_active: boolean
   }
-  onToggleDisplay: (id: number, currentValue: boolean) => void
-  onToggleRequired: (id: number, currentValue: boolean) => void
+  patient_field_config_id?: number
+  display_order: number
+  is_displayed: boolean
+  is_required: boolean
+}
+
+interface SortableFieldRowProps {
+  field: FieldRow
+  onToggleDisplay: (field: FieldRow) => void
+  onToggleRequired: (field: FieldRow) => void
 }
 
 function SortableFieldRow({ field, onToggleDisplay, onToggleRequired }: SortableFieldRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: field.id,
+    id: field.field_config_id,
   })
 
   const style = {
@@ -49,11 +57,15 @@ function SortableFieldRow({ field, onToggleDisplay, onToggleRequired }: Sortable
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const isUnconfigured = field.patient_field_config_id === undefined
+
   return (
     <tr
       ref={setNodeRef}
       style={style}
-      className="border-b hover:bg-gray-50 transition-colors bg-white"
+      className={`border-b hover:bg-gray-50 transition-colors ${
+        isUnconfigured ? 'bg-gray-50 opacity-75' : 'bg-white'
+      }`}
     >
       <td className="py-3 px-4">
         <div
@@ -65,29 +77,34 @@ function SortableFieldRow({ field, onToggleDisplay, onToggleRequired }: Sortable
         </div>
       </td>
       <td className="py-3 px-4">
-        <span className="text-sm text-gray-900">{field.field_label}</span>
+        <span className="text-sm text-gray-900">
+          {field.field_config?.label}
+          {isUnconfigured && (
+            <span className="ml-2 text-xs text-gray-400 italic">(not configured)</span>
+          )}
+        </span>
       </td>
       <td className="py-3 px-4 text-center">
-        {field.field_key === 'first_name' || field.field_key === 'last_name' ? (
+        {field.field_config?.key === 'first_name' || field.field_config?.key === 'last_name' ? (
           <span className="text-xs text-gray-400">Always shown</span>
         ) : (
           <input
             type="checkbox"
             checked={field.is_displayed}
-            onChange={() => onToggleDisplay(field.id, field.is_displayed)}
+            onChange={() => onToggleDisplay(field)}
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             onClick={(e) => e.stopPropagation()}
           />
         )}
       </td>
       <td className="py-3 px-4 text-center">
-        {field.field_key === 'first_name' || field.field_key === 'last_name' ? (
+        {field.field_config?.key === 'first_name' || field.field_config?.key === 'last_name' ? (
           <span className="text-xs text-gray-400">Always required</span>
         ) : (
           <input
             type="checkbox"
             checked={field.is_required}
-            onChange={() => onToggleRequired(field.id, field.is_required)}
+            onChange={() => onToggleRequired(field)}
             disabled={!field.is_displayed}
             className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={(e) => e.stopPropagation()}
@@ -111,8 +128,56 @@ export function PatientFieldConfig() {
   const [updateFieldConfigOrder] = useUpdatePatientFieldConfigOrderMutation()
   const [updateFieldConfigDisplay] = useUpdatePatientFieldConfigDisplayMutation()
   const [updateFieldConfigRequired] = useUpdatePatientFieldConfigRequiredMutation()
+  const [createPatientFieldConfig] = useCreatePatientFieldConfigMutation()
 
-  const fields = data?.patient_field_config || []
+  // Merge all field_config entries with existing patient_field_config entries
+  const allFieldConfigs = data?.field_config || []
+  const existingPatientConfigs = data?.patient_field_config || []
+  
+  // Create a map of field_config_id -> patient_field_config for quick lookup
+  const patientConfigMap = new Map(
+    existingPatientConfigs.map((pfc) => [pfc.field_config_id, pfc])
+  )
+
+  // Merge: for each field_config, create a row with patient_field_config data if it exists
+  const fields: FieldRow[] = allFieldConfigs.map((fc) => {
+    const patientConfig = patientConfigMap.get(fc.id)
+    if (patientConfig) {
+      return {
+        field_config_id: fc.id,
+        field_config: fc,
+        patient_field_config_id: patientConfig.id,
+        display_order: patientConfig.display_order,
+        is_displayed: patientConfig.is_displayed,
+        is_required: patientConfig.is_required,
+      }
+    } else {
+      // Field doesn't have a patient_field_config entry yet - default values
+      return {
+        field_config_id: fc.id,
+        field_config: fc,
+        display_order: 9999, // Put unconfigured fields at the end
+        is_displayed: false,
+        is_required: false,
+      }
+    }
+  })
+
+  // Sort: configured fields first (by display_order), then unconfigured (by label)
+  const sortedFields = [...fields].sort((a, b) => {
+    const aHasConfig = a.patient_field_config_id !== undefined
+    const bHasConfig = b.patient_field_config_id !== undefined
+    
+    if (aHasConfig && bHasConfig) {
+      return a.display_order - b.display_order
+    } else if (aHasConfig && !bHasConfig) {
+      return -1
+    } else if (!aHasConfig && bHasConfig) {
+      return 1
+    } else {
+      return a.field_config.label.localeCompare(b.field_config.label)
+    }
+  })
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -128,32 +193,55 @@ export function PatientFieldConfig() {
       return
     }
 
-    const oldIndex = fields.findIndex((f) => f.id === active.id)
-    const newIndex = fields.findIndex((f) => f.id === over.id)
+    const oldIndex = sortedFields.findIndex((f) => f.field_config_id === active.id)
+    const newIndex = sortedFields.findIndex((f) => f.field_config_id === over.id)
 
     if (oldIndex === -1 || newIndex === -1) {
       return
     }
 
-    const reorderedFields = arrayMove(fields, oldIndex, newIndex)
+    const reorderedFields = arrayMove(sortedFields, oldIndex, newIndex)
 
     try {
       setIsSaving(true)
       setError(null)
 
-      // Update all affected fields' display_order
+      // Process all fields - create entries for unconfigured ones, update order for existing ones
       const updates = reorderedFields.map((field, index) => ({
-        id: field.id,
+        field,
         displayOrder: index * 10, // Use increments of 10 for easier reordering
       }))
 
-      // Update all fields in parallel
+      // Create entries for fields that don't have patient_field_config yet
+      const fieldsToCreate = updates.filter(
+        ({ field }) => field.patient_field_config_id === undefined
+      )
+
       await Promise.all(
-        updates.map((update) =>
+        fieldsToCreate.map(({ field, displayOrder }) =>
+          createPatientFieldConfig({
+            variables: {
+              clinicId: session?.clinicId || 0,
+              fieldConfigId: field.field_config_id,
+              displayOrder,
+              isDisplayed: true,
+              isRequired: false,
+            },
+          })
+        )
+      )
+
+      // Update display_order for fields that already have patient_field_config entries
+      const fieldsToUpdate = updates.filter(
+        ({ field }) => field.patient_field_config_id !== undefined
+      )
+
+      await Promise.all(
+        fieldsToUpdate.map(({ field, displayOrder }) =>
           updateFieldConfigOrder({
             variables: {
-              id: update.id,
-              displayOrder: update.displayOrder,
+              id: field.patient_field_config_id!,
+              displayOrder,
             },
           })
         )
@@ -167,28 +255,70 @@ export function PatientFieldConfig() {
     }
   }
 
-  const handleToggleDisplay = async (id: number, currentValue: boolean) => {
+  const handleToggleDisplay = async (field: FieldRow) => {
     try {
-      await updateFieldConfigDisplay({
-        variables: {
-          id,
-          isDisplayed: !currentValue,
-        },
-      })
+      if (field.patient_field_config_id) {
+        // Update existing entry
+        await updateFieldConfigDisplay({
+          variables: {
+            id: field.patient_field_config_id,
+            isDisplayed: !field.is_displayed,
+          },
+        })
+      } else {
+        // Create new entry - find the max display_order for this clinic
+        const maxOrder = Math.max(
+          ...sortedFields
+            .filter((f) => f.patient_field_config_id !== undefined)
+            .map((f) => f.display_order),
+          0
+        )
+        
+        await createPatientFieldConfig({
+          variables: {
+            clinicId: session?.clinicId || 0,
+            fieldConfigId: field.field_config_id,
+            displayOrder: maxOrder + 10,
+            isDisplayed: true,
+            isRequired: false,
+          },
+        })
+      }
       await refetch()
     } catch (err: any) {
       setError(err.message || 'Failed to update field')
     }
   }
 
-  const handleToggleRequired = async (id: number, currentValue: boolean) => {
+  const handleToggleRequired = async (field: FieldRow) => {
     try {
-      await updateFieldConfigRequired({
-        variables: {
-          id,
-          isRequired: !currentValue,
-        },
-      })
+      if (!field.patient_field_config_id) {
+        // Can't set required if not displayed - create entry first
+        const maxOrder = Math.max(
+          ...sortedFields
+            .filter((f) => f.patient_field_config_id !== undefined)
+            .map((f) => f.display_order),
+          0
+        )
+        
+        await createPatientFieldConfig({
+          variables: {
+            clinicId: session?.clinicId || 0,
+            fieldConfigId: field.field_config_id,
+            displayOrder: maxOrder + 10,
+            isDisplayed: true,
+            isRequired: !field.is_required,
+          },
+        })
+      } else {
+        // Update existing entry
+        await updateFieldConfigRequired({
+          variables: {
+            id: field.patient_field_config_id,
+            isRequired: !field.is_required,
+          },
+        })
+      }
       await refetch()
     } catch (err: any) {
       setError(err.message || 'Failed to update field')
@@ -244,10 +374,10 @@ export function PatientFieldConfig() {
                   </tr>
                 </thead>
                 <tbody>
-                  <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
-                    {fields.map((field) => (
+                  <SortableContext items={sortedFields.map((f) => f.field_config_id)} strategy={verticalListSortingStrategy}>
+                    {sortedFields.map((field) => (
                       <SortableFieldRow
-                        key={field.id}
+                        key={field.field_config_id}
                         field={field}
                         onToggleDisplay={handleToggleDisplay}
                         onToggleRequired={handleToggleRequired}

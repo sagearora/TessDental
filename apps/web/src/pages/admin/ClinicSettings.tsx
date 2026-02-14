@@ -50,7 +50,7 @@ export function ClinicSettings() {
   )
   const currentClinic = currentClinicUser?.clinic
 
-  // Check for clinic.manage capability
+  // Check for clinic_manage capability
   const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
     variables: { 
       clinicId: session?.clinicId || 0,
@@ -65,7 +65,7 @@ export function ClinicSettings() {
       .filter((key): key is string => key !== null && key !== undefined) || []
   )
   
-  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic.manage') || capabilities.has('system.admin'))
+  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic_manage') || capabilities.has('system_admin'))
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 

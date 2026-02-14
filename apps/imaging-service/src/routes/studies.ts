@@ -21,7 +21,7 @@ export async function studiesRoutes(fastify: FastifyInstance) {
     },
     async (request: AuthenticatedRequest, reply) => {
       // Check capability
-      const hasCapability = await requireCapability(request, reply, 'imaging.write')
+      const hasCapability = await requireCapability(request, reply, 'imaging_write')
       if (!hasCapability) {
         return
       }

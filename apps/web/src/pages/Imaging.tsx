@@ -1,48 +1,65 @@
 import { useState, useEffect, useRef } from 'react'
+import { useParams } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { uploadAsset, createStudy, getAssetBlobUrl, type ImagingAsset } from '@/api/imaging'
+import {
+  listAssets,
+  updateAsset,
+  deleteAsset,
+  listMounts,
+  getMount,
+  createMount,
+  assignAssetToMountSlot,
+  type ImagingAsset,
+  type ImagingMount,
+} from '@/api/imaging'
+import { CaptureImageDialog } from '@/components/imaging/CaptureImageDialog'
 import { useAuth } from '@/contexts/AuthContext'
-import { ImageIcon, Upload, X } from 'lucide-react'
+import { ImageIcon, Upload, X, Grid, Layout, Calendar, User, Edit3, Trash2 } from 'lucide-react'
 import { AuthenticatedImage } from '@/components/imaging/AuthenticatedImage'
+import { InlineEditableField } from '@/components/profile/InlineEditableField'
+import { InlineEditableSelect } from '@/components/profile/InlineEditableSelect'
+import { listMountTemplates, type MountTemplate } from '@/api/imaging'
+import { MountView } from '@/components/imaging/MountView'
+
+type ViewMode = 'images' | 'mounts'
 
 export function Imaging() {
+  const { personId } = useParams<{ personId: string }>()
   const { session } = useAuth()
   const [assets, setAssets] = useState<ImagingAsset[]>([])
+  const [mounts, setMounts] = useState<ImagingMount[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [patientId, setPatientId] = useState<string>('1')
-  const [studyKind, setStudyKind] = useState<string>('PHOTO')
-  const [modality, setModality] = useState<string>('PHOTO')
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedAsset, setSelectedAsset] = useState<ImagingAsset | null>(null)
+  const [selectedMount, setSelectedMount] = useState<ImagingMount | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('images')
+  const [patientId, setPatientId] = useState<string>(personId || '')
+  const [mountTemplates, setMountTemplates] = useState<MountTemplate[]>([])
+  const [captureDialogOpen, setCaptureDialogOpen] = useState(false)
 
-  const IMAGING_API_URL = import.meta.env.VITE_IMAGING_API_URL || 'http://localhost:4010'
+  // Update patientId when personId changes
+  useEffect(() => {
+    if (personId) {
+      setPatientId(personId)
+    }
+  }, [personId])
 
   const fetchAssets = async () => {
-    if (!session) return
+    if (!session || !patientId) return
 
     setLoading(true)
     setError(null)
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await fetch(
-        `${IMAGING_API_URL}/imaging/assets${patientId ? `?patientId=${patientId}` : ''}`,
-        {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch assets')
-      }
-
-      const data = await response.json()
+      const data = await listAssets(Number(patientId))
       setAssets(data)
+      // Clear selection if selected asset no longer exists
+      if (selectedAsset && !data.find((a) => a.id === selectedAsset.id)) {
+        setSelectedAsset(null)
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load images')
       console.error('Error fetching assets:', err)
@@ -51,51 +68,50 @@ export function Imaging() {
     }
   }
 
-  useEffect(() => {
-    fetchAssets()
-  }, [session, patientId])
+  const fetchMounts = async () => {
+    if (!session || !patientId) return
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!session || !fileInputRef.current?.files?.[0]) {
-      setError('Please select a file')
-      return
-    }
-
-    const file = fileInputRef.current.files[0]
-    setUploading(true)
+    setLoading(true)
     setError(null)
-
     try {
-      // Create a study first
-      const studyResponse = await createStudy({
-        patientId: Number(patientId),
-        kind: studyKind,
-        title: studyKind,
-        source: 'manual-upload',
-      })
-
-      // Upload the asset
-      await uploadAsset({
-        patientId: Number(patientId),
-        studyId: studyResponse.studyId,
-        modality: modality,
-        file: file,
-      })
-
-      // Refresh the asset list
-      await fetchAssets()
-
-      // Reset form
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+      const data = await listMounts(Number(patientId))
+      setMounts(data)
+      // Clear selection if selected mount no longer exists
+      if (selectedMount && !data.find((m) => m.id === selectedMount.id)) {
+        setSelectedMount(null)
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to upload image')
-      console.error('Upload error:', err)
+      setError(err.message || 'Failed to load mounts')
+      console.error('Error fetching mounts:', err)
     } finally {
-      setUploading(false)
+      setLoading(false)
     }
+  }
+
+  const fetchMountTemplates = async () => {
+    if (!session) return
+    try {
+      const templates = await listMountTemplates()
+      setMountTemplates(templates)
+    } catch (err: any) {
+      console.error('Error fetching mount templates:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (viewMode === 'images') {
+      fetchAssets()
+    } else {
+      fetchMounts()
+    }
+  }, [session, patientId, viewMode])
+
+  useEffect(() => {
+    fetchMountTemplates()
+  }, [session])
+
+  const handleCaptureSuccess = () => {
+    fetchAssets()
   }
 
   const handleDelete = async (assetId: number) => {
@@ -106,18 +122,10 @@ export function Imaging() {
     }
 
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await fetch(`${IMAGING_API_URL}/imaging/assets/${assetId}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete asset')
+      await deleteAsset(assetId)
+      if (selectedAsset?.id === assetId) {
+        setSelectedAsset(null)
       }
-
       await fetchAssets()
     } catch (err: any) {
       setError(err.message || 'Failed to delete image')
@@ -125,183 +133,407 @@ export function Imaging() {
     }
   }
 
+  const handleUpdateAssetName = async (name: string) => {
+    if (!selectedAsset) return
+    try {
+      await updateAsset(selectedAsset.id, { name: name.trim() || null })
+      await fetchAssets()
+      // Update selected asset
+      const updated = await listAssets(Number(patientId))
+      const updatedAsset = updated.find((a) => a.id === selectedAsset.id)
+      if (updatedAsset) {
+        setSelectedAsset(updatedAsset)
+      }
+    } catch (err: any) {
+      throw new Error(err.message || 'Failed to update name')
+    }
+  }
+
+  const handleUpdateImageSource = async (imageSource: string) => {
+    if (!selectedAsset) return
+    try {
+      await updateAsset(selectedAsset.id, {
+        imageSource: imageSource as 'intraoral' | 'panoramic' | 'webcam' | 'scanner' | 'photo' | null,
+      })
+      await fetchAssets()
+      // Update selected asset
+      const updated = await listAssets(Number(patientId))
+      const updatedAsset = updated.find((a) => a.id === selectedAsset.id)
+      if (updatedAsset) {
+        setSelectedAsset(updatedAsset)
+      }
+    } catch (err: any) {
+      throw new Error(err.message || 'Failed to update image source')
+    }
+  }
+
+  const imageSourceOptions = [
+    { value: 'intraoral', label: 'Intraoral' },
+    { value: 'panoramic', label: 'Panoramic' },
+    { value: 'webcam', label: 'Webcam' },
+    { value: 'scanner', label: 'Scanner' },
+    { value: 'photo', label: 'Photo' },
+  ]
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Imaging Test Page</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Upload and view imaging assets. This is a test page for the imaging service.
-        </p>
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="border-b bg-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Imaging</h1>
+            <p className="text-sm text-gray-600 mt-1">Patient ID: {patientId || 'Not set'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'images' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setViewMode('images')
+                setSelectedMount(null)
+              }}
+            >
+              <Grid className="h-4 w-4 mr-2" />
+              All Images
+            </Button>
+            <Button
+              variant={viewMode === 'mounts' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setViewMode('mounts')
+                setSelectedAsset(null)
+              }}
+            >
+              <Layout className="h-4 w-4 mr-2" />
+              Mounts
+            </Button>
+          </div>
+        </div>
       </div>
 
+      {/* Error Banner */}
       {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">{error}</div>
-            </div>
-            <div className="ml-auto pl-3">
-              <button
-                onClick={() => setError(null)}
-                className="inline-flex rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+        <div className="bg-red-50 border-b border-red-200 px-6 py-3 flex items-center justify-between">
+          <div className="text-sm text-red-800">{error}</div>
+          <Button variant="ghost" size="sm" onClick={() => setError(null)}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload Image</CardTitle>
-          <CardDescription>Upload a new image to the imaging service</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="patientId">Patient ID</Label>
-                <Input
-                  id="patientId"
-                  type="number"
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
-                  required
-                  min="1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="studyKind">Study Kind</Label>
-                <Input
-                  id="studyKind"
-                  value={studyKind}
-                  onChange={(e) => setStudyKind(e.target.value)}
-                  placeholder="e.g., PHOTO, XRAY_BWX"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="modality">Modality</Label>
-                <Input
-                  id="modality"
-                  value={modality}
-                  onChange={(e) => setModality(e.target.value)}
-                  placeholder="e.g., PHOTO, XRAY, DOC"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="file">Image File</Label>
-                <Input
-                  id="file"
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  required
-                />
-              </div>
-            </div>
-            <Button type="submit" disabled={uploading || !session}>
-              <Upload className="mr-2 h-4 w-4" />
-              {uploading ? 'Uploading...' : 'Upload Image'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Main Content - Split View */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel - Thumbnails/Mounts List */}
+        <div className="w-2/3 border-r bg-white overflow-y-auto">
+          {viewMode === 'images' ? (
+            <div className="p-4">
+              {/* Upload Section */}
+              <Card className="mb-4">
+                <CardContent className="pt-6">
+                  <Button
+                    onClick={() => setCaptureDialogOpen(true)}
+                    disabled={!session || !patientId}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Capture an Image
+                  </Button>
+                </CardContent>
+              </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Uploaded Images</CardTitle>
-              <CardDescription>
-                {assets.length} image{assets.length !== 1 ? 's' : ''} found
-              </CardDescription>
-            </div>
-            <Button onClick={fetchAssets} variant="outline" disabled={loading}>
-              Refresh
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-gray-500">Loading images...</div>
-            </div>
-          ) : assets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <ImageIcon className="h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-500">No images uploaded yet</p>
-              <p className="text-sm text-gray-400 mt-2">Upload your first image using the form above</p>
+              {/* Images Grid */}
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-gray-500">Loading images...</div>
+                </div>
+              ) : assets.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <ImageIcon className="h-12 w-12 text-gray-400 mb-4" />
+                  <p className="text-gray-500">No images uploaded yet</p>
+                  <p className="text-sm text-gray-400 mt-2">Upload your first image using the form above</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {assets.map((asset) => (
+                    <div
+                      key={asset.id}
+                      onClick={() => setSelectedAsset(asset)}
+                      className={`border rounded-lg overflow-hidden cursor-pointer transition-all ${
+                        selectedAsset?.id === asset.id
+                          ? 'ring-2 ring-blue-500 border-blue-500'
+                          : 'hover:shadow-md border-gray-200'
+                      }`}
+                    >
+                      <div className="aspect-square bg-gray-100 relative">
+                        {asset.thumb_key ? (
+                          <AuthenticatedImage
+                            assetId={asset.id}
+                            variant="thumb"
+                            alt={asset.name || `Asset ${asset.id}`}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2 bg-white">
+                        <div className="text-xs font-medium text-gray-900 truncate">
+                          {asset.name || 'Untitled'}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {formatDate(asset.captured_at)}
+                        </div>
+                        {asset.image_source && (
+                          <div className="text-xs text-blue-600 mt-0.5 capitalize">
+                            {asset.image_source}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {assets.map((asset) => (
-                <div
-                  key={asset.id}
-                  className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+            <div className="p-4">
+              <div className="mb-4">
+                <Button
+                  onClick={async () => {
+                    if (mountTemplates.length > 0) {
+                      try {
+                        const newMount = await createMount({
+                          patientId: Number(patientId),
+                          templateId: mountTemplates[0].id, // For now, use first template
+                          name: `New Mount - ${new Date().toLocaleDateString()}`,
+                        })
+                        await fetchMounts()
+                        // Fetch full mount with slots
+                        const fullMount = await getMount(newMount.id)
+                        setSelectedMount(fullMount)
+                      } catch (err: any) {
+                        setError(err.message || 'Failed to create mount')
+                      }
+                    } else {
+                      setError('No mount templates available')
+                    }
+                  }}
+                  disabled={!patientId || mountTemplates.length === 0}
                 >
-                  <div className="aspect-square bg-gray-100 relative group">
-                    {asset.thumb_key ? (
-                      <AuthenticatedImage
-                        assetId={asset.id}
-                        variant="thumb"
-                        alt={`Asset ${asset.id}`}
-                        className="w-full h-full object-contain"
-                        onError={() => {
-                          // Fallback handled by component
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageIcon className="h-12 w-12 text-gray-400" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(asset.id)}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="p-3 bg-white">
-                    <div className="text-sm font-medium text-gray-900">Asset #{asset.id}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {asset.modality} • {Math.round(asset.size_bytes / 1024)} KB
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {new Date(asset.captured_at).toLocaleString()}
-                    </div>
-                    <button
+                  <Layout className="h-4 w-4 mr-2" />
+                  New Mount
+                </Button>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-gray-500">Loading mounts...</div>
+                </div>
+              ) : mounts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Layout className="h-12 w-12 text-gray-400 mb-4" />
+                  <p className="text-gray-500">No mounts created yet</p>
+                  <p className="text-sm text-gray-400 mt-2">Create your first mount using the button above</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {mounts.map((mount) => (
+                    <div
+                      key={mount.id}
                       onClick={async () => {
                         try {
-                          const url = await getAssetBlobUrl(asset.id, 'web')
-                          const newWindow = window.open()
-                          if (newWindow) {
-                            newWindow.location.href = url
-                          }
-                        } catch (err) {
-                          console.error('Failed to open image:', err)
-                          setError('Failed to load full size image')
+                          const fullMount = await getMount(mount.id)
+                          setSelectedMount(fullMount)
+                        } catch (err: any) {
+                          setError(err.message || 'Failed to load mount')
                         }
                       }}
-                      className="text-xs text-blue-600 hover:text-blue-800 mt-2 inline-block"
+                      className={`border rounded-lg p-3 cursor-pointer transition-all ${
+                        selectedMount?.id === mount.id
+                          ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-50'
+                          : 'hover:bg-gray-50 border-gray-200'
+                      }`}
                     >
-                      View Full Size →
-                    </button>
-                  </div>
+                      <div className="font-medium text-gray-900">
+                        {mount.name || mount.template?.name || 'Unnamed Mount'}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {mount.template?.name || 'Unknown Template'}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {formatDate(mount.created_at)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Right Panel - Preview */}
+        <div className="w-1/3 bg-gray-50 border-l overflow-y-auto">
+          {selectedAsset ? (
+            <div className="p-6 space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Image Preview</h2>
+                <div className="bg-white rounded-lg border p-4 mb-4">
+                  <div className="aspect-square bg-gray-100 rounded mb-4">
+                    <AuthenticatedImage
+                      assetId={selectedAsset.id}
+                      variant="web"
+                      alt={selectedAsset.name || `Asset ${selectedAsset.id}`}
+                      className="w-full h-full object-contain rounded"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Image Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <InlineEditableField
+                    value={selectedAsset.name}
+                    onSave={handleUpdateAssetName}
+                    label="Name"
+                    type="text"
+                  />
+
+                  <InlineEditableSelect
+                    value={selectedAsset.image_source || ''}
+                    onSave={handleUpdateImageSource}
+                    label="Image Source"
+                    options={imageSourceOptions}
+                  />
+
+                  <div>
+                    <p className="text-sm text-gray-500">Acquisition Date</p>
+                    <p className="font-medium text-gray-900 flex items-center gap-2 mt-1">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                      {formatDate(selectedAsset.captured_at)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500">Modality</p>
+                    <p className="font-medium text-gray-900 mt-1">{selectedAsset.modality}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500">File Size</p>
+                    <p className="font-medium text-gray-900 mt-1">
+                      {Math.round(selectedAsset.size_bytes / 1024)} KB
+                    </p>
+                  </div>
+
+                  {selectedAsset.created_at && (
+                    <div>
+                      <p className="text-sm text-gray-500">Created</p>
+                      <p className="font-medium text-gray-900 mt-1">
+                        {formatDate(selectedAsset.created_at)}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedAsset.updated_at && selectedAsset.updated_at !== selectedAsset.created_at && (
+                    <div>
+                      <p className="text-sm text-gray-500">Last Updated</p>
+                      <p className="font-medium text-gray-900 mt-1">
+                        {formatDate(selectedAsset.updated_at)}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={() => handleDelete(selectedAsset.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Image
+                </Button>
+              </div>
+            </div>
+          ) : selectedMount ? (
+            <div className="p-6 space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Mount Preview</h2>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{selectedMount.name || 'Unnamed Mount'}</CardTitle>
+                    <CardDescription>{selectedMount.template?.name || 'Unknown Template'}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-gray-600">
+                      <p>Created: {formatDate(selectedMount.created_at)}</p>
+                      {selectedMount.description && (
+                        <p className="mt-2">{selectedMount.description}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Mount Layout */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Mount Layout</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MountView
+                    mount={selectedMount}
+                    availableAssets={assets}
+                    onMountUpdate={async () => {
+                      const updated = await getMount(selectedMount.id)
+                      setSelectedMount(updated)
+                      await fetchMounts()
+                    }}
+                    onSlotClick={async (slotId, currentAssetId) => {
+                      // Open dialog to select asset for this slot
+                      // For now, just log - can be enhanced with a proper dialog
+                      console.log('Slot clicked:', slotId, 'Current asset:', currentAssetId)
+                      // TODO: Implement asset selection dialog
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="p-6">
+              <div className="text-center py-12 text-gray-500">
+                <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p>Select an image or mount to view details</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Capture Image Dialog */}
+      {patientId && (
+        <CaptureImageDialog
+          open={captureDialogOpen}
+          onOpenChange={setCaptureDialogOpen}
+          patientId={Number(patientId)}
+          onSuccess={handleCaptureSuccess}
+        />
+      )}
     </div>
   )
 }

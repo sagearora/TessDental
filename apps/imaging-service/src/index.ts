@@ -7,6 +7,7 @@ import { authenticate } from './middleware/auth.js'
 import { healthRoutes } from './routes/health.js'
 import { studiesRoutes } from './routes/studies.js'
 import { assetsRoutes } from './routes/assets.js'
+import { mountsRoutes } from './routes/mounts.js'
 import type { AuthenticatedRequest } from './middleware/auth.js'
 
 const fastify = Fastify({
@@ -44,6 +45,7 @@ fastify.decorate('authenticate', async function (request: AuthenticatedRequest, 
 await fastify.register(healthRoutes)
 await fastify.register(studiesRoutes)
 await fastify.register(assetsRoutes)
+await fastify.register(mountsRoutes)
 
 // Graceful shutdown
 const shutdown = async () => {

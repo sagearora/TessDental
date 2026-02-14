@@ -20,6 +20,7 @@ export type Scalars = {
   citext: { input: any; output: any; }
   date: { input: any; output: any; }
   float8: { input: any; output: any; }
+  image_source_enum: { input: any; output: any; }
   jsonb: { input: any; output: any; }
   smallint: { input: any; output: any; }
   time: { input: any; output: any; }
@@ -2541,12 +2542,15 @@ export type Clinic_User = {
   clinic_id: Scalars['bigint']['output'];
   created_at: Scalars['timestamptz']['output'];
   created_by?: Maybe<Scalars['uuid']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id: Scalars['bigint']['output'];
   is_active: Scalars['Boolean']['output'];
   is_schedulable: Scalars['Boolean']['output'];
   job_title?: Maybe<Scalars['String']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** An object relationship */
+  person?: Maybe<Person>;
   provider_kind?: Maybe<Scalars['String']['output']>;
   scheduler_color?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['timestamptz']['output'];
@@ -2588,6 +2592,7 @@ export type Clinic_User_Aggregate_FieldsCountArgs = {
 export type Clinic_User_Avg_Fields = {
   __typename?: 'clinic_user_avg_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -2600,12 +2605,14 @@ export type Clinic_User_Bool_Exp = {
   clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  current_person_id?: InputMaybe<Bigint_Comparison_Exp>;
   default_operatory_id?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   is_schedulable?: InputMaybe<Boolean_Comparison_Exp>;
   job_title?: InputMaybe<String_Comparison_Exp>;
   joined_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  person?: InputMaybe<Person_Bool_Exp>;
   provider_kind?: InputMaybe<String_Comparison_Exp>;
   scheduler_color?: InputMaybe<String_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -2766,6 +2773,7 @@ export type Clinic_User_Effective_Capabilities_V_Variance_Fields = {
 /** input type for incrementing numeric columns in table "clinic_user" */
 export type Clinic_User_Inc_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
 };
@@ -2775,12 +2783,14 @@ export type Clinic_User_Insert_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_schedulable?: InputMaybe<Scalars['Boolean']['input']>;
   job_title?: InputMaybe<Scalars['String']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  person?: InputMaybe<Person_Obj_Rel_Insert_Input>;
   provider_kind?: InputMaybe<Scalars['String']['input']>;
   scheduler_color?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -2794,6 +2804,7 @@ export type Clinic_User_Max_Fields = {
   clinic_id?: Maybe<Scalars['bigint']['output']>;
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   job_title?: Maybe<Scalars['String']['output']>;
@@ -2811,6 +2822,7 @@ export type Clinic_User_Min_Fields = {
   clinic_id?: Maybe<Scalars['bigint']['output']>;
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   job_title?: Maybe<Scalars['String']['output']>;
@@ -2850,12 +2862,14 @@ export type Clinic_User_Order_By = {
   clinic_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
+  current_person_id?: InputMaybe<Order_By>;
   default_operatory_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   is_schedulable?: InputMaybe<Order_By>;
   job_title?: InputMaybe<Order_By>;
   joined_at?: InputMaybe<Order_By>;
+  person?: InputMaybe<Person_Order_By>;
   provider_kind?: InputMaybe<Order_By>;
   scheduler_color?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -3093,6 +3107,8 @@ export type Clinic_User_Select_Column =
   /** column name */
   | 'created_by'
   /** column name */
+  | 'current_person_id'
+  /** column name */
   | 'default_operatory_id'
   /** column name */
   | 'id'
@@ -3120,6 +3136,7 @@ export type Clinic_User_Set_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3137,6 +3154,7 @@ export type Clinic_User_Set_Input = {
 export type Clinic_User_Stddev_Fields = {
   __typename?: 'clinic_user_stddev_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -3145,6 +3163,7 @@ export type Clinic_User_Stddev_Fields = {
 export type Clinic_User_Stddev_Pop_Fields = {
   __typename?: 'clinic_user_stddev_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -3153,6 +3172,7 @@ export type Clinic_User_Stddev_Pop_Fields = {
 export type Clinic_User_Stddev_Samp_Fields = {
   __typename?: 'clinic_user_stddev_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -3170,6 +3190,7 @@ export type Clinic_User_Stream_Cursor_Value_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   default_operatory_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3187,6 +3208,7 @@ export type Clinic_User_Stream_Cursor_Value_Input = {
 export type Clinic_User_Sum_Fields = {
   __typename?: 'clinic_user_sum_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   default_operatory_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
 };
@@ -3199,6 +3221,8 @@ export type Clinic_User_Update_Column =
   | 'created_at'
   /** column name */
   | 'created_by'
+  /** column name */
+  | 'current_person_id'
   /** column name */
   | 'default_operatory_id'
   /** column name */
@@ -3237,9 +3261,12 @@ export type Clinic_User_V = {
   /** An object relationship */
   clinic?: Maybe<Clinic_V>;
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   is_active?: Maybe<Scalars['Boolean']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
+  /** An object relationship */
+  person?: Maybe<Person>;
   user_id?: Maybe<Scalars['uuid']['output']>;
 };
 
@@ -3277,6 +3304,7 @@ export type Clinic_User_V_Aggregate_FieldsCountArgs = {
 export type Clinic_User_V_Avg_Fields = {
   __typename?: 'clinic_user_v_avg_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3287,15 +3315,18 @@ export type Clinic_User_V_Bool_Exp = {
   _or?: InputMaybe<Array<Clinic_User_V_Bool_Exp>>;
   clinic?: InputMaybe<Clinic_V_Bool_Exp>;
   clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  current_person_id?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   joined_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  person?: InputMaybe<Person_Bool_Exp>;
   user_id?: InputMaybe<Uuid_Comparison_Exp>;
 };
 
 /** input type for incrementing numeric columns in table "clinic_user_v" */
 export type Clinic_User_V_Inc_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
 };
 
@@ -3303,9 +3334,11 @@ export type Clinic_User_V_Inc_Input = {
 export type Clinic_User_V_Insert_Input = {
   clinic?: InputMaybe<Clinic_V_Obj_Rel_Insert_Input>;
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  person?: InputMaybe<Person_Obj_Rel_Insert_Input>;
   user_id?: InputMaybe<Scalars['uuid']['input']>;
 };
 
@@ -3313,6 +3346,7 @@ export type Clinic_User_V_Insert_Input = {
 export type Clinic_User_V_Max_Fields = {
   __typename?: 'clinic_user_v_max_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
   user_id?: Maybe<Scalars['uuid']['output']>;
@@ -3322,6 +3356,7 @@ export type Clinic_User_V_Max_Fields = {
 export type Clinic_User_V_Min_Fields = {
   __typename?: 'clinic_user_v_min_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   joined_at?: Maybe<Scalars['timestamptz']['output']>;
   user_id?: Maybe<Scalars['uuid']['output']>;
@@ -3340,9 +3375,11 @@ export type Clinic_User_V_Mutation_Response = {
 export type Clinic_User_V_Order_By = {
   clinic?: InputMaybe<Clinic_V_Order_By>;
   clinic_id?: InputMaybe<Order_By>;
+  current_person_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   joined_at?: InputMaybe<Order_By>;
+  person?: InputMaybe<Person_Order_By>;
   user_id?: InputMaybe<Order_By>;
 };
 
@@ -3350,6 +3387,8 @@ export type Clinic_User_V_Order_By = {
 export type Clinic_User_V_Select_Column =
   /** column name */
   | 'clinic_id'
+  /** column name */
+  | 'current_person_id'
   /** column name */
   | 'id'
   /** column name */
@@ -3362,6 +3401,7 @@ export type Clinic_User_V_Select_Column =
 /** input type for updating data in table "clinic_user_v" */
 export type Clinic_User_V_Set_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -3372,6 +3412,7 @@ export type Clinic_User_V_Set_Input = {
 export type Clinic_User_V_Stddev_Fields = {
   __typename?: 'clinic_user_v_stddev_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3379,6 +3420,7 @@ export type Clinic_User_V_Stddev_Fields = {
 export type Clinic_User_V_Stddev_Pop_Fields = {
   __typename?: 'clinic_user_v_stddev_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3386,6 +3428,7 @@ export type Clinic_User_V_Stddev_Pop_Fields = {
 export type Clinic_User_V_Stddev_Samp_Fields = {
   __typename?: 'clinic_user_v_stddev_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3400,6 +3443,7 @@ export type Clinic_User_V_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type Clinic_User_V_Stream_Cursor_Value_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  current_person_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   joined_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -3410,6 +3454,7 @@ export type Clinic_User_V_Stream_Cursor_Value_Input = {
 export type Clinic_User_V_Sum_Fields = {
   __typename?: 'clinic_user_v_sum_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  current_person_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
 };
 
@@ -3426,6 +3471,7 @@ export type Clinic_User_V_Updates = {
 export type Clinic_User_V_Var_Pop_Fields = {
   __typename?: 'clinic_user_v_var_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3433,6 +3479,7 @@ export type Clinic_User_V_Var_Pop_Fields = {
 export type Clinic_User_V_Var_Samp_Fields = {
   __typename?: 'clinic_user_v_var_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3440,6 +3487,7 @@ export type Clinic_User_V_Var_Samp_Fields = {
 export type Clinic_User_V_Variance_Fields = {
   __typename?: 'clinic_user_v_variance_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
 
@@ -3447,6 +3495,7 @@ export type Clinic_User_V_Variance_Fields = {
 export type Clinic_User_Var_Pop_Fields = {
   __typename?: 'clinic_user_var_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -3455,6 +3504,7 @@ export type Clinic_User_Var_Pop_Fields = {
 export type Clinic_User_Var_Samp_Fields = {
   __typename?: 'clinic_user_var_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -3463,6 +3513,7 @@ export type Clinic_User_Var_Samp_Fields = {
 export type Clinic_User_Variance_Fields = {
   __typename?: 'clinic_user_variance_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  current_person_id?: Maybe<Scalars['Float']['output']>;
   default_operatory_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
 };
@@ -4101,6 +4152,156 @@ export type Clinic_Variance_Fields = {
   id?: Maybe<Scalars['Float']['output']>;
 };
 
+/** columns and relationships of "contact_kind_enum" */
+export type Contact_Kind_Enum = {
+  __typename?: 'contact_kind_enum';
+  comment: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+/** aggregated selection of "contact_kind_enum" */
+export type Contact_Kind_Enum_Aggregate = {
+  __typename?: 'contact_kind_enum_aggregate';
+  aggregate?: Maybe<Contact_Kind_Enum_Aggregate_Fields>;
+  nodes: Array<Contact_Kind_Enum>;
+};
+
+/** aggregate fields of "contact_kind_enum" */
+export type Contact_Kind_Enum_Aggregate_Fields = {
+  __typename?: 'contact_kind_enum_aggregate_fields';
+  count: Scalars['Int']['output'];
+  max?: Maybe<Contact_Kind_Enum_Max_Fields>;
+  min?: Maybe<Contact_Kind_Enum_Min_Fields>;
+};
+
+
+/** aggregate fields of "contact_kind_enum" */
+export type Contact_Kind_Enum_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Contact_Kind_Enum_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "contact_kind_enum". All fields are combined with a logical 'AND'. */
+export type Contact_Kind_Enum_Bool_Exp = {
+  _and?: InputMaybe<Array<Contact_Kind_Enum_Bool_Exp>>;
+  _not?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+  _or?: InputMaybe<Array<Contact_Kind_Enum_Bool_Exp>>;
+  comment?: InputMaybe<String_Comparison_Exp>;
+  value?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "contact_kind_enum" */
+export type Contact_Kind_Enum_Constraint =
+  /** unique or primary key constraint on columns "value" */
+  | 'contact_kind_enum_pkey';
+
+export type Contact_Kind_Enum_Enum =
+  /** Cell Phone */
+  | 'cell_phone'
+  /** Email */
+  | 'email'
+  /** Home Phone */
+  | 'home_phone'
+  /** Work Phone */
+  | 'work_phone';
+
+/** Boolean expression to compare columns of type "contact_kind_enum_enum". All fields are combined with logical 'AND'. */
+export type Contact_Kind_Enum_Enum_Comparison_Exp = {
+  _eq?: InputMaybe<Contact_Kind_Enum_Enum>;
+  _in?: InputMaybe<Array<Contact_Kind_Enum_Enum>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _neq?: InputMaybe<Contact_Kind_Enum_Enum>;
+  _nin?: InputMaybe<Array<Contact_Kind_Enum_Enum>>;
+};
+
+/** input type for inserting data into table "contact_kind_enum" */
+export type Contact_Kind_Enum_Insert_Input = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Contact_Kind_Enum_Max_Fields = {
+  __typename?: 'contact_kind_enum_max_fields';
+  comment?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Contact_Kind_Enum_Min_Fields = {
+  __typename?: 'contact_kind_enum_min_fields';
+  comment?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "contact_kind_enum" */
+export type Contact_Kind_Enum_Mutation_Response = {
+  __typename?: 'contact_kind_enum_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Contact_Kind_Enum>;
+};
+
+/** on_conflict condition type for table "contact_kind_enum" */
+export type Contact_Kind_Enum_On_Conflict = {
+  constraint: Contact_Kind_Enum_Constraint;
+  update_columns?: Array<Contact_Kind_Enum_Update_Column>;
+  where?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "contact_kind_enum". */
+export type Contact_Kind_Enum_Order_By = {
+  comment?: InputMaybe<Order_By>;
+  value?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: contact_kind_enum */
+export type Contact_Kind_Enum_Pk_Columns_Input = {
+  value: Scalars['String']['input'];
+};
+
+/** select columns of table "contact_kind_enum" */
+export type Contact_Kind_Enum_Select_Column =
+  /** column name */
+  | 'comment'
+  /** column name */
+  | 'value';
+
+/** input type for updating data in table "contact_kind_enum" */
+export type Contact_Kind_Enum_Set_Input = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Streaming cursor of the table "contact_kind_enum" */
+export type Contact_Kind_Enum_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Contact_Kind_Enum_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Contact_Kind_Enum_Stream_Cursor_Value_Input = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** update columns of table "contact_kind_enum" */
+export type Contact_Kind_Enum_Update_Column =
+  /** column name */
+  | 'comment'
+  /** column name */
+  | 'value';
+
+export type Contact_Kind_Enum_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Contact_Kind_Enum_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Contact_Kind_Enum_Bool_Exp;
+};
+
 /** ordering argument of a cursor */
 export type Cursor_Ordering =
   /** ascending ordering of the cursor */
@@ -4540,6 +4741,283 @@ export type Family_Members_V_Variance_Fields = {
   responsible_party_id?: Maybe<Scalars['Float']['output']>;
 };
 
+/** columns and relationships of "field_config" */
+export type Field_Config = {
+  __typename?: 'field_config';
+  created_at: Scalars['timestamptz']['output'];
+  id: Scalars['bigint']['output'];
+  is_active: Scalars['Boolean']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  /** An array relationship */
+  patient_field_configs: Array<Patient_Field_Config>;
+  /** An aggregate relationship */
+  patient_field_configs_aggregate: Patient_Field_Config_Aggregate;
+  updated_at: Scalars['timestamptz']['output'];
+};
+
+
+/** columns and relationships of "field_config" */
+export type Field_ConfigPatient_Field_ConfigsArgs = {
+  distinct_on?: InputMaybe<Array<Patient_Field_Config_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Patient_Field_Config_Order_By>>;
+  where?: InputMaybe<Patient_Field_Config_Bool_Exp>;
+};
+
+
+/** columns and relationships of "field_config" */
+export type Field_ConfigPatient_Field_Configs_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Patient_Field_Config_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Patient_Field_Config_Order_By>>;
+  where?: InputMaybe<Patient_Field_Config_Bool_Exp>;
+};
+
+/** aggregated selection of "field_config" */
+export type Field_Config_Aggregate = {
+  __typename?: 'field_config_aggregate';
+  aggregate?: Maybe<Field_Config_Aggregate_Fields>;
+  nodes: Array<Field_Config>;
+};
+
+/** aggregate fields of "field_config" */
+export type Field_Config_Aggregate_Fields = {
+  __typename?: 'field_config_aggregate_fields';
+  avg?: Maybe<Field_Config_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Field_Config_Max_Fields>;
+  min?: Maybe<Field_Config_Min_Fields>;
+  stddev?: Maybe<Field_Config_Stddev_Fields>;
+  stddev_pop?: Maybe<Field_Config_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Field_Config_Stddev_Samp_Fields>;
+  sum?: Maybe<Field_Config_Sum_Fields>;
+  var_pop?: Maybe<Field_Config_Var_Pop_Fields>;
+  var_samp?: Maybe<Field_Config_Var_Samp_Fields>;
+  variance?: Maybe<Field_Config_Variance_Fields>;
+};
+
+
+/** aggregate fields of "field_config" */
+export type Field_Config_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Field_Config_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Field_Config_Avg_Fields = {
+  __typename?: 'field_config_avg_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "field_config". All fields are combined with a logical 'AND'. */
+export type Field_Config_Bool_Exp = {
+  _and?: InputMaybe<Array<Field_Config_Bool_Exp>>;
+  _not?: InputMaybe<Field_Config_Bool_Exp>;
+  _or?: InputMaybe<Array<Field_Config_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  key?: InputMaybe<String_Comparison_Exp>;
+  label?: InputMaybe<String_Comparison_Exp>;
+  patient_field_configs?: InputMaybe<Patient_Field_Config_Bool_Exp>;
+  patient_field_configs_aggregate?: InputMaybe<Patient_Field_Config_Aggregate_Bool_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "field_config" */
+export type Field_Config_Constraint =
+  /** unique or primary key constraint on columns "key" */
+  | 'field_config_key_key'
+  /** unique or primary key constraint on columns "id" */
+  | 'field_config_pkey';
+
+/** input type for incrementing numeric columns in table "field_config" */
+export type Field_Config_Inc_Input = {
+  id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "field_config" */
+export type Field_Config_Insert_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  key?: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  patient_field_configs?: InputMaybe<Patient_Field_Config_Arr_Rel_Insert_Input>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate max on columns */
+export type Field_Config_Max_Fields = {
+  __typename?: 'field_config_max_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  key?: Maybe<Scalars['String']['output']>;
+  label?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** aggregate min on columns */
+export type Field_Config_Min_Fields = {
+  __typename?: 'field_config_min_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  key?: Maybe<Scalars['String']['output']>;
+  label?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+};
+
+/** response of any mutation on the table "field_config" */
+export type Field_Config_Mutation_Response = {
+  __typename?: 'field_config_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Field_Config>;
+};
+
+/** input type for inserting object relation for remote table "field_config" */
+export type Field_Config_Obj_Rel_Insert_Input = {
+  data: Field_Config_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Field_Config_On_Conflict>;
+};
+
+/** on_conflict condition type for table "field_config" */
+export type Field_Config_On_Conflict = {
+  constraint: Field_Config_Constraint;
+  update_columns?: Array<Field_Config_Update_Column>;
+  where?: InputMaybe<Field_Config_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "field_config". */
+export type Field_Config_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  key?: InputMaybe<Order_By>;
+  label?: InputMaybe<Order_By>;
+  patient_field_configs_aggregate?: InputMaybe<Patient_Field_Config_Aggregate_Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: field_config */
+export type Field_Config_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** select columns of table "field_config" */
+export type Field_Config_Select_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'key'
+  /** column name */
+  | 'label'
+  /** column name */
+  | 'updated_at';
+
+/** input type for updating data in table "field_config" */
+export type Field_Config_Set_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  key?: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Field_Config_Stddev_Fields = {
+  __typename?: 'field_config_stddev_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Field_Config_Stddev_Pop_Fields = {
+  __typename?: 'field_config_stddev_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Field_Config_Stddev_Samp_Fields = {
+  __typename?: 'field_config_stddev_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "field_config" */
+export type Field_Config_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Field_Config_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Field_Config_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  key?: InputMaybe<Scalars['String']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Field_Config_Sum_Fields = {
+  __typename?: 'field_config_sum_fields';
+  id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "field_config" */
+export type Field_Config_Update_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'key'
+  /** column name */
+  | 'label'
+  /** column name */
+  | 'updated_at';
+
+export type Field_Config_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Field_Config_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Field_Config_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Field_Config_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Field_Config_Var_Pop_Fields = {
+  __typename?: 'field_config_var_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Field_Config_Var_Samp_Fields = {
+  __typename?: 'field_config_var_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Field_Config_Variance_Fields = {
+  __typename?: 'field_config_variance_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
 /** Boolean expression to compare columns of type "float8". All fields are combined with logical 'AND'. */
 export type Float8_Comparison_Exp = {
   _eq?: InputMaybe<Scalars['float8']['input']>;
@@ -4601,6 +5079,23 @@ export type Gender_Enum_Bool_Exp = {
 export type Gender_Enum_Constraint =
   /** unique or primary key constraint on columns "value" */
   | 'gender_enum_pkey';
+
+export type Gender_Enum_Enum =
+  /** Female */
+  | 'female'
+  /** Male */
+  | 'male'
+  /** Other */
+  | 'other';
+
+/** Boolean expression to compare columns of type "gender_enum_enum". All fields are combined with logical 'AND'. */
+export type Gender_Enum_Enum_Comparison_Exp = {
+  _eq?: InputMaybe<Gender_Enum_Enum>;
+  _in?: InputMaybe<Array<Gender_Enum_Enum>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _neq?: InputMaybe<Gender_Enum_Enum>;
+  _nin?: InputMaybe<Array<Gender_Enum_Enum>>;
+};
 
 /** input type for inserting data into table "gender_enum" */
 export type Gender_Enum_Insert_Input = {
@@ -4688,6 +5183,2442 @@ export type Gender_Enum_Updates = {
   _set?: InputMaybe<Gender_Enum_Set_Input>;
   /** filter the rows which have to be updated */
   where: Gender_Enum_Bool_Exp;
+};
+
+/** columns and relationships of "household_relationship_enum" */
+export type Household_Relationship_Enum = {
+  __typename?: 'household_relationship_enum';
+  comment: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+/** aggregated selection of "household_relationship_enum" */
+export type Household_Relationship_Enum_Aggregate = {
+  __typename?: 'household_relationship_enum_aggregate';
+  aggregate?: Maybe<Household_Relationship_Enum_Aggregate_Fields>;
+  nodes: Array<Household_Relationship_Enum>;
+};
+
+/** aggregate fields of "household_relationship_enum" */
+export type Household_Relationship_Enum_Aggregate_Fields = {
+  __typename?: 'household_relationship_enum_aggregate_fields';
+  count: Scalars['Int']['output'];
+  max?: Maybe<Household_Relationship_Enum_Max_Fields>;
+  min?: Maybe<Household_Relationship_Enum_Min_Fields>;
+};
+
+
+/** aggregate fields of "household_relationship_enum" */
+export type Household_Relationship_Enum_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Household_Relationship_Enum_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** Boolean expression to filter rows from the table "household_relationship_enum". All fields are combined with a logical 'AND'. */
+export type Household_Relationship_Enum_Bool_Exp = {
+  _and?: InputMaybe<Array<Household_Relationship_Enum_Bool_Exp>>;
+  _not?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+  _or?: InputMaybe<Array<Household_Relationship_Enum_Bool_Exp>>;
+  comment?: InputMaybe<String_Comparison_Exp>;
+  value?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "household_relationship_enum" */
+export type Household_Relationship_Enum_Constraint =
+  /** unique or primary key constraint on columns "value" */
+  | 'household_relationship_enum_pkey';
+
+export type Household_Relationship_Enum_Enum =
+  /** Child */
+  | 'child'
+  /** Other */
+  | 'other'
+  /** Parent */
+  | 'parent'
+  /** Self */
+  | 'self'
+  /** Sibling */
+  | 'sibling'
+  /** Spouse */
+  | 'spouse';
+
+/** Boolean expression to compare columns of type "household_relationship_enum_enum". All fields are combined with logical 'AND'. */
+export type Household_Relationship_Enum_Enum_Comparison_Exp = {
+  _eq?: InputMaybe<Household_Relationship_Enum_Enum>;
+  _in?: InputMaybe<Array<Household_Relationship_Enum_Enum>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _neq?: InputMaybe<Household_Relationship_Enum_Enum>;
+  _nin?: InputMaybe<Array<Household_Relationship_Enum_Enum>>;
+};
+
+/** input type for inserting data into table "household_relationship_enum" */
+export type Household_Relationship_Enum_Insert_Input = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Household_Relationship_Enum_Max_Fields = {
+  __typename?: 'household_relationship_enum_max_fields';
+  comment?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Household_Relationship_Enum_Min_Fields = {
+  __typename?: 'household_relationship_enum_min_fields';
+  comment?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "household_relationship_enum" */
+export type Household_Relationship_Enum_Mutation_Response = {
+  __typename?: 'household_relationship_enum_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Household_Relationship_Enum>;
+};
+
+/** on_conflict condition type for table "household_relationship_enum" */
+export type Household_Relationship_Enum_On_Conflict = {
+  constraint: Household_Relationship_Enum_Constraint;
+  update_columns?: Array<Household_Relationship_Enum_Update_Column>;
+  where?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "household_relationship_enum". */
+export type Household_Relationship_Enum_Order_By = {
+  comment?: InputMaybe<Order_By>;
+  value?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: household_relationship_enum */
+export type Household_Relationship_Enum_Pk_Columns_Input = {
+  value: Scalars['String']['input'];
+};
+
+/** select columns of table "household_relationship_enum" */
+export type Household_Relationship_Enum_Select_Column =
+  /** column name */
+  | 'comment'
+  /** column name */
+  | 'value';
+
+/** input type for updating data in table "household_relationship_enum" */
+export type Household_Relationship_Enum_Set_Input = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Streaming cursor of the table "household_relationship_enum" */
+export type Household_Relationship_Enum_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Household_Relationship_Enum_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Household_Relationship_Enum_Stream_Cursor_Value_Input = {
+  comment?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** update columns of table "household_relationship_enum" */
+export type Household_Relationship_Enum_Update_Column =
+  /** column name */
+  | 'comment'
+  /** column name */
+  | 'value';
+
+export type Household_Relationship_Enum_Updates = {
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Household_Relationship_Enum_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Household_Relationship_Enum_Bool_Exp;
+};
+
+/** Boolean expression to compare columns of type "image_source_enum". All fields are combined with logical 'AND'. */
+export type Image_Source_Enum_Comparison_Exp = {
+  _eq?: InputMaybe<Scalars['image_source_enum']['input']>;
+  _gt?: InputMaybe<Scalars['image_source_enum']['input']>;
+  _gte?: InputMaybe<Scalars['image_source_enum']['input']>;
+  _in?: InputMaybe<Array<Scalars['image_source_enum']['input']>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _lt?: InputMaybe<Scalars['image_source_enum']['input']>;
+  _lte?: InputMaybe<Scalars['image_source_enum']['input']>;
+  _neq?: InputMaybe<Scalars['image_source_enum']['input']>;
+  _nin?: InputMaybe<Array<Scalars['image_source_enum']['input']>>;
+};
+
+/** columns and relationships of "imaging_asset" */
+export type Imaging_Asset = {
+  __typename?: 'imaging_asset';
+  captured_at: Scalars['timestamptz']['output'];
+  clinic_id: Scalars['bigint']['output'];
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id: Scalars['bigint']['output'];
+  /** Source device type for the image capture */
+  image_source?: Maybe<Scalars['image_source_enum']['output']>;
+  is_active: Scalars['Boolean']['output'];
+  mime_type: Scalars['String']['output'];
+  modality: Scalars['String']['output'];
+  /** An array relationship */
+  mount_slots: Array<Imaging_Mount_Slot>;
+  /** An aggregate relationship */
+  mount_slots_aggregate: Imaging_Mount_Slot_Aggregate;
+  /** User-editable name for the image */
+  name?: Maybe<Scalars['String']['output']>;
+  patient_id: Scalars['bigint']['output'];
+  sha256: Scalars['String']['output'];
+  size_bytes: Scalars['bigint']['output'];
+  source_device?: Maybe<Scalars['String']['output']>;
+  storage_backend: Scalars['String']['output'];
+  storage_key: Scalars['String']['output'];
+  /** An object relationship */
+  study?: Maybe<Imaging_Study>;
+  study_id?: Maybe<Scalars['bigint']['output']>;
+  thumb_key?: Maybe<Scalars['String']['output']>;
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  web_key?: Maybe<Scalars['String']['output']>;
+};
+
+
+/** columns and relationships of "imaging_asset" */
+export type Imaging_AssetMount_SlotsArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+/** columns and relationships of "imaging_asset" */
+export type Imaging_AssetMount_Slots_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+/** aggregated selection of "imaging_asset" */
+export type Imaging_Asset_Aggregate = {
+  __typename?: 'imaging_asset_aggregate';
+  aggregate?: Maybe<Imaging_Asset_Aggregate_Fields>;
+  nodes: Array<Imaging_Asset>;
+};
+
+export type Imaging_Asset_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Imaging_Asset_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Imaging_Asset_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Imaging_Asset_Aggregate_Bool_Exp_Count>;
+};
+
+export type Imaging_Asset_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Imaging_Asset_Select_Column_Imaging_Asset_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Imaging_Asset_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Imaging_Asset_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Imaging_Asset_Select_Column_Imaging_Asset_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Imaging_Asset_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Imaging_Asset_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Imaging_Asset_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "imaging_asset" */
+export type Imaging_Asset_Aggregate_Fields = {
+  __typename?: 'imaging_asset_aggregate_fields';
+  avg?: Maybe<Imaging_Asset_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Asset_Max_Fields>;
+  min?: Maybe<Imaging_Asset_Min_Fields>;
+  stddev?: Maybe<Imaging_Asset_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Asset_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Asset_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Asset_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Asset_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Asset_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Asset_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_asset" */
+export type Imaging_Asset_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "imaging_asset" */
+export type Imaging_Asset_Aggregate_Order_By = {
+  avg?: InputMaybe<Imaging_Asset_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Imaging_Asset_Max_Order_By>;
+  min?: InputMaybe<Imaging_Asset_Min_Order_By>;
+  stddev?: InputMaybe<Imaging_Asset_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Imaging_Asset_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Imaging_Asset_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Imaging_Asset_Sum_Order_By>;
+  var_pop?: InputMaybe<Imaging_Asset_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Imaging_Asset_Var_Samp_Order_By>;
+  variance?: InputMaybe<Imaging_Asset_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "imaging_asset" */
+export type Imaging_Asset_Arr_Rel_Insert_Input = {
+  data: Array<Imaging_Asset_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Asset_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Asset_Avg_Fields = {
+  __typename?: 'imaging_asset_avg_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "imaging_asset" */
+export type Imaging_Asset_Avg_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_asset". All fields are combined with a logical 'AND'. */
+export type Imaging_Asset_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Asset_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Asset_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Asset_Bool_Exp>>;
+  captured_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  image_source?: InputMaybe<Image_Source_Enum_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  mime_type?: InputMaybe<String_Comparison_Exp>;
+  modality?: InputMaybe<String_Comparison_Exp>;
+  mount_slots?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+  mount_slots_aggregate?: InputMaybe<Imaging_Mount_Slot_Aggregate_Bool_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  patient_id?: InputMaybe<Bigint_Comparison_Exp>;
+  sha256?: InputMaybe<String_Comparison_Exp>;
+  size_bytes?: InputMaybe<Bigint_Comparison_Exp>;
+  source_device?: InputMaybe<String_Comparison_Exp>;
+  storage_backend?: InputMaybe<String_Comparison_Exp>;
+  storage_key?: InputMaybe<String_Comparison_Exp>;
+  study?: InputMaybe<Imaging_Study_Bool_Exp>;
+  study_id?: InputMaybe<Bigint_Comparison_Exp>;
+  thumb_key?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+  web_key?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_asset" */
+export type Imaging_Asset_Constraint =
+  /** unique or primary key constraint on columns "storage_key", "storage_backend" */
+  | 'idx_imaging_asset_storage_unique'
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_asset_pkey';
+
+/** input type for incrementing numeric columns in table "imaging_asset" */
+export type Imaging_Asset_Inc_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  study_id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_asset" */
+export type Imaging_Asset_Insert_Input = {
+  captured_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Source device type for the image capture */
+  image_source?: InputMaybe<Scalars['image_source_enum']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  modality?: InputMaybe<Scalars['String']['input']>;
+  mount_slots?: InputMaybe<Imaging_Mount_Slot_Arr_Rel_Insert_Input>;
+  /** User-editable name for the image */
+  name?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  sha256?: InputMaybe<Scalars['String']['input']>;
+  size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  source_device?: InputMaybe<Scalars['String']['input']>;
+  storage_backend?: InputMaybe<Scalars['String']['input']>;
+  storage_key?: InputMaybe<Scalars['String']['input']>;
+  study?: InputMaybe<Imaging_Study_Obj_Rel_Insert_Input>;
+  study_id?: InputMaybe<Scalars['bigint']['input']>;
+  thumb_key?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  web_key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Asset_Max_Fields = {
+  __typename?: 'imaging_asset_max_fields';
+  captured_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  /** Source device type for the image capture */
+  image_source?: Maybe<Scalars['image_source_enum']['output']>;
+  mime_type?: Maybe<Scalars['String']['output']>;
+  modality?: Maybe<Scalars['String']['output']>;
+  /** User-editable name for the image */
+  name?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  sha256?: Maybe<Scalars['String']['output']>;
+  size_bytes?: Maybe<Scalars['bigint']['output']>;
+  source_device?: Maybe<Scalars['String']['output']>;
+  storage_backend?: Maybe<Scalars['String']['output']>;
+  storage_key?: Maybe<Scalars['String']['output']>;
+  study_id?: Maybe<Scalars['bigint']['output']>;
+  thumb_key?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  web_key?: Maybe<Scalars['String']['output']>;
+};
+
+/** order by max() on columns of table "imaging_asset" */
+export type Imaging_Asset_Max_Order_By = {
+  captured_at?: InputMaybe<Order_By>;
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  /** Source device type for the image capture */
+  image_source?: InputMaybe<Order_By>;
+  mime_type?: InputMaybe<Order_By>;
+  modality?: InputMaybe<Order_By>;
+  /** User-editable name for the image */
+  name?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  sha256?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  source_device?: InputMaybe<Order_By>;
+  storage_backend?: InputMaybe<Order_By>;
+  storage_key?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+  thumb_key?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  web_key?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Asset_Min_Fields = {
+  __typename?: 'imaging_asset_min_fields';
+  captured_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  /** Source device type for the image capture */
+  image_source?: Maybe<Scalars['image_source_enum']['output']>;
+  mime_type?: Maybe<Scalars['String']['output']>;
+  modality?: Maybe<Scalars['String']['output']>;
+  /** User-editable name for the image */
+  name?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  sha256?: Maybe<Scalars['String']['output']>;
+  size_bytes?: Maybe<Scalars['bigint']['output']>;
+  source_device?: Maybe<Scalars['String']['output']>;
+  storage_backend?: Maybe<Scalars['String']['output']>;
+  storage_key?: Maybe<Scalars['String']['output']>;
+  study_id?: Maybe<Scalars['bigint']['output']>;
+  thumb_key?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+  web_key?: Maybe<Scalars['String']['output']>;
+};
+
+/** order by min() on columns of table "imaging_asset" */
+export type Imaging_Asset_Min_Order_By = {
+  captured_at?: InputMaybe<Order_By>;
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  /** Source device type for the image capture */
+  image_source?: InputMaybe<Order_By>;
+  mime_type?: InputMaybe<Order_By>;
+  modality?: InputMaybe<Order_By>;
+  /** User-editable name for the image */
+  name?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  sha256?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  source_device?: InputMaybe<Order_By>;
+  storage_backend?: InputMaybe<Order_By>;
+  storage_key?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+  thumb_key?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  web_key?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "imaging_asset" */
+export type Imaging_Asset_Mutation_Response = {
+  __typename?: 'imaging_asset_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Asset>;
+};
+
+/** input type for inserting object relation for remote table "imaging_asset" */
+export type Imaging_Asset_Obj_Rel_Insert_Input = {
+  data: Imaging_Asset_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Asset_On_Conflict>;
+};
+
+/** on_conflict condition type for table "imaging_asset" */
+export type Imaging_Asset_On_Conflict = {
+  constraint: Imaging_Asset_Constraint;
+  update_columns?: Array<Imaging_Asset_Update_Column>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_asset". */
+export type Imaging_Asset_Order_By = {
+  captured_at?: InputMaybe<Order_By>;
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  image_source?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  mime_type?: InputMaybe<Order_By>;
+  modality?: InputMaybe<Order_By>;
+  mount_slots_aggregate?: InputMaybe<Imaging_Mount_Slot_Aggregate_Order_By>;
+  name?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  sha256?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  source_device?: InputMaybe<Order_By>;
+  storage_backend?: InputMaybe<Order_By>;
+  storage_key?: InputMaybe<Order_By>;
+  study?: InputMaybe<Imaging_Study_Order_By>;
+  study_id?: InputMaybe<Order_By>;
+  thumb_key?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+  web_key?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_asset */
+export type Imaging_Asset_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** select columns of table "imaging_asset" */
+export type Imaging_Asset_Select_Column =
+  /** column name */
+  | 'captured_at'
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'image_source'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'mime_type'
+  /** column name */
+  | 'modality'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'patient_id'
+  /** column name */
+  | 'sha256'
+  /** column name */
+  | 'size_bytes'
+  /** column name */
+  | 'source_device'
+  /** column name */
+  | 'storage_backend'
+  /** column name */
+  | 'storage_key'
+  /** column name */
+  | 'study_id'
+  /** column name */
+  | 'thumb_key'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'web_key';
+
+/** select "imaging_asset_aggregate_bool_exp_bool_and_arguments_columns" columns of table "imaging_asset" */
+export type Imaging_Asset_Select_Column_Imaging_Asset_Aggregate_Bool_Exp_Bool_And_Arguments_Columns =
+  /** column name */
+  | 'is_active';
+
+/** select "imaging_asset_aggregate_bool_exp_bool_or_arguments_columns" columns of table "imaging_asset" */
+export type Imaging_Asset_Select_Column_Imaging_Asset_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns =
+  /** column name */
+  | 'is_active';
+
+/** input type for updating data in table "imaging_asset" */
+export type Imaging_Asset_Set_Input = {
+  captured_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Source device type for the image capture */
+  image_source?: InputMaybe<Scalars['image_source_enum']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  modality?: InputMaybe<Scalars['String']['input']>;
+  /** User-editable name for the image */
+  name?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  sha256?: InputMaybe<Scalars['String']['input']>;
+  size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  source_device?: InputMaybe<Scalars['String']['input']>;
+  storage_backend?: InputMaybe<Scalars['String']['input']>;
+  storage_key?: InputMaybe<Scalars['String']['input']>;
+  study_id?: InputMaybe<Scalars['bigint']['input']>;
+  thumb_key?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  web_key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Asset_Stddev_Fields = {
+  __typename?: 'imaging_asset_stddev_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "imaging_asset" */
+export type Imaging_Asset_Stddev_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Asset_Stddev_Pop_Fields = {
+  __typename?: 'imaging_asset_stddev_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "imaging_asset" */
+export type Imaging_Asset_Stddev_Pop_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Asset_Stddev_Samp_Fields = {
+  __typename?: 'imaging_asset_stddev_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "imaging_asset" */
+export type Imaging_Asset_Stddev_Samp_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "imaging_asset" */
+export type Imaging_Asset_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Asset_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Asset_Stream_Cursor_Value_Input = {
+  captured_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Source device type for the image capture */
+  image_source?: InputMaybe<Scalars['image_source_enum']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mime_type?: InputMaybe<Scalars['String']['input']>;
+  modality?: InputMaybe<Scalars['String']['input']>;
+  /** User-editable name for the image */
+  name?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  sha256?: InputMaybe<Scalars['String']['input']>;
+  size_bytes?: InputMaybe<Scalars['bigint']['input']>;
+  source_device?: InputMaybe<Scalars['String']['input']>;
+  storage_backend?: InputMaybe<Scalars['String']['input']>;
+  storage_key?: InputMaybe<Scalars['String']['input']>;
+  study_id?: InputMaybe<Scalars['bigint']['input']>;
+  thumb_key?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+  web_key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Asset_Sum_Fields = {
+  __typename?: 'imaging_asset_sum_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  size_bytes?: Maybe<Scalars['bigint']['output']>;
+  study_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** order by sum() on columns of table "imaging_asset" */
+export type Imaging_Asset_Sum_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "imaging_asset" */
+export type Imaging_Asset_Update_Column =
+  /** column name */
+  | 'captured_at'
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'image_source'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'mime_type'
+  /** column name */
+  | 'modality'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'patient_id'
+  /** column name */
+  | 'sha256'
+  /** column name */
+  | 'size_bytes'
+  /** column name */
+  | 'source_device'
+  /** column name */
+  | 'storage_backend'
+  /** column name */
+  | 'storage_key'
+  /** column name */
+  | 'study_id'
+  /** column name */
+  | 'thumb_key'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by'
+  /** column name */
+  | 'web_key';
+
+export type Imaging_Asset_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Asset_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Asset_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Asset_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Asset_Var_Pop_Fields = {
+  __typename?: 'imaging_asset_var_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "imaging_asset" */
+export type Imaging_Asset_Var_Pop_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Asset_Var_Samp_Fields = {
+  __typename?: 'imaging_asset_var_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "imaging_asset" */
+export type Imaging_Asset_Var_Samp_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Asset_Variance_Fields = {
+  __typename?: 'imaging_asset_variance_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  size_bytes?: Maybe<Scalars['Float']['output']>;
+  study_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "imaging_asset" */
+export type Imaging_Asset_Variance_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  size_bytes?: InputMaybe<Order_By>;
+  study_id?: InputMaybe<Order_By>;
+};
+
+/** Mount instances for organizing imaging assets using predefined templates */
+export type Imaging_Mount = {
+  __typename?: 'imaging_mount';
+  clinic_id: Scalars['bigint']['output'];
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['bigint']['output'];
+  is_active: Scalars['Boolean']['output'];
+  /** An array relationship */
+  mount_slots: Array<Imaging_Mount_Slot>;
+  /** An aggregate relationship */
+  mount_slots_aggregate: Imaging_Mount_Slot_Aggregate;
+  /** User-defined name for the mount (e.g., "Full Mouth Series - 2026-02-09") */
+  name?: Maybe<Scalars['String']['output']>;
+  patient_id: Scalars['bigint']['output'];
+  /** An object relationship */
+  template: Imaging_Mount_Template;
+  /** Reference to the mount template defining the layout */
+  template_id: Scalars['bigint']['output'];
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+
+/** Mount instances for organizing imaging assets using predefined templates */
+export type Imaging_MountMount_SlotsArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+/** Mount instances for organizing imaging assets using predefined templates */
+export type Imaging_MountMount_Slots_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+/** aggregated selection of "imaging_mount" */
+export type Imaging_Mount_Aggregate = {
+  __typename?: 'imaging_mount_aggregate';
+  aggregate?: Maybe<Imaging_Mount_Aggregate_Fields>;
+  nodes: Array<Imaging_Mount>;
+};
+
+/** aggregate fields of "imaging_mount" */
+export type Imaging_Mount_Aggregate_Fields = {
+  __typename?: 'imaging_mount_aggregate_fields';
+  avg?: Maybe<Imaging_Mount_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Mount_Max_Fields>;
+  min?: Maybe<Imaging_Mount_Min_Fields>;
+  stddev?: Maybe<Imaging_Mount_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Mount_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Mount_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Mount_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Mount_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Mount_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Mount_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_mount" */
+export type Imaging_Mount_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Mount_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Mount_Avg_Fields = {
+  __typename?: 'imaging_mount_avg_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_mount". All fields are combined with a logical 'AND'. */
+export type Imaging_Mount_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Mount_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Mount_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Mount_Bool_Exp>>;
+  clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  mount_slots?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+  mount_slots_aggregate?: InputMaybe<Imaging_Mount_Slot_Aggregate_Bool_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  patient_id?: InputMaybe<Bigint_Comparison_Exp>;
+  template?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+  template_id?: InputMaybe<Bigint_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_mount" */
+export type Imaging_Mount_Constraint =
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_mount_pkey';
+
+/** input type for incrementing numeric columns in table "imaging_mount" */
+export type Imaging_Mount_Inc_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_mount" */
+export type Imaging_Mount_Insert_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mount_slots?: InputMaybe<Imaging_Mount_Slot_Arr_Rel_Insert_Input>;
+  /** User-defined name for the mount (e.g., "Full Mouth Series - 2026-02-09") */
+  name?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  template?: InputMaybe<Imaging_Mount_Template_Obj_Rel_Insert_Input>;
+  /** Reference to the mount template defining the layout */
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Mount_Max_Fields = {
+  __typename?: 'imaging_mount_max_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  /** User-defined name for the mount (e.g., "Full Mouth Series - 2026-02-09") */
+  name?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['bigint']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Mount_Min_Fields = {
+  __typename?: 'imaging_mount_min_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  /** User-defined name for the mount (e.g., "Full Mouth Series - 2026-02-09") */
+  name?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['bigint']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "imaging_mount" */
+export type Imaging_Mount_Mutation_Response = {
+  __typename?: 'imaging_mount_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Mount>;
+};
+
+/** input type for inserting object relation for remote table "imaging_mount" */
+export type Imaging_Mount_Obj_Rel_Insert_Input = {
+  data: Imaging_Mount_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Mount_On_Conflict>;
+};
+
+/** on_conflict condition type for table "imaging_mount" */
+export type Imaging_Mount_On_Conflict = {
+  constraint: Imaging_Mount_Constraint;
+  update_columns?: Array<Imaging_Mount_Update_Column>;
+  where?: InputMaybe<Imaging_Mount_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_mount". */
+export type Imaging_Mount_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  mount_slots_aggregate?: InputMaybe<Imaging_Mount_Slot_Aggregate_Order_By>;
+  name?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  template?: InputMaybe<Imaging_Mount_Template_Order_By>;
+  template_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_mount */
+export type Imaging_Mount_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** select columns of table "imaging_mount" */
+export type Imaging_Mount_Select_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'description'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'patient_id'
+  /** column name */
+  | 'template_id'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+/** input type for updating data in table "imaging_mount" */
+export type Imaging_Mount_Set_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** User-defined name for the mount (e.g., "Full Mouth Series - 2026-02-09") */
+  name?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** Junction table linking imaging assets to mount slots */
+export type Imaging_Mount_Slot = {
+  __typename?: 'imaging_mount_slot';
+  /** An object relationship */
+  asset: Imaging_Asset;
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id: Scalars['bigint']['output'];
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id: Scalars['bigint']['output'];
+  is_active: Scalars['Boolean']['output'];
+  /** An object relationship */
+  mount: Imaging_Mount;
+  mount_id: Scalars['bigint']['output'];
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id: Scalars['String']['output'];
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregated selection of "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Aggregate = {
+  __typename?: 'imaging_mount_slot_aggregate';
+  aggregate?: Maybe<Imaging_Mount_Slot_Aggregate_Fields>;
+  nodes: Array<Imaging_Mount_Slot>;
+};
+
+export type Imaging_Mount_Slot_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Imaging_Mount_Slot_Aggregate_Bool_Exp_Count>;
+};
+
+export type Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Imaging_Mount_Slot_Select_Column_Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Imaging_Mount_Slot_Select_Column_Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Imaging_Mount_Slot_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
+};
+
+/** aggregate fields of "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Aggregate_Fields = {
+  __typename?: 'imaging_mount_slot_aggregate_fields';
+  avg?: Maybe<Imaging_Mount_Slot_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Mount_Slot_Max_Fields>;
+  min?: Maybe<Imaging_Mount_Slot_Min_Fields>;
+  stddev?: Maybe<Imaging_Mount_Slot_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Mount_Slot_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Mount_Slot_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Mount_Slot_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Mount_Slot_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Mount_Slot_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Mount_Slot_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** order by aggregate values of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Aggregate_Order_By = {
+  avg?: InputMaybe<Imaging_Mount_Slot_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Imaging_Mount_Slot_Max_Order_By>;
+  min?: InputMaybe<Imaging_Mount_Slot_Min_Order_By>;
+  stddev?: InputMaybe<Imaging_Mount_Slot_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Imaging_Mount_Slot_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Imaging_Mount_Slot_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Imaging_Mount_Slot_Sum_Order_By>;
+  var_pop?: InputMaybe<Imaging_Mount_Slot_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Imaging_Mount_Slot_Var_Samp_Order_By>;
+  variance?: InputMaybe<Imaging_Mount_Slot_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Arr_Rel_Insert_Input = {
+  data: Array<Imaging_Mount_Slot_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Mount_Slot_On_Conflict>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Mount_Slot_Avg_Fields = {
+  __typename?: 'imaging_mount_slot_avg_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Avg_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_mount_slot". All fields are combined with a logical 'AND'. */
+export type Imaging_Mount_Slot_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Mount_Slot_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Mount_Slot_Bool_Exp>>;
+  asset?: InputMaybe<Imaging_Asset_Bool_Exp>;
+  asset_id?: InputMaybe<Bigint_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  mount?: InputMaybe<Imaging_Mount_Bool_Exp>;
+  mount_id?: InputMaybe<Bigint_Comparison_Exp>;
+  slot_id?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Constraint =
+  /** unique or primary key constraint on columns "slot_id", "mount_id" */
+  | 'idx_imaging_mount_slot_unique'
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_mount_slot_pkey';
+
+/** input type for incrementing numeric columns in table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Inc_Input = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Scalars['bigint']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  mount_id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Insert_Input = {
+  asset?: InputMaybe<Imaging_Asset_Obj_Rel_Insert_Input>;
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mount?: InputMaybe<Imaging_Mount_Obj_Rel_Insert_Input>;
+  mount_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Mount_Slot_Max_Fields = {
+  __typename?: 'imaging_mount_slot_max_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  mount_id?: Maybe<Scalars['bigint']['output']>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** order by max() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Max_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Mount_Slot_Min_Fields = {
+  __typename?: 'imaging_mount_slot_min_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  mount_id?: Maybe<Scalars['bigint']['output']>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** order by min() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Min_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** response of any mutation on the table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Mutation_Response = {
+  __typename?: 'imaging_mount_slot_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Mount_Slot>;
+};
+
+/** on_conflict condition type for table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_On_Conflict = {
+  constraint: Imaging_Mount_Slot_Constraint;
+  update_columns?: Array<Imaging_Mount_Slot_Update_Column>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_mount_slot". */
+export type Imaging_Mount_Slot_Order_By = {
+  asset?: InputMaybe<Imaging_Asset_Order_By>;
+  asset_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  mount?: InputMaybe<Imaging_Mount_Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+  slot_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_mount_slot */
+export type Imaging_Mount_Slot_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** select columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Select_Column =
+  /** column name */
+  | 'asset_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'mount_id'
+  /** column name */
+  | 'slot_id'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+/** select "imaging_mount_slot_aggregate_bool_exp_bool_and_arguments_columns" columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Select_Column_Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_And_Arguments_Columns =
+  /** column name */
+  | 'is_active';
+
+/** select "imaging_mount_slot_aggregate_bool_exp_bool_or_arguments_columns" columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Select_Column_Imaging_Mount_Slot_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns =
+  /** column name */
+  | 'is_active';
+
+/** input type for updating data in table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Set_Input = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mount_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Mount_Slot_Stddev_Fields = {
+  __typename?: 'imaging_mount_slot_stddev_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Stddev_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Mount_Slot_Stddev_Pop_Fields = {
+  __typename?: 'imaging_mount_slot_stddev_pop_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Stddev_Pop_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Mount_Slot_Stddev_Samp_Fields = {
+  __typename?: 'imaging_mount_slot_stddev_samp_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Stddev_Samp_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** Streaming cursor of the table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Mount_Slot_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Mount_Slot_Stream_Cursor_Value_Input = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  mount_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Slot identifier from the mount template (e.g., "slot_1", "fms_ur1") */
+  slot_id?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Mount_Slot_Sum_Fields = {
+  __typename?: 'imaging_mount_slot_sum_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['bigint']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  mount_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** order by sum() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Sum_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** update columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Update_Column =
+  /** column name */
+  | 'asset_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'mount_id'
+  /** column name */
+  | 'slot_id'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+export type Imaging_Mount_Slot_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Mount_Slot_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Mount_Slot_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Mount_Slot_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Mount_Slot_Var_Pop_Fields = {
+  __typename?: 'imaging_mount_slot_var_pop_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Var_Pop_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Mount_Slot_Var_Samp_Fields = {
+  __typename?: 'imaging_mount_slot_var_samp_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Var_Samp_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Mount_Slot_Variance_Fields = {
+  __typename?: 'imaging_mount_slot_variance_fields';
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  mount_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "imaging_mount_slot" */
+export type Imaging_Mount_Slot_Variance_Order_By = {
+  /** Reference to the imaging asset assigned to this slot */
+  asset_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  mount_id?: InputMaybe<Order_By>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Mount_Stddev_Fields = {
+  __typename?: 'imaging_mount_stddev_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Mount_Stddev_Pop_Fields = {
+  __typename?: 'imaging_mount_stddev_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Mount_Stddev_Samp_Fields = {
+  __typename?: 'imaging_mount_stddev_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "imaging_mount" */
+export type Imaging_Mount_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Mount_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Mount_Stream_Cursor_Value_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** User-defined name for the mount (e.g., "Full Mouth Series - 2026-02-09") */
+  name?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Mount_Sum_Fields = {
+  __typename?: 'imaging_mount_sum_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** Predefined mount templates for organizing imaging assets */
+export type Imaging_Mount_Template = {
+  __typename?: 'imaging_mount_template';
+  created_at: Scalars['timestamptz']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['bigint']['output'];
+  is_active: Scalars['Boolean']['output'];
+  /** Template-specific layout metadata for rendering */
+  layout_config?: Maybe<Scalars['jsonb']['output']>;
+  name: Scalars['String']['output'];
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions: Scalars['jsonb']['output'];
+  /** Unique identifier for the template (e.g., "single", "two_horizontal") */
+  template_key: Scalars['String']['output'];
+};
+
+
+/** Predefined mount templates for organizing imaging assets */
+export type Imaging_Mount_TemplateLayout_ConfigArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Predefined mount templates for organizing imaging assets */
+export type Imaging_Mount_TemplateSlot_DefinitionsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "imaging_mount_template" */
+export type Imaging_Mount_Template_Aggregate = {
+  __typename?: 'imaging_mount_template_aggregate';
+  aggregate?: Maybe<Imaging_Mount_Template_Aggregate_Fields>;
+  nodes: Array<Imaging_Mount_Template>;
+};
+
+/** aggregate fields of "imaging_mount_template" */
+export type Imaging_Mount_Template_Aggregate_Fields = {
+  __typename?: 'imaging_mount_template_aggregate_fields';
+  avg?: Maybe<Imaging_Mount_Template_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Mount_Template_Max_Fields>;
+  min?: Maybe<Imaging_Mount_Template_Min_Fields>;
+  stddev?: Maybe<Imaging_Mount_Template_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Mount_Template_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Mount_Template_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Mount_Template_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Mount_Template_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Mount_Template_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Mount_Template_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_mount_template" */
+export type Imaging_Mount_Template_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Mount_Template_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Mount_Template_Append_Input = {
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Mount_Template_Avg_Fields = {
+  __typename?: 'imaging_mount_template_avg_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_mount_template". All fields are combined with a logical 'AND'. */
+export type Imaging_Mount_Template_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Mount_Template_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Mount_Template_Bool_Exp>>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  layout_config?: InputMaybe<Jsonb_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  slot_definitions?: InputMaybe<Jsonb_Comparison_Exp>;
+  template_key?: InputMaybe<String_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_mount_template" */
+export type Imaging_Mount_Template_Constraint =
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_mount_template_pkey'
+  /** unique or primary key constraint on columns "template_key" */
+  | 'imaging_mount_template_template_key_key';
+
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Imaging_Mount_Template_Delete_At_Path_Input = {
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Imaging_Mount_Template_Delete_Elem_Input = {
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['Int']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Imaging_Mount_Template_Delete_Key_Input = {
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "imaging_mount_template" */
+export type Imaging_Mount_Template_Inc_Input = {
+  id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_mount_template" */
+export type Imaging_Mount_Template_Insert_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Unique identifier for the template (e.g., "single", "two_horizontal") */
+  template_key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Mount_Template_Max_Fields = {
+  __typename?: 'imaging_mount_template_max_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  /** Unique identifier for the template (e.g., "single", "two_horizontal") */
+  template_key?: Maybe<Scalars['String']['output']>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Mount_Template_Min_Fields = {
+  __typename?: 'imaging_mount_template_min_fields';
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  /** Unique identifier for the template (e.g., "single", "two_horizontal") */
+  template_key?: Maybe<Scalars['String']['output']>;
+};
+
+/** response of any mutation on the table "imaging_mount_template" */
+export type Imaging_Mount_Template_Mutation_Response = {
+  __typename?: 'imaging_mount_template_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Mount_Template>;
+};
+
+/** input type for inserting object relation for remote table "imaging_mount_template" */
+export type Imaging_Mount_Template_Obj_Rel_Insert_Input = {
+  data: Imaging_Mount_Template_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Mount_Template_On_Conflict>;
+};
+
+/** on_conflict condition type for table "imaging_mount_template" */
+export type Imaging_Mount_Template_On_Conflict = {
+  constraint: Imaging_Mount_Template_Constraint;
+  update_columns?: Array<Imaging_Mount_Template_Update_Column>;
+  where?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_mount_template". */
+export type Imaging_Mount_Template_Order_By = {
+  created_at?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  layout_config?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  slot_definitions?: InputMaybe<Order_By>;
+  template_key?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_mount_template */
+export type Imaging_Mount_Template_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Mount_Template_Prepend_Input = {
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "imaging_mount_template" */
+export type Imaging_Mount_Template_Select_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'description'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'layout_config'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'slot_definitions'
+  /** column name */
+  | 'template_key';
+
+/** input type for updating data in table "imaging_mount_template" */
+export type Imaging_Mount_Template_Set_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Unique identifier for the template (e.g., "single", "two_horizontal") */
+  template_key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Mount_Template_Stddev_Fields = {
+  __typename?: 'imaging_mount_template_stddev_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Mount_Template_Stddev_Pop_Fields = {
+  __typename?: 'imaging_mount_template_stddev_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Mount_Template_Stddev_Samp_Fields = {
+  __typename?: 'imaging_mount_template_stddev_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "imaging_mount_template" */
+export type Imaging_Mount_Template_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Mount_Template_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Mount_Template_Stream_Cursor_Value_Input = {
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Template-specific layout metadata for rendering */
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Unique identifier for the template (e.g., "single", "two_horizontal") */
+  template_key?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Mount_Template_Sum_Fields = {
+  __typename?: 'imaging_mount_template_sum_fields';
+  id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "imaging_mount_template" */
+export type Imaging_Mount_Template_Update_Column =
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'description'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'layout_config'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'slot_definitions'
+  /** column name */
+  | 'template_key';
+
+export type Imaging_Mount_Template_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Imaging_Mount_Template_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Imaging_Mount_Template_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Imaging_Mount_Template_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Imaging_Mount_Template_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Mount_Template_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Imaging_Mount_Template_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Mount_Template_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Mount_Template_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Mount_Template_Var_Pop_Fields = {
+  __typename?: 'imaging_mount_template_var_pop_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Mount_Template_Var_Samp_Fields = {
+  __typename?: 'imaging_mount_template_var_samp_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Mount_Template_Variance_Fields = {
+  __typename?: 'imaging_mount_template_variance_fields';
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** update columns of table "imaging_mount" */
+export type Imaging_Mount_Update_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'description'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'patient_id'
+  /** column name */
+  | 'template_id'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+export type Imaging_Mount_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Mount_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Mount_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Mount_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Mount_Var_Pop_Fields = {
+  __typename?: 'imaging_mount_var_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Mount_Var_Samp_Fields = {
+  __typename?: 'imaging_mount_var_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Mount_Variance_Fields = {
+  __typename?: 'imaging_mount_variance_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+  /** Reference to the mount template defining the layout */
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** columns and relationships of "imaging_study" */
+export type Imaging_Study = {
+  __typename?: 'imaging_study';
+  /** An array relationship */
+  assets: Array<Imaging_Asset>;
+  /** An aggregate relationship */
+  assets_aggregate: Imaging_Asset_Aggregate;
+  captured_at: Scalars['timestamptz']['output'];
+  clinic_id: Scalars['bigint']['output'];
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id: Scalars['bigint']['output'];
+  is_active: Scalars['Boolean']['output'];
+  kind: Scalars['String']['output'];
+  patient_id: Scalars['bigint']['output'];
+  source?: Maybe<Scalars['String']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+
+/** columns and relationships of "imaging_study" */
+export type Imaging_StudyAssetsArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Asset_Order_By>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+/** columns and relationships of "imaging_study" */
+export type Imaging_StudyAssets_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Asset_Order_By>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+/** aggregated selection of "imaging_study" */
+export type Imaging_Study_Aggregate = {
+  __typename?: 'imaging_study_aggregate';
+  aggregate?: Maybe<Imaging_Study_Aggregate_Fields>;
+  nodes: Array<Imaging_Study>;
+};
+
+/** aggregate fields of "imaging_study" */
+export type Imaging_Study_Aggregate_Fields = {
+  __typename?: 'imaging_study_aggregate_fields';
+  avg?: Maybe<Imaging_Study_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Study_Max_Fields>;
+  min?: Maybe<Imaging_Study_Min_Fields>;
+  stddev?: Maybe<Imaging_Study_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Study_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Study_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Study_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Study_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Study_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Study_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_study" */
+export type Imaging_Study_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Study_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Study_Avg_Fields = {
+  __typename?: 'imaging_study_avg_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_study". All fields are combined with a logical 'AND'. */
+export type Imaging_Study_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Study_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Study_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Study_Bool_Exp>>;
+  assets?: InputMaybe<Imaging_Asset_Bool_Exp>;
+  assets_aggregate?: InputMaybe<Imaging_Asset_Aggregate_Bool_Exp>;
+  captured_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  kind?: InputMaybe<String_Comparison_Exp>;
+  patient_id?: InputMaybe<Bigint_Comparison_Exp>;
+  source?: InputMaybe<String_Comparison_Exp>;
+  title?: InputMaybe<String_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_study" */
+export type Imaging_Study_Constraint =
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_study_pkey';
+
+/** input type for incrementing numeric columns in table "imaging_study" */
+export type Imaging_Study_Inc_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_study" */
+export type Imaging_Study_Insert_Input = {
+  assets?: InputMaybe<Imaging_Asset_Arr_Rel_Insert_Input>;
+  captured_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  kind?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Study_Max_Fields = {
+  __typename?: 'imaging_study_max_fields';
+  captured_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  kind?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  source?: Maybe<Scalars['String']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Study_Min_Fields = {
+  __typename?: 'imaging_study_min_fields';
+  captured_at?: Maybe<Scalars['timestamptz']['output']>;
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  kind?: Maybe<Scalars['String']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+  source?: Maybe<Scalars['String']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "imaging_study" */
+export type Imaging_Study_Mutation_Response = {
+  __typename?: 'imaging_study_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Study>;
+};
+
+/** input type for inserting object relation for remote table "imaging_study" */
+export type Imaging_Study_Obj_Rel_Insert_Input = {
+  data: Imaging_Study_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Study_On_Conflict>;
+};
+
+/** on_conflict condition type for table "imaging_study" */
+export type Imaging_Study_On_Conflict = {
+  constraint: Imaging_Study_Constraint;
+  update_columns?: Array<Imaging_Study_Update_Column>;
+  where?: InputMaybe<Imaging_Study_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_study". */
+export type Imaging_Study_Order_By = {
+  assets_aggregate?: InputMaybe<Imaging_Asset_Aggregate_Order_By>;
+  captured_at?: InputMaybe<Order_By>;
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  kind?: InputMaybe<Order_By>;
+  patient_id?: InputMaybe<Order_By>;
+  source?: InputMaybe<Order_By>;
+  title?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_study */
+export type Imaging_Study_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** select columns of table "imaging_study" */
+export type Imaging_Study_Select_Column =
+  /** column name */
+  | 'captured_at'
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'kind'
+  /** column name */
+  | 'patient_id'
+  /** column name */
+  | 'source'
+  /** column name */
+  | 'title'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+/** input type for updating data in table "imaging_study" */
+export type Imaging_Study_Set_Input = {
+  captured_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  kind?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Study_Stddev_Fields = {
+  __typename?: 'imaging_study_stddev_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Study_Stddev_Pop_Fields = {
+  __typename?: 'imaging_study_stddev_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Study_Stddev_Samp_Fields = {
+  __typename?: 'imaging_study_stddev_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "imaging_study" */
+export type Imaging_Study_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Study_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Study_Stream_Cursor_Value_Input = {
+  captured_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  kind?: InputMaybe<Scalars['String']['input']>;
+  patient_id?: InputMaybe<Scalars['bigint']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Study_Sum_Fields = {
+  __typename?: 'imaging_study_sum_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  patient_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "imaging_study" */
+export type Imaging_Study_Update_Column =
+  /** column name */
+  | 'captured_at'
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'kind'
+  /** column name */
+  | 'patient_id'
+  /** column name */
+  | 'source'
+  /** column name */
+  | 'title'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+export type Imaging_Study_Updates = {
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Study_Inc_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Study_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Study_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Study_Var_Pop_Fields = {
+  __typename?: 'imaging_study_var_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Study_Var_Samp_Fields = {
+  __typename?: 'imaging_study_var_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Study_Variance_Fields = {
+  __typename?: 'imaging_study_variance_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  patient_id?: Maybe<Scalars['Float']['output']>;
 };
 
 /** columns and relationships of "insurance_subscriber" */
@@ -5072,12 +8003,44 @@ export type Mutation_Root = {
   delete_clinic_user_v?: Maybe<Clinic_User_V_Mutation_Response>;
   /** delete data from the table: "clinic_v" */
   delete_clinic_v?: Maybe<Clinic_V_Mutation_Response>;
+  /** delete data from the table: "contact_kind_enum" */
+  delete_contact_kind_enum?: Maybe<Contact_Kind_Enum_Mutation_Response>;
+  /** delete single row from the table: "contact_kind_enum" */
+  delete_contact_kind_enum_by_pk?: Maybe<Contact_Kind_Enum>;
   /** delete data from the table: "family_group_v" */
   delete_family_group_v?: Maybe<Family_Group_V_Mutation_Response>;
+  /** delete data from the table: "field_config" */
+  delete_field_config?: Maybe<Field_Config_Mutation_Response>;
+  /** delete single row from the table: "field_config" */
+  delete_field_config_by_pk?: Maybe<Field_Config>;
   /** delete data from the table: "gender_enum" */
   delete_gender_enum?: Maybe<Gender_Enum_Mutation_Response>;
   /** delete single row from the table: "gender_enum" */
   delete_gender_enum_by_pk?: Maybe<Gender_Enum>;
+  /** delete data from the table: "household_relationship_enum" */
+  delete_household_relationship_enum?: Maybe<Household_Relationship_Enum_Mutation_Response>;
+  /** delete single row from the table: "household_relationship_enum" */
+  delete_household_relationship_enum_by_pk?: Maybe<Household_Relationship_Enum>;
+  /** delete data from the table: "imaging_asset" */
+  delete_imaging_asset?: Maybe<Imaging_Asset_Mutation_Response>;
+  /** delete single row from the table: "imaging_asset" */
+  delete_imaging_asset_by_pk?: Maybe<Imaging_Asset>;
+  /** delete data from the table: "imaging_mount" */
+  delete_imaging_mount?: Maybe<Imaging_Mount_Mutation_Response>;
+  /** delete single row from the table: "imaging_mount" */
+  delete_imaging_mount_by_pk?: Maybe<Imaging_Mount>;
+  /** delete data from the table: "imaging_mount_slot" */
+  delete_imaging_mount_slot?: Maybe<Imaging_Mount_Slot_Mutation_Response>;
+  /** delete single row from the table: "imaging_mount_slot" */
+  delete_imaging_mount_slot_by_pk?: Maybe<Imaging_Mount_Slot>;
+  /** delete data from the table: "imaging_mount_template" */
+  delete_imaging_mount_template?: Maybe<Imaging_Mount_Template_Mutation_Response>;
+  /** delete single row from the table: "imaging_mount_template" */
+  delete_imaging_mount_template_by_pk?: Maybe<Imaging_Mount_Template>;
+  /** delete data from the table: "imaging_study" */
+  delete_imaging_study?: Maybe<Imaging_Study_Mutation_Response>;
+  /** delete single row from the table: "imaging_study" */
+  delete_imaging_study_by_pk?: Maybe<Imaging_Study>;
   /** delete data from the table: "insurance_subscriber" */
   delete_insurance_subscriber?: Maybe<Insurance_Subscriber_Mutation_Response>;
   /** delete single row from the table: "insurance_subscriber" */
@@ -5194,14 +8157,46 @@ export type Mutation_Root = {
   insert_clinic_v?: Maybe<Clinic_V_Mutation_Response>;
   /** insert a single row into the table: "clinic_v" */
   insert_clinic_v_one?: Maybe<Clinic_V>;
+  /** insert data into the table: "contact_kind_enum" */
+  insert_contact_kind_enum?: Maybe<Contact_Kind_Enum_Mutation_Response>;
+  /** insert a single row into the table: "contact_kind_enum" */
+  insert_contact_kind_enum_one?: Maybe<Contact_Kind_Enum>;
   /** insert data into the table: "family_group_v" */
   insert_family_group_v?: Maybe<Family_Group_V_Mutation_Response>;
   /** insert a single row into the table: "family_group_v" */
   insert_family_group_v_one?: Maybe<Family_Group_V>;
+  /** insert data into the table: "field_config" */
+  insert_field_config?: Maybe<Field_Config_Mutation_Response>;
+  /** insert a single row into the table: "field_config" */
+  insert_field_config_one?: Maybe<Field_Config>;
   /** insert data into the table: "gender_enum" */
   insert_gender_enum?: Maybe<Gender_Enum_Mutation_Response>;
   /** insert a single row into the table: "gender_enum" */
   insert_gender_enum_one?: Maybe<Gender_Enum>;
+  /** insert data into the table: "household_relationship_enum" */
+  insert_household_relationship_enum?: Maybe<Household_Relationship_Enum_Mutation_Response>;
+  /** insert a single row into the table: "household_relationship_enum" */
+  insert_household_relationship_enum_one?: Maybe<Household_Relationship_Enum>;
+  /** insert data into the table: "imaging_asset" */
+  insert_imaging_asset?: Maybe<Imaging_Asset_Mutation_Response>;
+  /** insert a single row into the table: "imaging_asset" */
+  insert_imaging_asset_one?: Maybe<Imaging_Asset>;
+  /** insert data into the table: "imaging_mount" */
+  insert_imaging_mount?: Maybe<Imaging_Mount_Mutation_Response>;
+  /** insert a single row into the table: "imaging_mount" */
+  insert_imaging_mount_one?: Maybe<Imaging_Mount>;
+  /** insert data into the table: "imaging_mount_slot" */
+  insert_imaging_mount_slot?: Maybe<Imaging_Mount_Slot_Mutation_Response>;
+  /** insert a single row into the table: "imaging_mount_slot" */
+  insert_imaging_mount_slot_one?: Maybe<Imaging_Mount_Slot>;
+  /** insert data into the table: "imaging_mount_template" */
+  insert_imaging_mount_template?: Maybe<Imaging_Mount_Template_Mutation_Response>;
+  /** insert a single row into the table: "imaging_mount_template" */
+  insert_imaging_mount_template_one?: Maybe<Imaging_Mount_Template>;
+  /** insert data into the table: "imaging_study" */
+  insert_imaging_study?: Maybe<Imaging_Study_Mutation_Response>;
+  /** insert a single row into the table: "imaging_study" */
+  insert_imaging_study_one?: Maybe<Imaging_Study>;
   /** insert data into the table: "insurance_subscriber" */
   insert_insurance_subscriber?: Maybe<Insurance_Subscriber_Mutation_Response>;
   /** insert a single row into the table: "insurance_subscriber" */
@@ -5342,16 +8337,64 @@ export type Mutation_Root = {
   update_clinic_v?: Maybe<Clinic_V_Mutation_Response>;
   /** update multiples rows of table: "clinic_v" */
   update_clinic_v_many?: Maybe<Array<Maybe<Clinic_V_Mutation_Response>>>;
+  /** update data of the table: "contact_kind_enum" */
+  update_contact_kind_enum?: Maybe<Contact_Kind_Enum_Mutation_Response>;
+  /** update single row of the table: "contact_kind_enum" */
+  update_contact_kind_enum_by_pk?: Maybe<Contact_Kind_Enum>;
+  /** update multiples rows of table: "contact_kind_enum" */
+  update_contact_kind_enum_many?: Maybe<Array<Maybe<Contact_Kind_Enum_Mutation_Response>>>;
   /** update data of the table: "family_group_v" */
   update_family_group_v?: Maybe<Family_Group_V_Mutation_Response>;
   /** update multiples rows of table: "family_group_v" */
   update_family_group_v_many?: Maybe<Array<Maybe<Family_Group_V_Mutation_Response>>>;
+  /** update data of the table: "field_config" */
+  update_field_config?: Maybe<Field_Config_Mutation_Response>;
+  /** update single row of the table: "field_config" */
+  update_field_config_by_pk?: Maybe<Field_Config>;
+  /** update multiples rows of table: "field_config" */
+  update_field_config_many?: Maybe<Array<Maybe<Field_Config_Mutation_Response>>>;
   /** update data of the table: "gender_enum" */
   update_gender_enum?: Maybe<Gender_Enum_Mutation_Response>;
   /** update single row of the table: "gender_enum" */
   update_gender_enum_by_pk?: Maybe<Gender_Enum>;
   /** update multiples rows of table: "gender_enum" */
   update_gender_enum_many?: Maybe<Array<Maybe<Gender_Enum_Mutation_Response>>>;
+  /** update data of the table: "household_relationship_enum" */
+  update_household_relationship_enum?: Maybe<Household_Relationship_Enum_Mutation_Response>;
+  /** update single row of the table: "household_relationship_enum" */
+  update_household_relationship_enum_by_pk?: Maybe<Household_Relationship_Enum>;
+  /** update multiples rows of table: "household_relationship_enum" */
+  update_household_relationship_enum_many?: Maybe<Array<Maybe<Household_Relationship_Enum_Mutation_Response>>>;
+  /** update data of the table: "imaging_asset" */
+  update_imaging_asset?: Maybe<Imaging_Asset_Mutation_Response>;
+  /** update single row of the table: "imaging_asset" */
+  update_imaging_asset_by_pk?: Maybe<Imaging_Asset>;
+  /** update multiples rows of table: "imaging_asset" */
+  update_imaging_asset_many?: Maybe<Array<Maybe<Imaging_Asset_Mutation_Response>>>;
+  /** update data of the table: "imaging_mount" */
+  update_imaging_mount?: Maybe<Imaging_Mount_Mutation_Response>;
+  /** update single row of the table: "imaging_mount" */
+  update_imaging_mount_by_pk?: Maybe<Imaging_Mount>;
+  /** update multiples rows of table: "imaging_mount" */
+  update_imaging_mount_many?: Maybe<Array<Maybe<Imaging_Mount_Mutation_Response>>>;
+  /** update data of the table: "imaging_mount_slot" */
+  update_imaging_mount_slot?: Maybe<Imaging_Mount_Slot_Mutation_Response>;
+  /** update single row of the table: "imaging_mount_slot" */
+  update_imaging_mount_slot_by_pk?: Maybe<Imaging_Mount_Slot>;
+  /** update multiples rows of table: "imaging_mount_slot" */
+  update_imaging_mount_slot_many?: Maybe<Array<Maybe<Imaging_Mount_Slot_Mutation_Response>>>;
+  /** update data of the table: "imaging_mount_template" */
+  update_imaging_mount_template?: Maybe<Imaging_Mount_Template_Mutation_Response>;
+  /** update single row of the table: "imaging_mount_template" */
+  update_imaging_mount_template_by_pk?: Maybe<Imaging_Mount_Template>;
+  /** update multiples rows of table: "imaging_mount_template" */
+  update_imaging_mount_template_many?: Maybe<Array<Maybe<Imaging_Mount_Template_Mutation_Response>>>;
+  /** update data of the table: "imaging_study" */
+  update_imaging_study?: Maybe<Imaging_Study_Mutation_Response>;
+  /** update single row of the table: "imaging_study" */
+  update_imaging_study_by_pk?: Maybe<Imaging_Study>;
+  /** update multiples rows of table: "imaging_study" */
+  update_imaging_study_many?: Maybe<Array<Maybe<Imaging_Study_Mutation_Response>>>;
   /** update data of the table: "insurance_subscriber" */
   update_insurance_subscriber?: Maybe<Insurance_Subscriber_Mutation_Response>;
   /** update single row of the table: "insurance_subscriber" */
@@ -5583,8 +8626,32 @@ export type Mutation_RootDelete_Clinic_VArgs = {
 
 
 /** mutation root */
+export type Mutation_RootDelete_Contact_Kind_EnumArgs = {
+  where: Contact_Kind_Enum_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Contact_Kind_Enum_By_PkArgs = {
+  value: Scalars['String']['input'];
+};
+
+
+/** mutation root */
 export type Mutation_RootDelete_Family_Group_VArgs = {
   where: Family_Group_V_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Field_ConfigArgs = {
+  where: Field_Config_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Field_Config_By_PkArgs = {
+  id: Scalars['bigint']['input'];
 };
 
 
@@ -5597,6 +8664,78 @@ export type Mutation_RootDelete_Gender_EnumArgs = {
 /** mutation root */
 export type Mutation_RootDelete_Gender_Enum_By_PkArgs = {
   value: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Household_Relationship_EnumArgs = {
+  where: Household_Relationship_Enum_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Household_Relationship_Enum_By_PkArgs = {
+  value: Scalars['String']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_AssetArgs = {
+  where: Imaging_Asset_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Asset_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_MountArgs = {
+  where: Imaging_Mount_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Mount_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Mount_SlotArgs = {
+  where: Imaging_Mount_Slot_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Mount_Slot_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Mount_TemplateArgs = {
+  where: Imaging_Mount_Template_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Mount_Template_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_StudyArgs = {
+  where: Imaging_Study_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Study_By_PkArgs = {
+  id: Scalars['bigint']['input'];
 };
 
 
@@ -5966,6 +9105,20 @@ export type Mutation_RootInsert_Clinic_V_OneArgs = {
 
 
 /** mutation root */
+export type Mutation_RootInsert_Contact_Kind_EnumArgs = {
+  objects: Array<Contact_Kind_Enum_Insert_Input>;
+  on_conflict?: InputMaybe<Contact_Kind_Enum_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Contact_Kind_Enum_OneArgs = {
+  object: Contact_Kind_Enum_Insert_Input;
+  on_conflict?: InputMaybe<Contact_Kind_Enum_On_Conflict>;
+};
+
+
+/** mutation root */
 export type Mutation_RootInsert_Family_Group_VArgs = {
   objects: Array<Family_Group_V_Insert_Input>;
 };
@@ -5974,6 +9127,20 @@ export type Mutation_RootInsert_Family_Group_VArgs = {
 /** mutation root */
 export type Mutation_RootInsert_Family_Group_V_OneArgs = {
   object: Family_Group_V_Insert_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Field_ConfigArgs = {
+  objects: Array<Field_Config_Insert_Input>;
+  on_conflict?: InputMaybe<Field_Config_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Field_Config_OneArgs = {
+  object: Field_Config_Insert_Input;
+  on_conflict?: InputMaybe<Field_Config_On_Conflict>;
 };
 
 
@@ -5988,6 +9155,90 @@ export type Mutation_RootInsert_Gender_EnumArgs = {
 export type Mutation_RootInsert_Gender_Enum_OneArgs = {
   object: Gender_Enum_Insert_Input;
   on_conflict?: InputMaybe<Gender_Enum_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Household_Relationship_EnumArgs = {
+  objects: Array<Household_Relationship_Enum_Insert_Input>;
+  on_conflict?: InputMaybe<Household_Relationship_Enum_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Household_Relationship_Enum_OneArgs = {
+  object: Household_Relationship_Enum_Insert_Input;
+  on_conflict?: InputMaybe<Household_Relationship_Enum_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_AssetArgs = {
+  objects: Array<Imaging_Asset_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Asset_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Asset_OneArgs = {
+  object: Imaging_Asset_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Asset_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_MountArgs = {
+  objects: Array<Imaging_Mount_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Mount_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Mount_OneArgs = {
+  object: Imaging_Mount_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Mount_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Mount_SlotArgs = {
+  objects: Array<Imaging_Mount_Slot_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Mount_Slot_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Mount_Slot_OneArgs = {
+  object: Imaging_Mount_Slot_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Mount_Slot_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Mount_TemplateArgs = {
+  objects: Array<Imaging_Mount_Template_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Mount_Template_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Mount_Template_OneArgs = {
+  object: Imaging_Mount_Template_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Mount_Template_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_StudyArgs = {
+  objects: Array<Imaging_Study_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Study_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Study_OneArgs = {
+  object: Imaging_Study_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Study_On_Conflict>;
 };
 
 
@@ -6490,6 +9741,26 @@ export type Mutation_RootUpdate_Clinic_V_ManyArgs = {
 
 
 /** mutation root */
+export type Mutation_RootUpdate_Contact_Kind_EnumArgs = {
+  _set?: InputMaybe<Contact_Kind_Enum_Set_Input>;
+  where: Contact_Kind_Enum_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Contact_Kind_Enum_By_PkArgs = {
+  _set?: InputMaybe<Contact_Kind_Enum_Set_Input>;
+  pk_columns: Contact_Kind_Enum_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Contact_Kind_Enum_ManyArgs = {
+  updates: Array<Contact_Kind_Enum_Updates>;
+};
+
+
+/** mutation root */
 export type Mutation_RootUpdate_Family_Group_VArgs = {
   _inc?: InputMaybe<Family_Group_V_Inc_Input>;
   _set?: InputMaybe<Family_Group_V_Set_Input>;
@@ -6500,6 +9771,28 @@ export type Mutation_RootUpdate_Family_Group_VArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Family_Group_V_ManyArgs = {
   updates: Array<Family_Group_V_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Field_ConfigArgs = {
+  _inc?: InputMaybe<Field_Config_Inc_Input>;
+  _set?: InputMaybe<Field_Config_Set_Input>;
+  where: Field_Config_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Field_Config_By_PkArgs = {
+  _inc?: InputMaybe<Field_Config_Inc_Input>;
+  _set?: InputMaybe<Field_Config_Set_Input>;
+  pk_columns: Field_Config_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Field_Config_ManyArgs = {
+  updates: Array<Field_Config_Updates>;
 };
 
 
@@ -6520,6 +9813,146 @@ export type Mutation_RootUpdate_Gender_Enum_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Gender_Enum_ManyArgs = {
   updates: Array<Gender_Enum_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Household_Relationship_EnumArgs = {
+  _set?: InputMaybe<Household_Relationship_Enum_Set_Input>;
+  where: Household_Relationship_Enum_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Household_Relationship_Enum_By_PkArgs = {
+  _set?: InputMaybe<Household_Relationship_Enum_Set_Input>;
+  pk_columns: Household_Relationship_Enum_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Household_Relationship_Enum_ManyArgs = {
+  updates: Array<Household_Relationship_Enum_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_AssetArgs = {
+  _inc?: InputMaybe<Imaging_Asset_Inc_Input>;
+  _set?: InputMaybe<Imaging_Asset_Set_Input>;
+  where: Imaging_Asset_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Asset_By_PkArgs = {
+  _inc?: InputMaybe<Imaging_Asset_Inc_Input>;
+  _set?: InputMaybe<Imaging_Asset_Set_Input>;
+  pk_columns: Imaging_Asset_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Asset_ManyArgs = {
+  updates: Array<Imaging_Asset_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_MountArgs = {
+  _inc?: InputMaybe<Imaging_Mount_Inc_Input>;
+  _set?: InputMaybe<Imaging_Mount_Set_Input>;
+  where: Imaging_Mount_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_By_PkArgs = {
+  _inc?: InputMaybe<Imaging_Mount_Inc_Input>;
+  _set?: InputMaybe<Imaging_Mount_Set_Input>;
+  pk_columns: Imaging_Mount_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_ManyArgs = {
+  updates: Array<Imaging_Mount_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_SlotArgs = {
+  _inc?: InputMaybe<Imaging_Mount_Slot_Inc_Input>;
+  _set?: InputMaybe<Imaging_Mount_Slot_Set_Input>;
+  where: Imaging_Mount_Slot_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_Slot_By_PkArgs = {
+  _inc?: InputMaybe<Imaging_Mount_Slot_Inc_Input>;
+  _set?: InputMaybe<Imaging_Mount_Slot_Set_Input>;
+  pk_columns: Imaging_Mount_Slot_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_Slot_ManyArgs = {
+  updates: Array<Imaging_Mount_Slot_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_TemplateArgs = {
+  _append?: InputMaybe<Imaging_Mount_Template_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Mount_Template_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Mount_Template_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Mount_Template_Delete_Key_Input>;
+  _inc?: InputMaybe<Imaging_Mount_Template_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Mount_Template_Prepend_Input>;
+  _set?: InputMaybe<Imaging_Mount_Template_Set_Input>;
+  where: Imaging_Mount_Template_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_Template_By_PkArgs = {
+  _append?: InputMaybe<Imaging_Mount_Template_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Mount_Template_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Mount_Template_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Mount_Template_Delete_Key_Input>;
+  _inc?: InputMaybe<Imaging_Mount_Template_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Mount_Template_Prepend_Input>;
+  _set?: InputMaybe<Imaging_Mount_Template_Set_Input>;
+  pk_columns: Imaging_Mount_Template_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Mount_Template_ManyArgs = {
+  updates: Array<Imaging_Mount_Template_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_StudyArgs = {
+  _inc?: InputMaybe<Imaging_Study_Inc_Input>;
+  _set?: InputMaybe<Imaging_Study_Set_Input>;
+  where: Imaging_Study_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Study_By_PkArgs = {
+  _inc?: InputMaybe<Imaging_Study_Inc_Input>;
+  _set?: InputMaybe<Imaging_Study_Set_Input>;
+  pk_columns: Imaging_Study_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Study_ManyArgs = {
+  updates: Array<Imaging_Study_Updates>;
 };
 
 
@@ -7488,7 +10921,7 @@ export type Patient = {
   /** An object relationship */
   person: Person;
   person_id: Scalars['bigint']['output'];
-  status: Scalars['String']['output'];
+  status: Patient_Status_Enum_Enum;
   updated_at: Scalars['timestamptz']['output'];
   updated_by?: Maybe<Scalars['uuid']['output']>;
 };
@@ -7566,7 +10999,7 @@ export type Patient_Bool_Exp = {
   patient_referral_aggregate?: InputMaybe<Patient_Referral_Aggregate_Bool_Exp>;
   person?: InputMaybe<Person_Bool_Exp>;
   person_id?: InputMaybe<Bigint_Comparison_Exp>;
-  status?: InputMaybe<String_Comparison_Exp>;
+  status?: InputMaybe<Patient_Status_Enum_Enum_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   updated_by?: InputMaybe<Uuid_Comparison_Exp>;
 };
@@ -7583,10 +11016,10 @@ export type Patient_Field_Config = {
   created_at: Scalars['timestamptz']['output'];
   created_by?: Maybe<Scalars['uuid']['output']>;
   display_order: Scalars['Int']['output'];
-  field_key: Scalars['String']['output'];
-  field_label: Scalars['String']['output'];
+  /** An object relationship */
+  field_config: Field_Config;
+  field_config_id: Scalars['bigint']['output'];
   id: Scalars['bigint']['output'];
-  is_active: Scalars['Boolean']['output'];
   is_displayed: Scalars['Boolean']['output'];
   is_required: Scalars['Boolean']['output'];
   updated_at: Scalars['timestamptz']['output'];
@@ -7598,6 +11031,33 @@ export type Patient_Field_Config_Aggregate = {
   __typename?: 'patient_field_config_aggregate';
   aggregate?: Maybe<Patient_Field_Config_Aggregate_Fields>;
   nodes: Array<Patient_Field_Config>;
+};
+
+export type Patient_Field_Config_Aggregate_Bool_Exp = {
+  bool_and?: InputMaybe<Patient_Field_Config_Aggregate_Bool_Exp_Bool_And>;
+  bool_or?: InputMaybe<Patient_Field_Config_Aggregate_Bool_Exp_Bool_Or>;
+  count?: InputMaybe<Patient_Field_Config_Aggregate_Bool_Exp_Count>;
+};
+
+export type Patient_Field_Config_Aggregate_Bool_Exp_Bool_And = {
+  arguments: Patient_Field_Config_Select_Column_Patient_Field_Config_Aggregate_Bool_Exp_Bool_And_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Patient_Field_Config_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Patient_Field_Config_Aggregate_Bool_Exp_Bool_Or = {
+  arguments: Patient_Field_Config_Select_Column_Patient_Field_Config_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Patient_Field_Config_Bool_Exp>;
+  predicate: Boolean_Comparison_Exp;
+};
+
+export type Patient_Field_Config_Aggregate_Bool_Exp_Count = {
+  arguments?: InputMaybe<Array<Patient_Field_Config_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Patient_Field_Config_Bool_Exp>;
+  predicate: Int_Comparison_Exp;
 };
 
 /** aggregate fields of "patient_field_config" */
@@ -7623,12 +11083,43 @@ export type Patient_Field_Config_Aggregate_FieldsCountArgs = {
   distinct?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+/** order by aggregate values of table "patient_field_config" */
+export type Patient_Field_Config_Aggregate_Order_By = {
+  avg?: InputMaybe<Patient_Field_Config_Avg_Order_By>;
+  count?: InputMaybe<Order_By>;
+  max?: InputMaybe<Patient_Field_Config_Max_Order_By>;
+  min?: InputMaybe<Patient_Field_Config_Min_Order_By>;
+  stddev?: InputMaybe<Patient_Field_Config_Stddev_Order_By>;
+  stddev_pop?: InputMaybe<Patient_Field_Config_Stddev_Pop_Order_By>;
+  stddev_samp?: InputMaybe<Patient_Field_Config_Stddev_Samp_Order_By>;
+  sum?: InputMaybe<Patient_Field_Config_Sum_Order_By>;
+  var_pop?: InputMaybe<Patient_Field_Config_Var_Pop_Order_By>;
+  var_samp?: InputMaybe<Patient_Field_Config_Var_Samp_Order_By>;
+  variance?: InputMaybe<Patient_Field_Config_Variance_Order_By>;
+};
+
+/** input type for inserting array relation for remote table "patient_field_config" */
+export type Patient_Field_Config_Arr_Rel_Insert_Input = {
+  data: Array<Patient_Field_Config_Insert_Input>;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Patient_Field_Config_On_Conflict>;
+};
+
 /** aggregate avg on columns */
 export type Patient_Field_Config_Avg_Fields = {
   __typename?: 'patient_field_config_avg_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by avg() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Avg_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** Boolean expression to filter rows from the table "patient_field_config". All fields are combined with a logical 'AND'. */
@@ -7640,10 +11131,9 @@ export type Patient_Field_Config_Bool_Exp = {
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<Uuid_Comparison_Exp>;
   display_order?: InputMaybe<Int_Comparison_Exp>;
-  field_key?: InputMaybe<String_Comparison_Exp>;
-  field_label?: InputMaybe<String_Comparison_Exp>;
+  field_config?: InputMaybe<Field_Config_Bool_Exp>;
+  field_config_id?: InputMaybe<Bigint_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
-  is_active?: InputMaybe<Boolean_Comparison_Exp>;
   is_displayed?: InputMaybe<Boolean_Comparison_Exp>;
   is_required?: InputMaybe<Boolean_Comparison_Exp>;
   updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -7652,8 +11142,8 @@ export type Patient_Field_Config_Bool_Exp = {
 
 /** unique or primary key constraints on table "patient_field_config" */
 export type Patient_Field_Config_Constraint =
-  /** unique or primary key constraint on columns "clinic_id", "field_key" */
-  | 'patient_field_config_clinic_id_field_key_key'
+  /** unique or primary key constraint on columns "field_config_id", "clinic_id" */
+  | 'patient_field_config_clinic_id_field_config_id_key'
   /** unique or primary key constraint on columns "id" */
   | 'patient_field_config_pkey';
 
@@ -7661,6 +11151,7 @@ export type Patient_Field_Config_Constraint =
 export type Patient_Field_Config_Inc_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   display_order?: InputMaybe<Scalars['Int']['input']>;
+  field_config_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
 };
 
@@ -7670,10 +11161,9 @@ export type Patient_Field_Config_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   display_order?: InputMaybe<Scalars['Int']['input']>;
-  field_key?: InputMaybe<Scalars['String']['input']>;
-  field_label?: InputMaybe<Scalars['String']['input']>;
+  field_config?: InputMaybe<Field_Config_Obj_Rel_Insert_Input>;
+  field_config_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
-  is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_displayed?: InputMaybe<Scalars['Boolean']['input']>;
   is_required?: InputMaybe<Scalars['Boolean']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -7687,11 +11177,22 @@ export type Patient_Field_Config_Max_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
   display_order?: Maybe<Scalars['Int']['output']>;
-  field_key?: Maybe<Scalars['String']['output']>;
-  field_label?: Maybe<Scalars['String']['output']>;
+  field_config_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** order by max() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Max_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
 };
 
 /** aggregate min on columns */
@@ -7701,11 +11202,22 @@ export type Patient_Field_Config_Min_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
   display_order?: Maybe<Scalars['Int']['output']>;
-  field_key?: Maybe<Scalars['String']['output']>;
-  field_label?: Maybe<Scalars['String']['output']>;
+  field_config_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** order by min() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Min_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
 };
 
 /** response of any mutation on the table "patient_field_config" */
@@ -7730,10 +11242,9 @@ export type Patient_Field_Config_Order_By = {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   display_order?: InputMaybe<Order_By>;
-  field_key?: InputMaybe<Order_By>;
-  field_label?: InputMaybe<Order_By>;
+  field_config?: InputMaybe<Field_Config_Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  is_active?: InputMaybe<Order_By>;
   is_displayed?: InputMaybe<Order_By>;
   is_required?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -7756,13 +11267,9 @@ export type Patient_Field_Config_Select_Column =
   /** column name */
   | 'display_order'
   /** column name */
-  | 'field_key'
-  /** column name */
-  | 'field_label'
+  | 'field_config_id'
   /** column name */
   | 'id'
-  /** column name */
-  | 'is_active'
   /** column name */
   | 'is_displayed'
   /** column name */
@@ -7772,16 +11279,28 @@ export type Patient_Field_Config_Select_Column =
   /** column name */
   | 'updated_by';
 
+/** select "patient_field_config_aggregate_bool_exp_bool_and_arguments_columns" columns of table "patient_field_config" */
+export type Patient_Field_Config_Select_Column_Patient_Field_Config_Aggregate_Bool_Exp_Bool_And_Arguments_Columns =
+  /** column name */
+  | 'is_displayed'
+  /** column name */
+  | 'is_required';
+
+/** select "patient_field_config_aggregate_bool_exp_bool_or_arguments_columns" columns of table "patient_field_config" */
+export type Patient_Field_Config_Select_Column_Patient_Field_Config_Aggregate_Bool_Exp_Bool_Or_Arguments_Columns =
+  /** column name */
+  | 'is_displayed'
+  /** column name */
+  | 'is_required';
+
 /** input type for updating data in table "patient_field_config" */
 export type Patient_Field_Config_Set_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   display_order?: InputMaybe<Scalars['Int']['input']>;
-  field_key?: InputMaybe<Scalars['String']['input']>;
-  field_label?: InputMaybe<Scalars['String']['input']>;
+  field_config_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
-  is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_displayed?: InputMaybe<Scalars['Boolean']['input']>;
   is_required?: InputMaybe<Scalars['Boolean']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -7793,7 +11312,16 @@ export type Patient_Field_Config_Stddev_Fields = {
   __typename?: 'patient_field_config_stddev_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Stddev_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** aggregate stddev_pop on columns */
@@ -7801,7 +11329,16 @@ export type Patient_Field_Config_Stddev_Pop_Fields = {
   __typename?: 'patient_field_config_stddev_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_pop() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Stddev_Pop_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** aggregate stddev_samp on columns */
@@ -7809,7 +11346,16 @@ export type Patient_Field_Config_Stddev_Samp_Fields = {
   __typename?: 'patient_field_config_stddev_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by stddev_samp() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Stddev_Samp_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** Streaming cursor of the table "patient_field_config" */
@@ -7826,10 +11372,8 @@ export type Patient_Field_Config_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   display_order?: InputMaybe<Scalars['Int']['input']>;
-  field_key?: InputMaybe<Scalars['String']['input']>;
-  field_label?: InputMaybe<Scalars['String']['input']>;
+  field_config_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
-  is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_displayed?: InputMaybe<Scalars['Boolean']['input']>;
   is_required?: InputMaybe<Scalars['Boolean']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -7841,7 +11385,16 @@ export type Patient_Field_Config_Sum_Fields = {
   __typename?: 'patient_field_config_sum_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
   display_order?: Maybe<Scalars['Int']['output']>;
+  field_config_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** order by sum() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Sum_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** update columns of table "patient_field_config" */
@@ -7855,13 +11408,9 @@ export type Patient_Field_Config_Update_Column =
   /** column name */
   | 'display_order'
   /** column name */
-  | 'field_key'
-  /** column name */
-  | 'field_label'
+  | 'field_config_id'
   /** column name */
   | 'id'
-  /** column name */
-  | 'is_active'
   /** column name */
   | 'is_displayed'
   /** column name */
@@ -7885,7 +11434,16 @@ export type Patient_Field_Config_Var_Pop_Fields = {
   __typename?: 'patient_field_config_var_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_pop() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Var_Pop_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** aggregate var_samp on columns */
@@ -7893,7 +11451,16 @@ export type Patient_Field_Config_Var_Samp_Fields = {
   __typename?: 'patient_field_config_var_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by var_samp() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Var_Samp_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** aggregate variance on columns */
@@ -7901,7 +11468,16 @@ export type Patient_Field_Config_Variance_Fields = {
   __typename?: 'patient_field_config_variance_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
   display_order?: Maybe<Scalars['Float']['output']>;
+  field_config_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** order by variance() on columns of table "patient_field_config" */
+export type Patient_Field_Config_Variance_Order_By = {
+  clinic_id?: InputMaybe<Order_By>;
+  display_order?: InputMaybe<Order_By>;
+  field_config_id?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
 };
 
 /** columns and relationships of "patient_financial" */
@@ -8174,7 +11750,7 @@ export type Patient_Insert_Input = {
   patient_referral?: InputMaybe<Patient_Referral_Arr_Rel_Insert_Input>;
   person?: InputMaybe<Person_Obj_Rel_Insert_Input>;
   person_id?: InputMaybe<Scalars['bigint']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Patient_Status_Enum_Enum>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   updated_by?: InputMaybe<Scalars['uuid']['input']>;
 };
@@ -8189,7 +11765,6 @@ export type Patient_Max_Fields = {
   family_doctor_phone?: Maybe<Scalars['String']['output']>;
   imaging_id?: Maybe<Scalars['String']['output']>;
   person_id?: Maybe<Scalars['bigint']['output']>;
-  status?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   updated_by?: Maybe<Scalars['uuid']['output']>;
 };
@@ -8204,7 +11779,6 @@ export type Patient_Min_Fields = {
   family_doctor_phone?: Maybe<Scalars['String']['output']>;
   imaging_id?: Maybe<Scalars['String']['output']>;
   person_id?: Maybe<Scalars['bigint']['output']>;
-  status?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
   updated_by?: Maybe<Scalars['uuid']['output']>;
 };
@@ -8746,7 +12320,7 @@ export type Patient_Referral = {
   /** An object relationship */
   referral_contact_person?: Maybe<Person>;
   referral_contact_person_id?: Maybe<Scalars['bigint']['output']>;
-  referral_kind: Scalars['String']['output'];
+  referral_kind: Referral_Kind_Enum_Enum;
   /** An object relationship */
   referral_kind_enum?: Maybe<Referral_Kind_Enum>;
   referral_other_text?: Maybe<Scalars['String']['output']>;
@@ -8863,7 +12437,7 @@ export type Patient_Referral_Bool_Exp = {
   patient_person_id?: InputMaybe<Bigint_Comparison_Exp>;
   referral_contact_person?: InputMaybe<Person_Bool_Exp>;
   referral_contact_person_id?: InputMaybe<Bigint_Comparison_Exp>;
-  referral_kind?: InputMaybe<String_Comparison_Exp>;
+  referral_kind?: InputMaybe<Referral_Kind_Enum_Enum_Comparison_Exp>;
   referral_kind_enum?: InputMaybe<Referral_Kind_Enum_Bool_Exp>;
   referral_other_text?: InputMaybe<String_Comparison_Exp>;
   referral_source?: InputMaybe<Referral_Source_Bool_Exp>;
@@ -8893,7 +12467,7 @@ export type Patient_Referral_Insert_Input = {
   patient_person_id?: InputMaybe<Scalars['bigint']['input']>;
   referral_contact_person?: InputMaybe<Person_Obj_Rel_Insert_Input>;
   referral_contact_person_id?: InputMaybe<Scalars['bigint']['input']>;
-  referral_kind?: InputMaybe<Scalars['String']['input']>;
+  referral_kind?: InputMaybe<Referral_Kind_Enum_Enum>;
   referral_kind_enum?: InputMaybe<Referral_Kind_Enum_Obj_Rel_Insert_Input>;
   referral_other_text?: InputMaybe<Scalars['String']['input']>;
   referral_source?: InputMaybe<Referral_Source_Obj_Rel_Insert_Input>;
@@ -8909,7 +12483,6 @@ export type Patient_Referral_Max_Fields = {
   created_by?: Maybe<Scalars['uuid']['output']>;
   patient_person_id?: Maybe<Scalars['bigint']['output']>;
   referral_contact_person_id?: Maybe<Scalars['bigint']['output']>;
-  referral_kind?: Maybe<Scalars['String']['output']>;
   referral_other_text?: Maybe<Scalars['String']['output']>;
   referral_source_id?: Maybe<Scalars['bigint']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
@@ -8922,7 +12495,6 @@ export type Patient_Referral_Max_Order_By = {
   created_by?: InputMaybe<Order_By>;
   patient_person_id?: InputMaybe<Order_By>;
   referral_contact_person_id?: InputMaybe<Order_By>;
-  referral_kind?: InputMaybe<Order_By>;
   referral_other_text?: InputMaybe<Order_By>;
   referral_source_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -8936,7 +12508,6 @@ export type Patient_Referral_Min_Fields = {
   created_by?: Maybe<Scalars['uuid']['output']>;
   patient_person_id?: Maybe<Scalars['bigint']['output']>;
   referral_contact_person_id?: Maybe<Scalars['bigint']['output']>;
-  referral_kind?: Maybe<Scalars['String']['output']>;
   referral_other_text?: Maybe<Scalars['String']['output']>;
   referral_source_id?: Maybe<Scalars['bigint']['output']>;
   updated_at?: Maybe<Scalars['timestamptz']['output']>;
@@ -8949,7 +12520,6 @@ export type Patient_Referral_Min_Order_By = {
   created_by?: InputMaybe<Order_By>;
   patient_person_id?: InputMaybe<Order_By>;
   referral_contact_person_id?: InputMaybe<Order_By>;
-  referral_kind?: InputMaybe<Order_By>;
   referral_other_text?: InputMaybe<Order_By>;
   referral_source_id?: InputMaybe<Order_By>;
   updated_at?: InputMaybe<Order_By>;
@@ -9035,7 +12605,7 @@ export type Patient_Referral_Set_Input = {
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   patient_person_id?: InputMaybe<Scalars['bigint']['input']>;
   referral_contact_person_id?: InputMaybe<Scalars['bigint']['input']>;
-  referral_kind?: InputMaybe<Scalars['String']['input']>;
+  referral_kind?: InputMaybe<Referral_Kind_Enum_Enum>;
   referral_other_text?: InputMaybe<Scalars['String']['input']>;
   referral_source_id?: InputMaybe<Scalars['bigint']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -9102,7 +12672,7 @@ export type Patient_Referral_Stream_Cursor_Value_Input = {
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   patient_person_id?: InputMaybe<Scalars['bigint']['input']>;
   referral_contact_person_id?: InputMaybe<Scalars['bigint']['input']>;
-  referral_kind?: InputMaybe<Scalars['String']['input']>;
+  referral_kind?: InputMaybe<Referral_Kind_Enum_Enum>;
   referral_other_text?: InputMaybe<Scalars['String']['input']>;
   referral_source_id?: InputMaybe<Scalars['bigint']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -9236,7 +12806,7 @@ export type Patient_Set_Input = {
   imaging_id?: InputMaybe<Scalars['String']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   person_id?: InputMaybe<Scalars['bigint']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Patient_Status_Enum_Enum>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   updated_by?: InputMaybe<Scalars['uuid']['input']>;
 };
@@ -9283,6 +12853,27 @@ export type Patient_Status_Enum_Bool_Exp = {
 export type Patient_Status_Enum_Constraint =
   /** unique or primary key constraint on columns "value" */
   | 'patient_status_enum_pkey';
+
+export type Patient_Status_Enum_Enum =
+  /** Active */
+  | 'active'
+  /** Archived */
+  | 'archived'
+  /** Deceased */
+  | 'deceased'
+  /** Deleted */
+  | 'deleted'
+  /** Inactive */
+  | 'inactive';
+
+/** Boolean expression to compare columns of type "patient_status_enum_enum". All fields are combined with logical 'AND'. */
+export type Patient_Status_Enum_Enum_Comparison_Exp = {
+  _eq?: InputMaybe<Patient_Status_Enum_Enum>;
+  _in?: InputMaybe<Array<Patient_Status_Enum_Enum>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _neq?: InputMaybe<Patient_Status_Enum_Enum>;
+  _nin?: InputMaybe<Array<Patient_Status_Enum_Enum>>;
+};
 
 /** input type for inserting data into table "patient_status_enum" */
 export type Patient_Status_Enum_Insert_Input = {
@@ -9408,7 +12999,7 @@ export type Patient_Stream_Cursor_Value_Input = {
   imaging_id?: InputMaybe<Scalars['String']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   person_id?: InputMaybe<Scalars['bigint']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Patient_Status_Enum_Enum>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
   updated_by?: InputMaybe<Scalars['uuid']['input']>;
 };
@@ -9486,7 +13077,7 @@ export type Person = {
   dependents_aggregate: Person_Aggregate;
   dob?: Maybe<Scalars['date']['output']>;
   first_name: Scalars['String']['output'];
-  gender?: Maybe<Scalars['String']['output']>;
+  gender?: Maybe<Gender_Enum_Enum>;
   /** An object relationship */
   household_head?: Maybe<Person>;
   household_head_id?: Maybe<Scalars['bigint']['output']>;
@@ -9494,7 +13085,7 @@ export type Person = {
   household_members: Array<Person>;
   /** An aggregate relationship */
   household_members_aggregate: Person_Aggregate;
-  household_relationship?: Maybe<Scalars['String']['output']>;
+  household_relationship?: Maybe<Household_Relationship_Enum_Enum>;
   id: Scalars['bigint']['output'];
   is_active: Scalars['Boolean']['output'];
   last_name: Scalars['String']['output'];
@@ -9691,12 +13282,12 @@ export type Person_Bool_Exp = {
   dependents_aggregate?: InputMaybe<Person_Aggregate_Bool_Exp>;
   dob?: InputMaybe<Date_Comparison_Exp>;
   first_name?: InputMaybe<String_Comparison_Exp>;
-  gender?: InputMaybe<String_Comparison_Exp>;
+  gender?: InputMaybe<Gender_Enum_Enum_Comparison_Exp>;
   household_head?: InputMaybe<Person_Bool_Exp>;
   household_head_id?: InputMaybe<Bigint_Comparison_Exp>;
   household_members?: InputMaybe<Person_Bool_Exp>;
   household_members_aggregate?: InputMaybe<Person_Aggregate_Bool_Exp>;
-  household_relationship?: InputMaybe<String_Comparison_Exp>;
+  household_relationship?: InputMaybe<Household_Relationship_Enum_Enum_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   last_name?: InputMaybe<String_Comparison_Exp>;
@@ -9727,8 +13318,7 @@ export type Person_Contact_Point = {
   id: Scalars['bigint']['output'];
   is_active: Scalars['Boolean']['output'];
   is_primary: Scalars['Boolean']['output'];
-  kind: Scalars['String']['output'];
-  label?: Maybe<Scalars['String']['output']>;
+  kind: Contact_Kind_Enum_Enum;
   /** An object relationship */
   person: Person;
   person_id: Scalars['bigint']['output'];
@@ -9842,8 +13432,7 @@ export type Person_Contact_Point_Bool_Exp = {
   id?: InputMaybe<Bigint_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   is_primary?: InputMaybe<Boolean_Comparison_Exp>;
-  kind?: InputMaybe<String_Comparison_Exp>;
-  label?: InputMaybe<String_Comparison_Exp>;
+  kind?: InputMaybe<Contact_Kind_Enum_Enum_Comparison_Exp>;
   person?: InputMaybe<Person_Bool_Exp>;
   person_id?: InputMaybe<Bigint_Comparison_Exp>;
   phone_e164?: InputMaybe<String_Comparison_Exp>;
@@ -9874,8 +13463,7 @@ export type Person_Contact_Point_Insert_Input = {
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_primary?: InputMaybe<Scalars['Boolean']['input']>;
-  kind?: InputMaybe<Scalars['String']['input']>;
-  label?: InputMaybe<Scalars['String']['input']>;
+  kind?: InputMaybe<Contact_Kind_Enum_Enum>;
   person?: InputMaybe<Person_Obj_Rel_Insert_Input>;
   person_id?: InputMaybe<Scalars['bigint']['input']>;
   phone_e164?: InputMaybe<Scalars['String']['input']>;
@@ -9891,8 +13479,6 @@ export type Person_Contact_Point_Max_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
-  kind?: Maybe<Scalars['String']['output']>;
-  label?: Maybe<Scalars['String']['output']>;
   person_id?: Maybe<Scalars['bigint']['output']>;
   phone_e164?: Maybe<Scalars['String']['output']>;
   phone_last10?: Maybe<Scalars['String']['output']>;
@@ -9907,8 +13493,6 @@ export type Person_Contact_Point_Max_Order_By = {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  kind?: InputMaybe<Order_By>;
-  label?: InputMaybe<Order_By>;
   person_id?: InputMaybe<Order_By>;
   phone_e164?: InputMaybe<Order_By>;
   phone_last10?: InputMaybe<Order_By>;
@@ -9924,8 +13508,6 @@ export type Person_Contact_Point_Min_Fields = {
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
-  kind?: Maybe<Scalars['String']['output']>;
-  label?: Maybe<Scalars['String']['output']>;
   person_id?: Maybe<Scalars['bigint']['output']>;
   phone_e164?: Maybe<Scalars['String']['output']>;
   phone_last10?: Maybe<Scalars['String']['output']>;
@@ -9940,8 +13522,6 @@ export type Person_Contact_Point_Min_Order_By = {
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
-  kind?: InputMaybe<Order_By>;
-  label?: InputMaybe<Order_By>;
   person_id?: InputMaybe<Order_By>;
   phone_e164?: InputMaybe<Order_By>;
   phone_last10?: InputMaybe<Order_By>;
@@ -9975,7 +13555,6 @@ export type Person_Contact_Point_Order_By = {
   is_active?: InputMaybe<Order_By>;
   is_primary?: InputMaybe<Order_By>;
   kind?: InputMaybe<Order_By>;
-  label?: InputMaybe<Order_By>;
   person?: InputMaybe<Person_Order_By>;
   person_id?: InputMaybe<Order_By>;
   phone_e164?: InputMaybe<Order_By>;
@@ -10005,8 +13584,6 @@ export type Person_Contact_Point_Select_Column =
   | 'is_primary'
   /** column name */
   | 'kind'
-  /** column name */
-  | 'label'
   /** column name */
   | 'person_id'
   /** column name */
@@ -10043,8 +13620,7 @@ export type Person_Contact_Point_Set_Input = {
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_primary?: InputMaybe<Scalars['Boolean']['input']>;
-  kind?: InputMaybe<Scalars['String']['input']>;
-  label?: InputMaybe<Scalars['String']['input']>;
+  kind?: InputMaybe<Contact_Kind_Enum_Enum>;
   person_id?: InputMaybe<Scalars['bigint']['input']>;
   phone_e164?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -10107,8 +13683,7 @@ export type Person_Contact_Point_Stream_Cursor_Value_Input = {
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   is_primary?: InputMaybe<Scalars['Boolean']['input']>;
-  kind?: InputMaybe<Scalars['String']['input']>;
-  label?: InputMaybe<Scalars['String']['input']>;
+  kind?: InputMaybe<Contact_Kind_Enum_Enum>;
   person_id?: InputMaybe<Scalars['bigint']['input']>;
   phone_e164?: InputMaybe<Scalars['String']['input']>;
   phone_last10?: InputMaybe<Scalars['String']['input']>;
@@ -10145,8 +13720,6 @@ export type Person_Contact_Point_Update_Column =
   | 'is_primary'
   /** column name */
   | 'kind'
-  /** column name */
-  | 'label'
   /** column name */
   | 'person_id'
   /** column name */
@@ -10228,11 +13801,11 @@ export type Person_Insert_Input = {
   dependents?: InputMaybe<Person_Arr_Rel_Insert_Input>;
   dob?: InputMaybe<Scalars['date']['input']>;
   first_name?: InputMaybe<Scalars['String']['input']>;
-  gender?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender_Enum_Enum>;
   household_head?: InputMaybe<Person_Obj_Rel_Insert_Input>;
   household_head_id?: InputMaybe<Scalars['bigint']['input']>;
   household_members?: InputMaybe<Person_Arr_Rel_Insert_Input>;
-  household_relationship?: InputMaybe<Scalars['String']['input']>;
+  household_relationship?: InputMaybe<Household_Relationship_Enum_Enum>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   last_name?: InputMaybe<Scalars['String']['input']>;
@@ -10258,9 +13831,7 @@ export type Person_Max_Fields = {
   created_by?: Maybe<Scalars['uuid']['output']>;
   dob?: Maybe<Scalars['date']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
-  gender?: Maybe<Scalars['String']['output']>;
   household_head_id?: Maybe<Scalars['bigint']['output']>;
-  household_relationship?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   mailing_address_id?: Maybe<Scalars['bigint']['output']>;
@@ -10280,9 +13851,7 @@ export type Person_Max_Order_By = {
   created_by?: InputMaybe<Order_By>;
   dob?: InputMaybe<Order_By>;
   first_name?: InputMaybe<Order_By>;
-  gender?: InputMaybe<Order_By>;
   household_head_id?: InputMaybe<Order_By>;
-  household_relationship?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   last_name?: InputMaybe<Order_By>;
   mailing_address_id?: InputMaybe<Order_By>;
@@ -10303,9 +13872,7 @@ export type Person_Min_Fields = {
   created_by?: Maybe<Scalars['uuid']['output']>;
   dob?: Maybe<Scalars['date']['output']>;
   first_name?: Maybe<Scalars['String']['output']>;
-  gender?: Maybe<Scalars['String']['output']>;
   household_head_id?: Maybe<Scalars['bigint']['output']>;
-  household_relationship?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   last_name?: Maybe<Scalars['String']['output']>;
   mailing_address_id?: Maybe<Scalars['bigint']['output']>;
@@ -10325,9 +13892,7 @@ export type Person_Min_Order_By = {
   created_by?: InputMaybe<Order_By>;
   dob?: InputMaybe<Order_By>;
   first_name?: InputMaybe<Order_By>;
-  gender?: InputMaybe<Order_By>;
   household_head_id?: InputMaybe<Order_By>;
-  household_relationship?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   last_name?: InputMaybe<Order_By>;
   mailing_address_id?: InputMaybe<Order_By>;
@@ -10457,9 +14022,9 @@ export type Person_Set_Input = {
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   dob?: InputMaybe<Scalars['date']['input']>;
   first_name?: InputMaybe<Scalars['String']['input']>;
-  gender?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender_Enum_Enum>;
   household_head_id?: InputMaybe<Scalars['bigint']['input']>;
-  household_relationship?: InputMaybe<Scalars['String']['input']>;
+  household_relationship?: InputMaybe<Household_Relationship_Enum_Enum>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   last_name?: InputMaybe<Scalars['String']['input']>;
@@ -10551,9 +14116,9 @@ export type Person_Stream_Cursor_Value_Input = {
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   dob?: InputMaybe<Scalars['date']['input']>;
   first_name?: InputMaybe<Scalars['String']['input']>;
-  gender?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender_Enum_Enum>;
   household_head_id?: InputMaybe<Scalars['bigint']['input']>;
-  household_relationship?: InputMaybe<Scalars['String']['input']>;
+  household_relationship?: InputMaybe<Household_Relationship_Enum_Enum>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   last_name?: InputMaybe<Scalars['String']['input']>;
@@ -11051,6 +14616,12 @@ export type Query_Root = {
   clinic_v: Array<Clinic_V>;
   /** fetch aggregated fields from the table: "clinic_v" */
   clinic_v_aggregate: Clinic_V_Aggregate;
+  /** fetch data from the table: "contact_kind_enum" */
+  contact_kind_enum: Array<Contact_Kind_Enum>;
+  /** fetch aggregated fields from the table: "contact_kind_enum" */
+  contact_kind_enum_aggregate: Contact_Kind_Enum_Aggregate;
+  /** fetch data from the table: "contact_kind_enum" using primary key columns */
+  contact_kind_enum_by_pk?: Maybe<Contact_Kind_Enum>;
   /** fetch data from the table: "family_group_v" */
   family_group_v: Array<Family_Group_V>;
   /** fetch aggregated fields from the table: "family_group_v" */
@@ -11059,6 +14630,12 @@ export type Query_Root = {
   family_members_v: Array<Family_Members_V>;
   /** fetch aggregated fields from the table: "family_members_v" */
   family_members_v_aggregate: Family_Members_V_Aggregate;
+  /** fetch data from the table: "field_config" */
+  field_config: Array<Field_Config>;
+  /** fetch aggregated fields from the table: "field_config" */
+  field_config_aggregate: Field_Config_Aggregate;
+  /** fetch data from the table: "field_config" using primary key columns */
+  field_config_by_pk?: Maybe<Field_Config>;
   /** execute function "fn_search_household_heads" which returns "search_household_heads_result" */
   fn_search_household_heads: Array<Search_Household_Heads_Result>;
   /** execute function "fn_search_household_heads" and query aggregates on result of table type "search_household_heads_result" */
@@ -11069,6 +14646,42 @@ export type Query_Root = {
   gender_enum_aggregate: Gender_Enum_Aggregate;
   /** fetch data from the table: "gender_enum" using primary key columns */
   gender_enum_by_pk?: Maybe<Gender_Enum>;
+  /** fetch data from the table: "household_relationship_enum" */
+  household_relationship_enum: Array<Household_Relationship_Enum>;
+  /** fetch aggregated fields from the table: "household_relationship_enum" */
+  household_relationship_enum_aggregate: Household_Relationship_Enum_Aggregate;
+  /** fetch data from the table: "household_relationship_enum" using primary key columns */
+  household_relationship_enum_by_pk?: Maybe<Household_Relationship_Enum>;
+  /** fetch data from the table: "imaging_asset" */
+  imaging_asset: Array<Imaging_Asset>;
+  /** fetch aggregated fields from the table: "imaging_asset" */
+  imaging_asset_aggregate: Imaging_Asset_Aggregate;
+  /** fetch data from the table: "imaging_asset" using primary key columns */
+  imaging_asset_by_pk?: Maybe<Imaging_Asset>;
+  /** fetch data from the table: "imaging_mount" */
+  imaging_mount: Array<Imaging_Mount>;
+  /** fetch aggregated fields from the table: "imaging_mount" */
+  imaging_mount_aggregate: Imaging_Mount_Aggregate;
+  /** fetch data from the table: "imaging_mount" using primary key columns */
+  imaging_mount_by_pk?: Maybe<Imaging_Mount>;
+  /** fetch data from the table: "imaging_mount_slot" */
+  imaging_mount_slot: Array<Imaging_Mount_Slot>;
+  /** fetch aggregated fields from the table: "imaging_mount_slot" */
+  imaging_mount_slot_aggregate: Imaging_Mount_Slot_Aggregate;
+  /** fetch data from the table: "imaging_mount_slot" using primary key columns */
+  imaging_mount_slot_by_pk?: Maybe<Imaging_Mount_Slot>;
+  /** fetch data from the table: "imaging_mount_template" */
+  imaging_mount_template: Array<Imaging_Mount_Template>;
+  /** fetch aggregated fields from the table: "imaging_mount_template" */
+  imaging_mount_template_aggregate: Imaging_Mount_Template_Aggregate;
+  /** fetch data from the table: "imaging_mount_template" using primary key columns */
+  imaging_mount_template_by_pk?: Maybe<Imaging_Mount_Template>;
+  /** fetch data from the table: "imaging_study" */
+  imaging_study: Array<Imaging_Study>;
+  /** fetch aggregated fields from the table: "imaging_study" */
+  imaging_study_aggregate: Imaging_Study_Aggregate;
+  /** fetch data from the table: "imaging_study" using primary key columns */
+  imaging_study_by_pk?: Maybe<Imaging_Study>;
   /** fetch data from the table: "insurance_subscriber" */
   insurance_subscriber: Array<Insurance_Subscriber>;
   /** fetch aggregated fields from the table: "insurance_subscriber" */
@@ -11479,6 +15092,29 @@ export type Query_RootClinic_V_AggregateArgs = {
 };
 
 
+export type Query_RootContact_Kind_EnumArgs = {
+  distinct_on?: InputMaybe<Array<Contact_Kind_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contact_Kind_Enum_Order_By>>;
+  where?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+};
+
+
+export type Query_RootContact_Kind_Enum_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contact_Kind_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contact_Kind_Enum_Order_By>>;
+  where?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+};
+
+
+export type Query_RootContact_Kind_Enum_By_PkArgs = {
+  value: Scalars['String']['input'];
+};
+
+
 export type Query_RootFamily_Group_VArgs = {
   distinct_on?: InputMaybe<Array<Family_Group_V_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -11512,6 +15148,29 @@ export type Query_RootFamily_Members_V_AggregateArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
   order_by?: InputMaybe<Array<Family_Members_V_Order_By>>;
   where?: InputMaybe<Family_Members_V_Bool_Exp>;
+};
+
+
+export type Query_RootField_ConfigArgs = {
+  distinct_on?: InputMaybe<Array<Field_Config_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Field_Config_Order_By>>;
+  where?: InputMaybe<Field_Config_Bool_Exp>;
+};
+
+
+export type Query_RootField_Config_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Field_Config_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Field_Config_Order_By>>;
+  where?: InputMaybe<Field_Config_Bool_Exp>;
+};
+
+
+export type Query_RootField_Config_By_PkArgs = {
+  id: Scalars['bigint']['input'];
 };
 
 
@@ -11555,6 +15214,144 @@ export type Query_RootGender_Enum_AggregateArgs = {
 
 export type Query_RootGender_Enum_By_PkArgs = {
   value: Scalars['String']['input'];
+};
+
+
+export type Query_RootHousehold_Relationship_EnumArgs = {
+  distinct_on?: InputMaybe<Array<Household_Relationship_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Household_Relationship_Enum_Order_By>>;
+  where?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+};
+
+
+export type Query_RootHousehold_Relationship_Enum_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Household_Relationship_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Household_Relationship_Enum_Order_By>>;
+  where?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+};
+
+
+export type Query_RootHousehold_Relationship_Enum_By_PkArgs = {
+  value: Scalars['String']['input'];
+};
+
+
+export type Query_RootImaging_AssetArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Asset_Order_By>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Asset_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Asset_Order_By>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Asset_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootImaging_MountArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Mount_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Mount_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootImaging_Mount_SlotArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Mount_Slot_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Mount_Slot_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootImaging_Mount_TemplateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Mount_Template_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Mount_Template_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootImaging_StudyArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Study_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Study_Order_By>>;
+  where?: InputMaybe<Imaging_Study_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Study_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Study_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Study_Order_By>>;
+  where?: InputMaybe<Imaging_Study_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Study_By_PkArgs = {
+  id: Scalars['bigint']['input'];
 };
 
 
@@ -12053,6 +15850,23 @@ export type Referral_Kind_Enum_Bool_Exp = {
 export type Referral_Kind_Enum_Constraint =
   /** unique or primary key constraint on columns "value" */
   | 'referral_kind_enum_pkey';
+
+export type Referral_Kind_Enum_Enum =
+  /** Contact */
+  | 'contact'
+  /** Other */
+  | 'other'
+  /** Source */
+  | 'source';
+
+/** Boolean expression to compare columns of type "referral_kind_enum_enum". All fields are combined with logical 'AND'. */
+export type Referral_Kind_Enum_Enum_Comparison_Exp = {
+  _eq?: InputMaybe<Referral_Kind_Enum_Enum>;
+  _in?: InputMaybe<Array<Referral_Kind_Enum_Enum>>;
+  _is_null?: InputMaybe<Scalars['Boolean']['input']>;
+  _neq?: InputMaybe<Referral_Kind_Enum_Enum>;
+  _nin?: InputMaybe<Array<Referral_Kind_Enum_Enum>>;
+};
 
 /** input type for inserting data into table "referral_kind_enum" */
 export type Referral_Kind_Enum_Insert_Input = {
@@ -13477,6 +17291,14 @@ export type Subscription_Root = {
   clinic_v_aggregate: Clinic_V_Aggregate;
   /** fetch data from the table in a streaming manner: "clinic_v" */
   clinic_v_stream: Array<Clinic_V>;
+  /** fetch data from the table: "contact_kind_enum" */
+  contact_kind_enum: Array<Contact_Kind_Enum>;
+  /** fetch aggregated fields from the table: "contact_kind_enum" */
+  contact_kind_enum_aggregate: Contact_Kind_Enum_Aggregate;
+  /** fetch data from the table: "contact_kind_enum" using primary key columns */
+  contact_kind_enum_by_pk?: Maybe<Contact_Kind_Enum>;
+  /** fetch data from the table in a streaming manner: "contact_kind_enum" */
+  contact_kind_enum_stream: Array<Contact_Kind_Enum>;
   /** fetch data from the table: "family_group_v" */
   family_group_v: Array<Family_Group_V>;
   /** fetch aggregated fields from the table: "family_group_v" */
@@ -13489,6 +17311,14 @@ export type Subscription_Root = {
   family_members_v_aggregate: Family_Members_V_Aggregate;
   /** fetch data from the table in a streaming manner: "family_members_v" */
   family_members_v_stream: Array<Family_Members_V>;
+  /** fetch data from the table: "field_config" */
+  field_config: Array<Field_Config>;
+  /** fetch aggregated fields from the table: "field_config" */
+  field_config_aggregate: Field_Config_Aggregate;
+  /** fetch data from the table: "field_config" using primary key columns */
+  field_config_by_pk?: Maybe<Field_Config>;
+  /** fetch data from the table in a streaming manner: "field_config" */
+  field_config_stream: Array<Field_Config>;
   /** execute function "fn_search_household_heads" which returns "search_household_heads_result" */
   fn_search_household_heads: Array<Search_Household_Heads_Result>;
   /** execute function "fn_search_household_heads" and query aggregates on result of table type "search_household_heads_result" */
@@ -13501,6 +17331,54 @@ export type Subscription_Root = {
   gender_enum_by_pk?: Maybe<Gender_Enum>;
   /** fetch data from the table in a streaming manner: "gender_enum" */
   gender_enum_stream: Array<Gender_Enum>;
+  /** fetch data from the table: "household_relationship_enum" */
+  household_relationship_enum: Array<Household_Relationship_Enum>;
+  /** fetch aggregated fields from the table: "household_relationship_enum" */
+  household_relationship_enum_aggregate: Household_Relationship_Enum_Aggregate;
+  /** fetch data from the table: "household_relationship_enum" using primary key columns */
+  household_relationship_enum_by_pk?: Maybe<Household_Relationship_Enum>;
+  /** fetch data from the table in a streaming manner: "household_relationship_enum" */
+  household_relationship_enum_stream: Array<Household_Relationship_Enum>;
+  /** fetch data from the table: "imaging_asset" */
+  imaging_asset: Array<Imaging_Asset>;
+  /** fetch aggregated fields from the table: "imaging_asset" */
+  imaging_asset_aggregate: Imaging_Asset_Aggregate;
+  /** fetch data from the table: "imaging_asset" using primary key columns */
+  imaging_asset_by_pk?: Maybe<Imaging_Asset>;
+  /** fetch data from the table in a streaming manner: "imaging_asset" */
+  imaging_asset_stream: Array<Imaging_Asset>;
+  /** fetch data from the table: "imaging_mount" */
+  imaging_mount: Array<Imaging_Mount>;
+  /** fetch aggregated fields from the table: "imaging_mount" */
+  imaging_mount_aggregate: Imaging_Mount_Aggregate;
+  /** fetch data from the table: "imaging_mount" using primary key columns */
+  imaging_mount_by_pk?: Maybe<Imaging_Mount>;
+  /** fetch data from the table: "imaging_mount_slot" */
+  imaging_mount_slot: Array<Imaging_Mount_Slot>;
+  /** fetch aggregated fields from the table: "imaging_mount_slot" */
+  imaging_mount_slot_aggregate: Imaging_Mount_Slot_Aggregate;
+  /** fetch data from the table: "imaging_mount_slot" using primary key columns */
+  imaging_mount_slot_by_pk?: Maybe<Imaging_Mount_Slot>;
+  /** fetch data from the table in a streaming manner: "imaging_mount_slot" */
+  imaging_mount_slot_stream: Array<Imaging_Mount_Slot>;
+  /** fetch data from the table in a streaming manner: "imaging_mount" */
+  imaging_mount_stream: Array<Imaging_Mount>;
+  /** fetch data from the table: "imaging_mount_template" */
+  imaging_mount_template: Array<Imaging_Mount_Template>;
+  /** fetch aggregated fields from the table: "imaging_mount_template" */
+  imaging_mount_template_aggregate: Imaging_Mount_Template_Aggregate;
+  /** fetch data from the table: "imaging_mount_template" using primary key columns */
+  imaging_mount_template_by_pk?: Maybe<Imaging_Mount_Template>;
+  /** fetch data from the table in a streaming manner: "imaging_mount_template" */
+  imaging_mount_template_stream: Array<Imaging_Mount_Template>;
+  /** fetch data from the table: "imaging_study" */
+  imaging_study: Array<Imaging_Study>;
+  /** fetch aggregated fields from the table: "imaging_study" */
+  imaging_study_aggregate: Imaging_Study_Aggregate;
+  /** fetch data from the table: "imaging_study" using primary key columns */
+  imaging_study_by_pk?: Maybe<Imaging_Study>;
+  /** fetch data from the table in a streaming manner: "imaging_study" */
+  imaging_study_stream: Array<Imaging_Study>;
   /** fetch data from the table: "insurance_subscriber" */
   insurance_subscriber: Array<Insurance_Subscriber>;
   /** fetch aggregated fields from the table: "insurance_subscriber" */
@@ -14051,6 +17929,36 @@ export type Subscription_RootClinic_V_StreamArgs = {
 };
 
 
+export type Subscription_RootContact_Kind_EnumArgs = {
+  distinct_on?: InputMaybe<Array<Contact_Kind_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contact_Kind_Enum_Order_By>>;
+  where?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+};
+
+
+export type Subscription_RootContact_Kind_Enum_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Contact_Kind_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Contact_Kind_Enum_Order_By>>;
+  where?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+};
+
+
+export type Subscription_RootContact_Kind_Enum_By_PkArgs = {
+  value: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootContact_Kind_Enum_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Contact_Kind_Enum_Stream_Cursor_Input>>;
+  where?: InputMaybe<Contact_Kind_Enum_Bool_Exp>;
+};
+
+
 export type Subscription_RootFamily_Group_VArgs = {
   distinct_on?: InputMaybe<Array<Family_Group_V_Select_Column>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -14101,6 +18009,36 @@ export type Subscription_RootFamily_Members_V_StreamArgs = {
 };
 
 
+export type Subscription_RootField_ConfigArgs = {
+  distinct_on?: InputMaybe<Array<Field_Config_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Field_Config_Order_By>>;
+  where?: InputMaybe<Field_Config_Bool_Exp>;
+};
+
+
+export type Subscription_RootField_Config_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Field_Config_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Field_Config_Order_By>>;
+  where?: InputMaybe<Field_Config_Bool_Exp>;
+};
+
+
+export type Subscription_RootField_Config_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootField_Config_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Field_Config_Stream_Cursor_Input>>;
+  where?: InputMaybe<Field_Config_Bool_Exp>;
+};
+
+
 export type Subscription_RootFn_Search_Household_HeadsArgs = {
   args: Fn_Search_Household_Heads_Args;
   distinct_on?: InputMaybe<Array<Search_Household_Heads_Result_Select_Column>>;
@@ -14148,6 +18086,186 @@ export type Subscription_RootGender_Enum_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Gender_Enum_Stream_Cursor_Input>>;
   where?: InputMaybe<Gender_Enum_Bool_Exp>;
+};
+
+
+export type Subscription_RootHousehold_Relationship_EnumArgs = {
+  distinct_on?: InputMaybe<Array<Household_Relationship_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Household_Relationship_Enum_Order_By>>;
+  where?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+};
+
+
+export type Subscription_RootHousehold_Relationship_Enum_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Household_Relationship_Enum_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Household_Relationship_Enum_Order_By>>;
+  where?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+};
+
+
+export type Subscription_RootHousehold_Relationship_Enum_By_PkArgs = {
+  value: Scalars['String']['input'];
+};
+
+
+export type Subscription_RootHousehold_Relationship_Enum_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Household_Relationship_Enum_Stream_Cursor_Input>>;
+  where?: InputMaybe<Household_Relationship_Enum_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_AssetArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Asset_Order_By>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Asset_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Asset_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Asset_Order_By>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Asset_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Asset_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Asset_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_MountArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Mount_SlotArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_Slot_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Slot_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Slot_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_Slot_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Mount_Slot_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Mount_Slot_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Mount_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Mount_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_TemplateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_Template_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Mount_Template_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Mount_Template_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Mount_Template_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_StudyArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Study_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Study_Order_By>>;
+  where?: InputMaybe<Imaging_Study_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Study_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Study_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Study_Order_By>>;
+  where?: InputMaybe<Imaging_Study_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Study_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Study_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Study_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Study_Bool_Exp>;
 };
 
 
@@ -15678,13 +19796,13 @@ export type CreatePatientWithRelationsMutationVariables = Exact<{
   lastName: Scalars['String']['input'];
   preferredName?: InputMaybe<Scalars['String']['input']>;
   dob?: InputMaybe<Scalars['date']['input']>;
-  gender?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender_Enum_Enum>;
   preferredLanguage?: InputMaybe<Scalars['String']['input']>;
   householdHeadId?: InputMaybe<Scalars['bigint']['input']>;
-  householdRelationship?: InputMaybe<Scalars['String']['input']>;
+  householdRelationship?: InputMaybe<Household_Relationship_Enum_Enum>;
   responsiblePartyId?: InputMaybe<Scalars['bigint']['input']>;
   chartNo?: InputMaybe<Scalars['String']['input']>;
-  status: Scalars['String']['input'];
+  status: Patient_Status_Enum_Enum;
   familyDoctorName?: InputMaybe<Scalars['String']['input']>;
   familyDoctorPhone?: InputMaybe<Scalars['String']['input']>;
   imagingId?: InputMaybe<Scalars['String']['input']>;
@@ -15694,7 +19812,7 @@ export type CreatePatientWithRelationsMutationVariables = Exact<{
 }>;
 
 
-export type CreatePatientWithRelationsMutation = { __typename?: 'mutation_root', insert_person_one?: { __typename?: 'person', id: number, clinic_id: number, first_name: string, last_name: string, preferred_name?: string | null, household_head_id?: number | null, household_relationship?: string | null, responsible_party_id?: number | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null, status: string } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', id: number, kind: string, value: any }>, mailing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string } | null, billing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string } | null } | null };
+export type CreatePatientWithRelationsMutation = { __typename?: 'mutation_root', insert_person_one?: { __typename?: 'person', id: number, clinic_id: number, first_name: string, last_name: string, preferred_name?: string | null, household_head_id?: number | null, household_relationship?: Household_Relationship_Enum_Enum | null, responsible_party_id?: number | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null, status: Patient_Status_Enum_Enum } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', id: number, kind: Contact_Kind_Enum_Enum, value: any }>, mailing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string } | null, billing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string } | null } | null };
 
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -15737,7 +19855,7 @@ export type GetFamilyMembersQueryVariables = Exact<{
 }>;
 
 
-export type GetFamilyMembersQuery = { __typename?: 'query_root', rootPerson: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: string | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }>, dependents: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: string | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }> };
+export type GetFamilyMembersQuery = { __typename?: 'query_root', rootPerson: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: Household_Relationship_Enum_Enum | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }>, dependents: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: Household_Relationship_Enum_Enum | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }> };
 
 export type GetHouseholdMembersQueryVariables = Exact<{
   householdHeadPersonId: Scalars['bigint']['input'];
@@ -15745,16 +19863,16 @@ export type GetHouseholdMembersQueryVariables = Exact<{
 }>;
 
 
-export type GetHouseholdMembersQuery = { __typename?: 'query_root', householdHead: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: string | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }>, householdMembers: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: string | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }> };
+export type GetHouseholdMembersQuery = { __typename?: 'query_root', householdHead: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: Household_Relationship_Enum_Enum | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }>, householdMembers: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_relationship?: Household_Relationship_Enum_Enum | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }> };
 
 export type UpdatePersonResponsiblePartyMutationVariables = Exact<{
   personId: Scalars['bigint']['input'];
   responsiblePartyId?: InputMaybe<Scalars['bigint']['input']>;
-  householdRelationship?: InputMaybe<Scalars['String']['input']>;
+  householdRelationship?: InputMaybe<Household_Relationship_Enum_Enum>;
 }>;
 
 
-export type UpdatePersonResponsiblePartyMutation = { __typename?: 'mutation_root', update_person_by_pk?: { __typename?: 'person', id: number, responsible_party_id?: number | null, household_relationship?: string | null } | null };
+export type UpdatePersonResponsiblePartyMutation = { __typename?: 'mutation_root', update_person_by_pk?: { __typename?: 'person', id: number, responsible_party_id?: number | null, household_relationship?: Household_Relationship_Enum_Enum | null } | null };
 
 export type SearchFamilyRootsQueryVariables = Exact<{
   clinicId: Scalars['bigint']['input'];
@@ -15762,7 +19880,7 @@ export type SearchFamilyRootsQueryVariables = Exact<{
 }>;
 
 
-export type SearchFamilyRootsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, responsible_party_id?: number | null, person_contact_point: Array<{ __typename?: 'person_contact_point', value: any, kind: string }> }> };
+export type SearchFamilyRootsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, responsible_party_id?: number | null, person_contact_point: Array<{ __typename?: 'person_contact_point', value: any, kind: Contact_Kind_Enum_Enum }> }> };
 
 export type UpsertPatientFinancialMutationVariables = Exact<{
   patientPersonId: Scalars['bigint']['input'];
@@ -15774,11 +19892,11 @@ export type UpsertPatientFinancialMutation = { __typename?: 'mutation_root', ins
 export type UpdatePersonHouseholdHeadMutationVariables = Exact<{
   personId: Scalars['bigint']['input'];
   householdHeadId?: InputMaybe<Scalars['bigint']['input']>;
-  householdRelationship?: InputMaybe<Scalars['String']['input']>;
+  householdRelationship?: InputMaybe<Household_Relationship_Enum_Enum>;
 }>;
 
 
-export type UpdatePersonHouseholdHeadMutation = { __typename?: 'mutation_root', update_person_by_pk?: { __typename?: 'person', id: number, household_head_id?: number | null, household_relationship?: string | null, household_head?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null } | null };
+export type UpdatePersonHouseholdHeadMutation = { __typename?: 'mutation_root', update_person_by_pk?: { __typename?: 'person', id: number, household_head_id?: number | null, household_relationship?: Household_Relationship_Enum_Enum | null, household_head?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null } | null };
 
 export type SearchHouseholdHeadsQueryVariables = Exact<{
   clinicId: Scalars['bigint']['input'];
@@ -15830,18 +19948,17 @@ export type GetPatientFieldConfigQueryVariables = Exact<{
 }>;
 
 
-export type GetPatientFieldConfigQuery = { __typename?: 'query_root', patient_field_config: Array<{ __typename?: 'patient_field_config', id: number, clinic_id: number, field_key: string, field_label: string, display_order: number, is_displayed: boolean, is_required: boolean, is_active: boolean }> };
+export type GetPatientFieldConfigQuery = { __typename?: 'query_root', field_config: Array<{ __typename?: 'field_config', id: number, key: string, label: string, is_active: boolean }>, patient_field_config: Array<{ __typename?: 'patient_field_config', id: number, clinic_id: number, field_config_id: number, display_order: number, is_displayed: boolean, is_required: boolean, field_config: { __typename?: 'field_config', id: number, key: string, label: string, is_active: boolean } }> };
 
 export type UpdatePatientFieldConfigMutationVariables = Exact<{
   id: Scalars['bigint']['input'];
-  fieldLabel?: InputMaybe<Scalars['String']['input']>;
   displayOrder?: InputMaybe<Scalars['Int']['input']>;
   isDisplayed?: InputMaybe<Scalars['Boolean']['input']>;
   isRequired?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
-export type UpdatePatientFieldConfigMutation = { __typename?: 'mutation_root', update_patient_field_config_by_pk?: { __typename?: 'patient_field_config', id: number, field_key: string, field_label: string, display_order: number, is_displayed: boolean, is_required: boolean } | null };
+export type UpdatePatientFieldConfigMutation = { __typename?: 'mutation_root', update_patient_field_config_by_pk?: { __typename?: 'patient_field_config', id: number, display_order: number, is_displayed: boolean, is_required: boolean, field_config: { __typename?: 'field_config', id: number, key: string, label: string } } | null };
 
 export type UpdatePatientFieldConfigOrderMutationVariables = Exact<{
   id: Scalars['bigint']['input'];
@@ -15867,13 +19984,24 @@ export type UpdatePatientFieldConfigRequiredMutationVariables = Exact<{
 
 export type UpdatePatientFieldConfigRequiredMutation = { __typename?: 'mutation_root', update_patient_field_config_by_pk?: { __typename?: 'patient_field_config', id: number, is_required: boolean } | null };
 
+export type CreatePatientFieldConfigMutationVariables = Exact<{
+  clinicId: Scalars['bigint']['input'];
+  fieldConfigId: Scalars['bigint']['input'];
+  displayOrder: Scalars['Int']['input'];
+  isDisplayed: Scalars['Boolean']['input'];
+  isRequired: Scalars['Boolean']['input'];
+}>;
+
+
+export type CreatePatientFieldConfigMutation = { __typename?: 'mutation_root', insert_patient_field_config_one?: { __typename?: 'patient_field_config', id: number, clinic_id: number, field_config_id: number, display_order: number, is_displayed: boolean, is_required: boolean, field_config: { __typename?: 'field_config', id: number, key: string, label: string, is_active: boolean } } | null };
+
 export type CreatePersonMutationVariables = Exact<{
   clinicId: Scalars['bigint']['input'];
   firstName: Scalars['String']['input'];
   lastName: Scalars['String']['input'];
   preferredName?: InputMaybe<Scalars['String']['input']>;
   dob?: InputMaybe<Scalars['date']['input']>;
-  gender?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender_Enum_Enum>;
   preferredLanguage?: InputMaybe<Scalars['String']['input']>;
 }>;
 
@@ -15883,14 +20011,14 @@ export type CreatePersonMutation = { __typename?: 'mutation_root', insert_person
 export type CreatePatientMutationVariables = Exact<{
   personId: Scalars['bigint']['input'];
   chartNo?: InputMaybe<Scalars['String']['input']>;
-  status: Scalars['String']['input'];
+  status: Patient_Status_Enum_Enum;
   familyDoctorName?: InputMaybe<Scalars['String']['input']>;
   familyDoctorPhone?: InputMaybe<Scalars['String']['input']>;
   imagingId?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type CreatePatientMutation = { __typename?: 'mutation_root', insert_patient_one?: { __typename?: 'patient', person_id: number, chart_no?: string | null, status: string } | null };
+export type CreatePatientMutation = { __typename?: 'mutation_root', insert_patient_one?: { __typename?: 'patient', person_id: number, chart_no?: string | null, status: Patient_Status_Enum_Enum } | null };
 
 export type UpdatePersonFirstNameMutationVariables = Exact<{
   id: Scalars['bigint']['input'];
@@ -15950,11 +20078,11 @@ export type UpdatePatientChartNoMutation = { __typename?: 'mutation_root', updat
 
 export type UpdatePatientStatusMutationVariables = Exact<{
   personId: Scalars['bigint']['input'];
-  status: Scalars['String']['input'];
+  status: Patient_Status_Enum_Enum;
 }>;
 
 
-export type UpdatePatientStatusMutation = { __typename?: 'mutation_root', update_patient_by_pk?: { __typename?: 'patient', person_id: number, status: string } | null };
+export type UpdatePatientStatusMutation = { __typename?: 'mutation_root', update_patient_by_pk?: { __typename?: 'patient', person_id: number, status: Patient_Status_Enum_Enum } | null };
 
 export type UpdatePatientFamilyDoctorNameMutationVariables = Exact<{
   personId: Scalars['bigint']['input'];
@@ -15993,7 +20121,7 @@ export type LegacySearchPatientsQueryVariables = Exact<{
 }>;
 
 
-export type LegacySearchPatientsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, clinic_id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, patient?: { __typename?: 'patient', chart_no?: string | null, status: string } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', value: any }> }> };
+export type LegacySearchPatientsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, clinic_id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, patient?: { __typename?: 'patient', chart_no?: string | null, status: Patient_Status_Enum_Enum } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', value: any }> }> };
 
 export type CreateAddressMutationVariables = Exact<{
   line1: Scalars['String']['input'];
@@ -16042,30 +20170,28 @@ export type GetPersonAddressIdsQueryVariables = Exact<{
 }>;
 
 
-export type GetPersonAddressIdsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, mailing_address_id?: number | null, billing_address_id?: number | null, mailing_address?: { __typename?: 'address', line1: string, line2?: string | null, city: string, region: string, postal_code: string, country: string } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', id: number, kind: string, value: any, is_primary: boolean }> }> };
+export type GetPersonAddressIdsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, mailing_address_id?: number | null, billing_address_id?: number | null, mailing_address?: { __typename?: 'address', line1: string, line2?: string | null, city: string, region: string, postal_code: string, country: string } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', id: number, kind: Contact_Kind_Enum_Enum, value: any, is_primary: boolean }> }> };
 
 export type CreatePersonContactPointMutationVariables = Exact<{
   personId: Scalars['bigint']['input'];
-  kind: Scalars['String']['input'];
-  label?: InputMaybe<Scalars['String']['input']>;
+  kind: Contact_Kind_Enum_Enum;
   value: Scalars['citext']['input'];
   phoneE164?: InputMaybe<Scalars['String']['input']>;
   isPrimary?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
-export type CreatePersonContactPointMutation = { __typename?: 'mutation_root', insert_person_contact_point_one?: { __typename?: 'person_contact_point', id: number, person_id: number, kind: string, label?: string | null, value: any, phone_e164?: string | null, is_primary: boolean, is_active: boolean } | null };
+export type CreatePersonContactPointMutation = { __typename?: 'mutation_root', insert_person_contact_point_one?: { __typename?: 'person_contact_point', id: number, person_id: number, kind: Contact_Kind_Enum_Enum, value: any, phone_e164?: string | null, is_primary: boolean, is_active: boolean } | null };
 
 export type UpdatePersonContactPointMutationVariables = Exact<{
   id: Scalars['bigint']['input'];
-  label?: InputMaybe<Scalars['String']['input']>;
   value?: InputMaybe<Scalars['citext']['input']>;
   phoneE164?: InputMaybe<Scalars['String']['input']>;
   isPrimary?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
-export type UpdatePersonContactPointMutation = { __typename?: 'mutation_root', update_person_contact_point_by_pk?: { __typename?: 'person_contact_point', id: number, kind: string, label?: string | null, value: any, phone_e164?: string | null, is_primary: boolean } | null };
+export type UpdatePersonContactPointMutation = { __typename?: 'mutation_root', update_person_contact_point_by_pk?: { __typename?: 'person_contact_point', id: number, kind: Contact_Kind_Enum_Enum, value: any, phone_e164?: string | null, is_primary: boolean } | null };
 
 export type DeletePersonContactPointMutationVariables = Exact<{
   id: Scalars['bigint']['input'];
@@ -16074,13 +20200,27 @@ export type DeletePersonContactPointMutationVariables = Exact<{
 
 export type DeletePersonContactPointMutation = { __typename?: 'mutation_root', update_person_contact_point_by_pk?: { __typename?: 'person_contact_point', id: number } | null };
 
+export type GetCurrentPersonQueryVariables = Exact<{
+  userId: Scalars['uuid']['input'];
+}>;
+
+
+export type GetCurrentPersonQuery = { __typename?: 'query_root', clinic_user_v: Array<{ __typename?: 'clinic_user_v', id?: number | null, current_person_id?: number | null, person?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, clinic_id: number } | null }> };
+
+export type UpdateCurrentPersonMutationVariables = Exact<{
+  personId?: InputMaybe<Scalars['bigint']['input']>;
+}>;
+
+
+export type UpdateCurrentPersonMutation = { __typename?: 'mutation_root', update_clinic_user?: { __typename?: 'clinic_user_mutation_response', affected_rows: number, returning: Array<{ __typename?: 'clinic_user', id: number, clinic_id: number, user_id: string, current_person_id?: number | null }> } | null };
+
 export type GetPersonProfileQueryVariables = Exact<{
   personId: Scalars['bigint']['input'];
   clinicId: Scalars['bigint']['input'];
 }>;
 
 
-export type GetPersonProfileQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, clinic_id: number, first_name: string, middle_name?: string | null, last_name: string, preferred_name?: string | null, dob?: any | null, gender?: string | null, preferred_language?: string | null, is_active: boolean, responsible_party_id?: number | null, household_relationship?: string | null, household_head_id?: number | null, created_at: string, created_by?: string | null, updated_at: string, updated_by?: string | null, household_head?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null, household_members: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null }>, responsible_party?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null, dependents: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, household_relationship?: string | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }>, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null, status: string, family_doctor_name?: string | null, family_doctor_phone?: string | null, imaging_id?: string | null, is_active: boolean, patient_referral: Array<{ __typename?: 'patient_referral', referral_kind: string, referral_other_text?: string | null, referral_source?: { __typename?: 'referral_source', id: number, name: string } | null, referral_contact_person?: { __typename?: 'person', id: number, first_name: string, last_name: string } | null }> } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', id: number, kind: string, label?: string | null, value: any, is_primary: boolean }>, mailing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string, country: string } | null, billing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string, country: string } | null }>, patient_financial: Array<{ __typename?: 'patient_financial', patient_person_id: number }> };
+export type GetPersonProfileQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, clinic_id: number, first_name: string, middle_name?: string | null, last_name: string, preferred_name?: string | null, dob?: any | null, gender?: Gender_Enum_Enum | null, preferred_language?: string | null, is_active: boolean, responsible_party_id?: number | null, household_relationship?: Household_Relationship_Enum_Enum | null, household_head_id?: number | null, created_at: string, created_by?: string | null, updated_at: string, updated_by?: string | null, household_head?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null, household_members: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null }>, responsible_party?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null, dependents: Array<{ __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null, household_relationship?: Household_Relationship_Enum_Enum | null, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null } | null }>, patient?: { __typename?: 'patient', person_id: number, chart_no?: string | null, status: Patient_Status_Enum_Enum, family_doctor_name?: string | null, family_doctor_phone?: string | null, imaging_id?: string | null, is_active: boolean, patient_referral: Array<{ __typename?: 'patient_referral', referral_kind: Referral_Kind_Enum_Enum, referral_other_text?: string | null, referral_source?: { __typename?: 'referral_source', id: number, name: string } | null, referral_contact_person?: { __typename?: 'person', id: number, first_name: string, last_name: string } | null }> } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', id: number, kind: Contact_Kind_Enum_Enum, value: any, is_primary: boolean }>, mailing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string, country: string } | null, billing_address?: { __typename?: 'address', id: number, line1: string, line2?: string | null, city: string, region: string, postal_code: string, country: string } | null }>, patient_financial: Array<{ __typename?: 'patient_financial', patient_person_id: number }> };
 
 export type SearchPatientsQueryVariables = Exact<{
   where: Person_Bool_Exp;
@@ -16088,7 +20228,7 @@ export type SearchPatientsQueryVariables = Exact<{
 }>;
 
 
-export type SearchPatientsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, household_head_id?: number | null, responsible_party_id?: number | null, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_head?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null, patient?: { __typename?: 'patient', status: string, chart_no?: string | null } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', value: any }> }> };
+export type SearchPatientsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, household_head_id?: number | null, responsible_party_id?: number | null, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, household_head?: { __typename?: 'person', id: number, first_name: string, last_name: string, preferred_name?: string | null } | null, patient?: { __typename?: 'patient', status: Patient_Status_Enum_Enum, chart_no?: string | null } | null, person_contact_point: Array<{ __typename?: 'person_contact_point', kind: Contact_Kind_Enum_Enum, value: any, phone_last10?: string | null, value_norm?: string | null }> }> };
 
 export type GetPersonsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -16098,7 +20238,7 @@ export type GetPersonsQueryVariables = Exact<{
 }>;
 
 
-export type GetPersonsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, clinic_id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, gender?: string | null, preferred_language?: string | null, is_active: boolean, created_at: string, created_by?: string | null, updated_at: string, updated_by?: string | null, patient?: { __typename?: 'patient', patient_referral: Array<{ __typename?: 'patient_referral', referral_kind: string, referral_other_text?: string | null, referral_source?: { __typename?: 'referral_source', name: string } | null, referral_contact_person?: { __typename?: 'person', id: number, first_name: string, last_name: string } | null }> } | null }>, person_aggregate: { __typename?: 'person_aggregate', aggregate?: { __typename?: 'person_aggregate_fields', count: number } | null } };
+export type GetPersonsQuery = { __typename?: 'query_root', person: Array<{ __typename?: 'person', id: number, clinic_id: number, first_name: string, last_name: string, preferred_name?: string | null, dob?: any | null, gender?: Gender_Enum_Enum | null, preferred_language?: string | null, is_active: boolean, created_at: string, created_by?: string | null, updated_at: string, updated_by?: string | null, patient?: { __typename?: 'patient', patient_referral: Array<{ __typename?: 'patient_referral', referral_kind: Referral_Kind_Enum_Enum, referral_other_text?: string | null, referral_source?: { __typename?: 'referral_source', name: string } | null, referral_contact_person?: { __typename?: 'person', id: number, first_name: string, last_name: string } | null }> } | null }>, person_aggregate: { __typename?: 'person_aggregate', aggregate?: { __typename?: 'person_aggregate_fields', count: number } | null } };
 
 export type GetReferralKindEnumQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -16117,7 +20257,7 @@ export type GetPatientReferralQueryVariables = Exact<{
 }>;
 
 
-export type GetPatientReferralQuery = { __typename?: 'query_root', patient_referral: Array<{ __typename?: 'patient_referral', patient_person_id: number, referral_kind: string, referral_source_id?: number | null, referral_contact_person_id?: number | null, referral_other_text?: string | null, referral_source?: { __typename?: 'referral_source', id: number, name: string } | null, referral_contact_person?: { __typename?: 'person', id: number, first_name: string, last_name: string } | null }> };
+export type GetPatientReferralQuery = { __typename?: 'query_root', patient_referral: Array<{ __typename?: 'patient_referral', patient_person_id: number, referral_kind: Referral_Kind_Enum_Enum, referral_source_id?: number | null, referral_contact_person_id?: number | null, referral_other_text?: string | null, referral_source?: { __typename?: 'referral_source', id: number, name: string } | null, referral_contact_person?: { __typename?: 'person', id: number, first_name: string, last_name: string } | null }> };
 
 export type CreateReferralSourceMutationVariables = Exact<{
   clinicId: Scalars['bigint']['input'];
@@ -16145,14 +20285,14 @@ export type DeleteReferralSourceMutation = { __typename?: 'mutation_root', updat
 
 export type UpsertPatientReferralMutationVariables = Exact<{
   patientPersonId: Scalars['bigint']['input'];
-  referralKind: Scalars['String']['input'];
+  referralKind: Referral_Kind_Enum_Enum;
   referralSourceId?: InputMaybe<Scalars['bigint']['input']>;
   referralContactPersonId?: InputMaybe<Scalars['bigint']['input']>;
   referralOtherText?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type UpsertPatientReferralMutation = { __typename?: 'mutation_root', insert_patient_referral_one?: { __typename?: 'patient_referral', patient_person_id: number, referral_kind: string, referral_source_id?: number | null, referral_contact_person_id?: number | null, referral_other_text?: string | null } | null };
+export type UpsertPatientReferralMutation = { __typename?: 'mutation_root', insert_patient_referral_one?: { __typename?: 'patient_referral', patient_person_id: number, referral_kind: Referral_Kind_Enum_Enum, referral_source_id?: number | null, referral_contact_person_id?: number | null, referral_other_text?: string | null } | null };
 
 export type DeletePatientReferralMutationVariables = Exact<{
   patientPersonId: Scalars['bigint']['input'];
@@ -16646,7 +20786,7 @@ export type DeleteClinicHoursMutationHookResult = ReturnType<typeof useDeleteCli
 export type DeleteClinicHoursMutationResult = ApolloReactCommon.MutationResult<DeleteClinicHoursMutation>;
 export type DeleteClinicHoursMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteClinicHoursMutation, DeleteClinicHoursMutationVariables>;
 export const CreatePatientWithRelationsDocument = gql`
-    mutation CreatePatientWithRelations($clinicId: bigint!, $firstName: String!, $lastName: String!, $preferredName: String, $dob: date, $gender: String, $preferredLanguage: String, $householdHeadId: bigint, $householdRelationship: String, $responsiblePartyId: bigint, $chartNo: String, $status: String!, $familyDoctorName: String, $familyDoctorPhone: String, $imagingId: String, $contactPoints: [person_contact_point_insert_input!]!, $mailingAddressId: bigint, $billingAddressId: bigint) {
+    mutation CreatePatientWithRelations($clinicId: bigint!, $firstName: String!, $lastName: String!, $preferredName: String, $dob: date, $gender: gender_enum_enum, $preferredLanguage: String, $householdHeadId: bigint, $householdRelationship: household_relationship_enum_enum, $responsiblePartyId: bigint, $chartNo: String, $status: patient_status_enum_enum!, $familyDoctorName: String, $familyDoctorPhone: String, $imagingId: String, $contactPoints: [person_contact_point_insert_input!]!, $mailingAddressId: bigint, $billingAddressId: bigint) {
   insert_person_one(
     object: {clinic_id: $clinicId, first_name: $firstName, last_name: $lastName, preferred_name: $preferredName, dob: $dob, gender: $gender, preferred_language: $preferredLanguage, household_head_id: $householdHeadId, household_relationship: $householdRelationship, responsible_party_id: $responsiblePartyId, mailing_address_id: $mailingAddressId, billing_address_id: $billingAddressId, patient: {data: {chart_no: $chartNo, status: $status, family_doctor_name: $familyDoctorName, family_doctor_phone: $familyDoctorPhone, imaging_id: $imagingId}}, person_contact_point: {data: $contactPoints}}
   ) {
@@ -17177,7 +21317,7 @@ export type GetHouseholdMembersLazyQueryHookResult = ReturnType<typeof useGetHou
 export type GetHouseholdMembersSuspenseQueryHookResult = ReturnType<typeof useGetHouseholdMembersSuspenseQuery>;
 export type GetHouseholdMembersQueryResult = ApolloReactCommon.QueryResult<GetHouseholdMembersQuery, GetHouseholdMembersQueryVariables>;
 export const UpdatePersonResponsiblePartyDocument = gql`
-    mutation UpdatePersonResponsibleParty($personId: bigint!, $responsiblePartyId: bigint, $householdRelationship: String) {
+    mutation UpdatePersonResponsibleParty($personId: bigint!, $responsiblePartyId: bigint, $householdRelationship: household_relationship_enum_enum) {
   update_person_by_pk(
     pk_columns: {id: $personId}
     _set: {responsible_party_id: $responsiblePartyId, household_relationship: $householdRelationship}
@@ -17313,7 +21453,7 @@ export type UpsertPatientFinancialMutationHookResult = ReturnType<typeof useUpse
 export type UpsertPatientFinancialMutationResult = ApolloReactCommon.MutationResult<UpsertPatientFinancialMutation>;
 export type UpsertPatientFinancialMutationOptions = ApolloReactCommon.BaseMutationOptions<UpsertPatientFinancialMutation, UpsertPatientFinancialMutationVariables>;
 export const UpdatePersonHouseholdHeadDocument = gql`
-    mutation UpdatePersonHouseholdHead($personId: bigint!, $householdHeadId: bigint, $householdRelationship: String) {
+    mutation UpdatePersonHouseholdHead($personId: bigint!, $householdHeadId: bigint, $householdRelationship: household_relationship_enum_enum) {
   update_person_by_pk(
     pk_columns: {id: $personId}
     _set: {household_head_id: $householdHeadId, household_relationship: $householdRelationship}
@@ -17589,18 +21729,28 @@ export type DeleteOperatoryMutationResult = ApolloReactCommon.MutationResult<Del
 export type DeleteOperatoryMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteOperatoryMutation, DeleteOperatoryMutationVariables>;
 export const GetPatientFieldConfigDocument = gql`
     query GetPatientFieldConfig($clinicId: bigint!) {
+  field_config(where: {is_active: {_eq: true}}, order_by: {label: asc}) {
+    id
+    key
+    label
+    is_active
+  }
   patient_field_config(
-    where: {clinic_id: {_eq: $clinicId}, is_active: {_eq: true}}
+    where: {clinic_id: {_eq: $clinicId}}
     order_by: {display_order: asc}
   ) {
     id
     clinic_id
-    field_key
-    field_label
+    field_config_id
     display_order
     is_displayed
     is_required
-    is_active
+    field_config {
+      id
+      key
+      label
+      is_active
+    }
   }
 }
     `;
@@ -17641,17 +21791,20 @@ export type GetPatientFieldConfigLazyQueryHookResult = ReturnType<typeof useGetP
 export type GetPatientFieldConfigSuspenseQueryHookResult = ReturnType<typeof useGetPatientFieldConfigSuspenseQuery>;
 export type GetPatientFieldConfigQueryResult = ApolloReactCommon.QueryResult<GetPatientFieldConfigQuery, GetPatientFieldConfigQueryVariables>;
 export const UpdatePatientFieldConfigDocument = gql`
-    mutation UpdatePatientFieldConfig($id: bigint!, $fieldLabel: String, $displayOrder: Int, $isDisplayed: Boolean, $isRequired: Boolean) {
+    mutation UpdatePatientFieldConfig($id: bigint!, $displayOrder: Int, $isDisplayed: Boolean, $isRequired: Boolean) {
   update_patient_field_config_by_pk(
     pk_columns: {id: $id}
-    _set: {field_label: $fieldLabel, display_order: $displayOrder, is_displayed: $isDisplayed, is_required: $isRequired}
+    _set: {display_order: $displayOrder, is_displayed: $isDisplayed, is_required: $isRequired}
   ) {
     id
-    field_key
-    field_label
     display_order
     is_displayed
     is_required
+    field_config {
+      id
+      key
+      label
+    }
   }
 }
     `;
@@ -17671,7 +21824,6 @@ export type UpdatePatientFieldConfigMutationFn = ApolloReactCommon.MutationFunct
  * const [updatePatientFieldConfigMutation, { data, loading, error }] = useUpdatePatientFieldConfigMutation({
  *   variables: {
  *      id: // value for 'id'
- *      fieldLabel: // value for 'fieldLabel'
  *      displayOrder: // value for 'displayOrder'
  *      isDisplayed: // value for 'isDisplayed'
  *      isRequired: // value for 'isRequired'
@@ -17799,8 +21951,58 @@ export function useUpdatePatientFieldConfigRequiredMutation(baseOptions?: Apollo
 export type UpdatePatientFieldConfigRequiredMutationHookResult = ReturnType<typeof useUpdatePatientFieldConfigRequiredMutation>;
 export type UpdatePatientFieldConfigRequiredMutationResult = ApolloReactCommon.MutationResult<UpdatePatientFieldConfigRequiredMutation>;
 export type UpdatePatientFieldConfigRequiredMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdatePatientFieldConfigRequiredMutation, UpdatePatientFieldConfigRequiredMutationVariables>;
+export const CreatePatientFieldConfigDocument = gql`
+    mutation CreatePatientFieldConfig($clinicId: bigint!, $fieldConfigId: bigint!, $displayOrder: Int!, $isDisplayed: Boolean!, $isRequired: Boolean!) {
+  insert_patient_field_config_one(
+    object: {clinic_id: $clinicId, field_config_id: $fieldConfigId, display_order: $displayOrder, is_displayed: $isDisplayed, is_required: $isRequired}
+  ) {
+    id
+    clinic_id
+    field_config_id
+    display_order
+    is_displayed
+    is_required
+    field_config {
+      id
+      key
+      label
+      is_active
+    }
+  }
+}
+    `;
+export type CreatePatientFieldConfigMutationFn = ApolloReactCommon.MutationFunction<CreatePatientFieldConfigMutation, CreatePatientFieldConfigMutationVariables>;
+
+/**
+ * __useCreatePatientFieldConfigMutation__
+ *
+ * To run a mutation, you first call `useCreatePatientFieldConfigMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePatientFieldConfigMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPatientFieldConfigMutation, { data, loading, error }] = useCreatePatientFieldConfigMutation({
+ *   variables: {
+ *      clinicId: // value for 'clinicId'
+ *      fieldConfigId: // value for 'fieldConfigId'
+ *      displayOrder: // value for 'displayOrder'
+ *      isDisplayed: // value for 'isDisplayed'
+ *      isRequired: // value for 'isRequired'
+ *   },
+ * });
+ */
+export function useCreatePatientFieldConfigMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreatePatientFieldConfigMutation, CreatePatientFieldConfigMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreatePatientFieldConfigMutation, CreatePatientFieldConfigMutationVariables>(CreatePatientFieldConfigDocument, options);
+      }
+export type CreatePatientFieldConfigMutationHookResult = ReturnType<typeof useCreatePatientFieldConfigMutation>;
+export type CreatePatientFieldConfigMutationResult = ApolloReactCommon.MutationResult<CreatePatientFieldConfigMutation>;
+export type CreatePatientFieldConfigMutationOptions = ApolloReactCommon.BaseMutationOptions<CreatePatientFieldConfigMutation, CreatePatientFieldConfigMutationVariables>;
 export const CreatePersonDocument = gql`
-    mutation CreatePerson($clinicId: bigint!, $firstName: String!, $lastName: String!, $preferredName: String, $dob: date, $gender: String, $preferredLanguage: String) {
+    mutation CreatePerson($clinicId: bigint!, $firstName: String!, $lastName: String!, $preferredName: String, $dob: date, $gender: gender_enum_enum, $preferredLanguage: String) {
   insert_person_one(
     object: {clinic_id: $clinicId, first_name: $firstName, last_name: $lastName, preferred_name: $preferredName, dob: $dob, gender: $gender, preferred_language: $preferredLanguage}
   ) {
@@ -17844,7 +22046,7 @@ export type CreatePersonMutationHookResult = ReturnType<typeof useCreatePersonMu
 export type CreatePersonMutationResult = ApolloReactCommon.MutationResult<CreatePersonMutation>;
 export type CreatePersonMutationOptions = ApolloReactCommon.BaseMutationOptions<CreatePersonMutation, CreatePersonMutationVariables>;
 export const CreatePatientDocument = gql`
-    mutation CreatePatient($personId: bigint!, $chartNo: String, $status: String!, $familyDoctorName: String, $familyDoctorPhone: String, $imagingId: String) {
+    mutation CreatePatient($personId: bigint!, $chartNo: String, $status: patient_status_enum_enum!, $familyDoctorName: String, $familyDoctorPhone: String, $imagingId: String) {
   insert_patient_one(
     object: {person_id: $personId, chart_no: $chartNo, status: $status, family_doctor_name: $familyDoctorName, family_doctor_phone: $familyDoctorPhone, imaging_id: $imagingId}
   ) {
@@ -18140,7 +22342,7 @@ export type UpdatePatientChartNoMutationHookResult = ReturnType<typeof useUpdate
 export type UpdatePatientChartNoMutationResult = ApolloReactCommon.MutationResult<UpdatePatientChartNoMutation>;
 export type UpdatePatientChartNoMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdatePatientChartNoMutation, UpdatePatientChartNoMutationVariables>;
 export const UpdatePatientStatusDocument = gql`
-    mutation UpdatePatientStatus($personId: bigint!, $status: String!) {
+    mutation UpdatePatientStatus($personId: bigint!, $status: patient_status_enum_enum!) {
   update_patient_by_pk(
     pk_columns: {person_id: $personId}
     _set: {status: $status}
@@ -18352,7 +22554,7 @@ export const LegacySearchPatientsDocument = gql`
       status
     }
     person_contact_point(
-      where: {kind: {_eq: "phone"}, is_active: {_eq: true}}
+      where: {kind: {_in: [cell_phone, home_phone, work_phone]}, is_active: {_eq: true}}
       order_by: {is_primary: desc}
       limit: 1
     ) {
@@ -18649,14 +22851,13 @@ export type GetPersonAddressIdsLazyQueryHookResult = ReturnType<typeof useGetPer
 export type GetPersonAddressIdsSuspenseQueryHookResult = ReturnType<typeof useGetPersonAddressIdsSuspenseQuery>;
 export type GetPersonAddressIdsQueryResult = ApolloReactCommon.QueryResult<GetPersonAddressIdsQuery, GetPersonAddressIdsQueryVariables>;
 export const CreatePersonContactPointDocument = gql`
-    mutation CreatePersonContactPoint($personId: bigint!, $kind: String!, $label: String, $value: citext!, $phoneE164: String, $isPrimary: Boolean) {
+    mutation CreatePersonContactPoint($personId: bigint!, $kind: contact_kind_enum_enum!, $value: citext!, $phoneE164: String, $isPrimary: Boolean) {
   insert_person_contact_point_one(
-    object: {person_id: $personId, kind: $kind, label: $label, value: $value, phone_e164: $phoneE164, is_primary: $isPrimary, is_active: true}
+    object: {person_id: $personId, kind: $kind, value: $value, phone_e164: $phoneE164, is_primary: $isPrimary, is_active: true}
   ) {
     id
     person_id
     kind
-    label
     value
     phone_e164
     is_primary
@@ -18681,7 +22882,6 @@ export type CreatePersonContactPointMutationFn = ApolloReactCommon.MutationFunct
  *   variables: {
  *      personId: // value for 'personId'
  *      kind: // value for 'kind'
- *      label: // value for 'label'
  *      value: // value for 'value'
  *      phoneE164: // value for 'phoneE164'
  *      isPrimary: // value for 'isPrimary'
@@ -18696,14 +22896,13 @@ export type CreatePersonContactPointMutationHookResult = ReturnType<typeof useCr
 export type CreatePersonContactPointMutationResult = ApolloReactCommon.MutationResult<CreatePersonContactPointMutation>;
 export type CreatePersonContactPointMutationOptions = ApolloReactCommon.BaseMutationOptions<CreatePersonContactPointMutation, CreatePersonContactPointMutationVariables>;
 export const UpdatePersonContactPointDocument = gql`
-    mutation UpdatePersonContactPoint($id: bigint!, $label: String, $value: citext, $phoneE164: String, $isPrimary: Boolean) {
+    mutation UpdatePersonContactPoint($id: bigint!, $value: citext, $phoneE164: String, $isPrimary: Boolean) {
   update_person_contact_point_by_pk(
     pk_columns: {id: $id}
-    _set: {label: $label, value: $value, phone_e164: $phoneE164, is_primary: $isPrimary}
+    _set: {value: $value, phone_e164: $phoneE164, is_primary: $isPrimary}
   ) {
     id
     kind
-    label
     value
     phone_e164
     is_primary
@@ -18726,7 +22925,6 @@ export type UpdatePersonContactPointMutationFn = ApolloReactCommon.MutationFunct
  * const [updatePersonContactPointMutation, { data, loading, error }] = useUpdatePersonContactPointMutation({
  *   variables: {
  *      id: // value for 'id'
- *      label: // value for 'label'
  *      value: // value for 'value'
  *      phoneE164: // value for 'phoneE164'
  *      isPrimary: // value for 'isPrimary'
@@ -18776,6 +22974,102 @@ export function useDeletePersonContactPointMutation(baseOptions?: ApolloReactHoo
 export type DeletePersonContactPointMutationHookResult = ReturnType<typeof useDeletePersonContactPointMutation>;
 export type DeletePersonContactPointMutationResult = ApolloReactCommon.MutationResult<DeletePersonContactPointMutation>;
 export type DeletePersonContactPointMutationOptions = ApolloReactCommon.BaseMutationOptions<DeletePersonContactPointMutation, DeletePersonContactPointMutationVariables>;
+export const GetCurrentPersonDocument = gql`
+    query GetCurrentPerson($userId: uuid!) {
+  clinic_user_v(
+    where: {is_active: {_eq: true}, user_id: {_eq: $userId}}
+    limit: 1
+  ) {
+    id
+    current_person_id
+    person {
+      id
+      first_name
+      last_name
+      preferred_name
+      clinic_id
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetCurrentPersonQuery__
+ *
+ * To run a query within a React component, call `useGetCurrentPersonQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCurrentPersonQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCurrentPersonQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetCurrentPersonQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetCurrentPersonQuery, GetCurrentPersonQueryVariables> & ({ variables: GetCurrentPersonQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>(GetCurrentPersonDocument, options);
+      }
+export function useGetCurrentPersonLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>(GetCurrentPersonDocument, options);
+        }
+// @ts-ignore
+export function useGetCurrentPersonSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>;
+export function useGetCurrentPersonSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetCurrentPersonQuery | undefined, GetCurrentPersonQueryVariables>;
+export function useGetCurrentPersonSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>(GetCurrentPersonDocument, options);
+        }
+export type GetCurrentPersonQueryHookResult = ReturnType<typeof useGetCurrentPersonQuery>;
+export type GetCurrentPersonLazyQueryHookResult = ReturnType<typeof useGetCurrentPersonLazyQuery>;
+export type GetCurrentPersonSuspenseQueryHookResult = ReturnType<typeof useGetCurrentPersonSuspenseQuery>;
+export type GetCurrentPersonQueryResult = ApolloReactCommon.QueryResult<GetCurrentPersonQuery, GetCurrentPersonQueryVariables>;
+export const UpdateCurrentPersonDocument = gql`
+    mutation UpdateCurrentPerson($personId: bigint) {
+  update_clinic_user(
+    where: {is_active: {_eq: true}}
+    _set: {current_person_id: $personId}
+  ) {
+    affected_rows
+    returning {
+      id
+      clinic_id
+      user_id
+      current_person_id
+    }
+  }
+}
+    `;
+export type UpdateCurrentPersonMutationFn = ApolloReactCommon.MutationFunction<UpdateCurrentPersonMutation, UpdateCurrentPersonMutationVariables>;
+
+/**
+ * __useUpdateCurrentPersonMutation__
+ *
+ * To run a mutation, you first call `useUpdateCurrentPersonMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateCurrentPersonMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateCurrentPersonMutation, { data, loading, error }] = useUpdateCurrentPersonMutation({
+ *   variables: {
+ *      personId: // value for 'personId'
+ *   },
+ * });
+ */
+export function useUpdateCurrentPersonMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateCurrentPersonMutation, UpdateCurrentPersonMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateCurrentPersonMutation, UpdateCurrentPersonMutationVariables>(UpdateCurrentPersonDocument, options);
+      }
+export type UpdateCurrentPersonMutationHookResult = ReturnType<typeof useUpdateCurrentPersonMutation>;
+export type UpdateCurrentPersonMutationResult = ApolloReactCommon.MutationResult<UpdateCurrentPersonMutation>;
+export type UpdateCurrentPersonMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateCurrentPersonMutation, UpdateCurrentPersonMutationVariables>;
 export const GetPersonProfileDocument = gql`
     query GetPersonProfile($personId: bigint!, $clinicId: bigint!) {
   person(where: {id: {_eq: $personId}, clinic_id: {_eq: $clinicId}}) {
@@ -18850,7 +23144,6 @@ export const GetPersonProfileDocument = gql`
     person_contact_point(where: {is_active: {_eq: true}}) {
       id
       kind
-      label
       value
       is_primary
     }
@@ -18940,11 +23233,13 @@ export const SearchPatientsDocument = gql`
       chart_no
     }
     person_contact_point(
-      where: {kind: {_eq: "phone"}, is_active: {_eq: true}}
+      where: {kind: {_in: [cell_phone, home_phone, work_phone]}, is_active: {_eq: true}}
       order_by: {is_primary: desc}
-      limit: 1
     ) {
+      kind
       value
+      phone_last10
+      value_norm
     }
   }
 }
@@ -19324,7 +23619,7 @@ export type DeleteReferralSourceMutationHookResult = ReturnType<typeof useDelete
 export type DeleteReferralSourceMutationResult = ApolloReactCommon.MutationResult<DeleteReferralSourceMutation>;
 export type DeleteReferralSourceMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteReferralSourceMutation, DeleteReferralSourceMutationVariables>;
 export const UpsertPatientReferralDocument = gql`
-    mutation UpsertPatientReferral($patientPersonId: bigint!, $referralKind: String!, $referralSourceId: bigint, $referralContactPersonId: bigint, $referralOtherText: String) {
+    mutation UpsertPatientReferral($patientPersonId: bigint!, $referralKind: referral_kind_enum_enum!, $referralSourceId: bigint, $referralContactPersonId: bigint, $referralOtherText: String) {
   insert_patient_referral_one(
     object: {patient_person_id: $patientPersonId, referral_kind: $referralKind, referral_source_id: $referralSourceId, referral_contact_person_id: $referralContactPersonId, referral_other_text: $referralOtherText, is_active: true}
     on_conflict: {constraint: patient_referral_pkey, update_columns: [referral_kind, referral_source_id, referral_contact_person_id, referral_other_text, is_active]}

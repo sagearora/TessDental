@@ -53,23 +53,18 @@ export const InitInputSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email"),
-  password: z.string().refine(
-    (password, ctx) => {
-      const email = ctx.parent.email
-      const error = validatePasswordRequirements(password, email)
-      if (error) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: error,
-        })
-        return false
-      }
-      return true
-    },
-    { message: "Password does not meet security requirements" }
-  ),
+  password: z.string(),
   clinicName: z.string().min(1, "Clinic name is required"),
   timezone: z.string().min(1, "Timezone is required")
+}).superRefine((data, ctx) => {
+  const error = validatePasswordRequirements(data.password, data.email);
+  if (error) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: error,
+      path: ["password"],
+    });
+  }
 });
 
 export type InitInput = z.infer<typeof InitInputSchema>;

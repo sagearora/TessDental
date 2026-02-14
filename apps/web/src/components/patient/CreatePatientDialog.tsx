@@ -14,6 +14,7 @@ import {
   useCreatePatientWithRelationsMutation,
   useCreateAddressMutation,
   useGetPersonAddressIdsLazyQuery,
+  type Referral_Kind_Enum_Enum,
 } from '@/gql/generated'
 import { useUnifiedPatientSearch } from '@/hooks/useUnifiedPatientSearch'
 import { useAuth } from '@/contexts/AuthContext'
@@ -32,7 +33,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { data: fieldConfigData } = useGetPatientFieldConfigQuery({
+  const { data: fieldConfigData, loading: fieldConfigLoading, error: fieldConfigError } = useGetPatientFieldConfigQuery({
     variables: { clinicId: session?.clinicId || 0 },
     skip: !session?.clinicId || !open,
   })
@@ -80,7 +81,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
     setHeadHasPhone(false)
     setHeadPhone(null)
     setUseDifferentPhone(false)
-    setHouseholdHeadSearchTerm('')
     setHouseholdHeadQuery('')
   }, [open])
 
@@ -89,17 +89,15 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
   const [createAddress] = useCreateAddressMutation()
 
   // Referral state (only used when household head is NOT selected)
-  const [referralKind, setReferralKind] = useState<string>('')
+  const [referralKind, setReferralKind] = useState<Referral_Kind_Enum_Enum|undefined>()
   const [referralSourceId, setReferralSourceId] = useState<string>('')
   const [referralContactPersonId, setReferralContactPersonId] = useState<string>('')
   const [referralContactPersonName, setReferralContactPersonName] = useState<string>('')
   const [referralOtherText, setReferralOtherText] = useState<string>('')
-  const [referralContactSearchTerm, setReferralContactSearchTerm] = useState('')
   const [isReferralContactPopoverOpen, setIsReferralContactPopoverOpen] = useState(false)
   const referralContactInputRef = useRef<HTMLInputElement>(null)
 
   // Household head state (must be declared before fields filtering)
-  const [householdHeadSearchTerm, setHouseholdHeadSearchTerm] = useState('')
   const [selectedHouseholdHeadId, setSelectedHouseholdHeadId] = useState<number | null>(null)
   const [selectedHouseholdHeadName, setSelectedHouseholdHeadName] = useState<string>('')
   const [householdRelationship, setHouseholdRelationship] = useState<string>('child')
@@ -159,18 +157,29 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
     return null
   }
 
-  // Filter out household-related fields and referral field if household head is selected
-  const fields = fieldConfigData?.patient_field_config?.filter((f) =>
-    f.is_displayed &&
-    f.field_key !== 'head_of_household' &&
-    f.field_key !== 'responsible_party' &&
-    !f.field_key?.toLowerCase().includes('household') &&
-    // Hide referral field if household head is selected
-    !(selectedHouseholdHeadId && f.field_key === 'referred_by')
-  ) || []
+  // Get all configured fields from patient_field_config, sorted by display_order
+  const configuredFields = (Array.isArray(fieldConfigData?.patient_field_config) 
+    ? fieldConfigData.patient_field_config
+        .filter((f) =>
+          f.is_displayed &&
+          f.field_config?.is_active !== false &&
+          f.field_config?.key !== 'head_of_household' &&
+          f.field_config?.key !== 'responsible_party' &&
+          !f.field_config?.key?.toLowerCase().includes('household') &&
+          // Hide referral field if household head is selected
+          !(selectedHouseholdHeadId && f.field_config?.key === 'referred_by')
+        )
+        .map((f) => ({
+          ...f,
+          field_key: f.field_config?.key || '',
+          field_label: f.field_config?.label || '',
+        }))
+        // Sort by display_order from patient_field_config
+        .sort((a, b) => a.display_order - b.display_order)
+    : [])
 
   // Make email and cell phone optional if household head is selected
-  const processedFields = fields.map((f) => {
+  const processedFields = configuredFields.map((f) => {
     if (selectedHouseholdHeadId && (f.field_key === 'email' || f.field_key === 'cell_phone' || f.field_key === 'phone')) {
       return { ...f, is_required: false }
     }
@@ -281,7 +290,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
           throw new Error('Invalid phone number format. Please enter a valid phone number.')
         }
         contactPoints.push({
-          kind: 'phone',
+          kind: 'cell_phone',
           value: rawPhone,
           phone_e164: phoneE164,
           is_primary: true,
@@ -344,7 +353,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
           gender: formData.gender || null,
           preferredLanguage: formData.preferred_language || null,
           householdHeadId: selectedHouseholdHeadId ? Number(selectedHouseholdHeadId) : null,
-          householdRelationship: selectedHouseholdHeadId ? householdRelationship : null,
+          householdRelationship: selectedHouseholdHeadId ? ((householdRelationship === 'guardian' ? 'other' : householdRelationship) as 'self' | 'child' | 'spouse' | 'parent' | 'sibling' | 'other') : null,
           responsiblePartyId: responsiblePartyId,
           chartNo: formData.chart_no || null,
           status: formData.status || 'active',
@@ -377,11 +386,10 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
 
       // Reset form
       setFormData({})
-      setReferralKind('')
+      setReferralKind(undefined)
       setReferralSourceId('')
       setReferralContactPersonId('')
       setReferralOtherText('')
-      setHouseholdHeadSearchTerm('')
       setSelectedHouseholdHeadId(null)
       setHouseholdRelationship('child')
       setUseDifferentAddress(false)
@@ -397,7 +405,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
     }
   }
 
-  const renderField = (field: typeof fields[0]) => {
+  const renderField = (field: typeof processedFields[0]) => {
     const value = formData[field.field_key] || ''
     const isRequired = field.is_required
 
@@ -472,18 +480,29 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
 
       case 'cell_phone':
       case 'home_phone':
-      case 'work_phone':
+      case 'work_phone': {
+        // Format the phone number for display
+        const displayValue = formatPhone(value)
         return (
           <Input
             key={field.id}
             type="tel"
-            value={value}
-            onChange={(e) => handleFieldChange(field.field_key, e.target.value)}
-            onBlur={(e) => handleFieldChange(field.field_key, formatPhone(e.target.value))}
+            value={displayValue}
+            onChange={(e) => {
+              // Extract only digits from input and store raw value
+              const rawValue = e.target.value.replace(/\D/g, '')
+              handleFieldChange(field.field_key, rawValue)
+            }}
+            onBlur={(e) => {
+              // Ensure value is stored as raw digits
+              const rawValue = e.target.value.replace(/\D/g, '')
+              handleFieldChange(field.field_key, rawValue)
+            }}
             placeholder={field.field_label}
             required={isRequired}
           />
         )
+      }
 
       case 'chart_no':
       case 'client_number':
@@ -521,13 +540,12 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                 <select
                   value={referralKind}
                   onChange={(e) => {
-                    setReferralKind(e.target.value)
+                    setReferralKind(e.target.value as Referral_Kind_Enum_Enum)
                     // Clear other referral fields when kind changes
                     setReferralSourceId('')
                     setReferralContactPersonId('')
                     setReferralContactPersonName('')
                     setReferralOtherText('')
-                    setReferralContactSearchTerm('')
                   }}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   required={isRequired}
@@ -572,7 +590,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                         value={referralContactPersonId ? referralContactPersonName : referralSearchQuery}
                         onChange={(e) => {
                           const v = e.target.value
-                          setReferralContactSearchTerm(v)
                           setReferralSearchQuery(v)
                           setReferralContactPersonId('')
                           setReferralContactPersonName('')
@@ -605,7 +622,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                             e.stopPropagation()
                             setReferralContactPersonId('')
                             setReferralContactPersonName('')
-                            setReferralContactSearchTerm('')
                             setReferralSearchQuery('')
                             referralContactInputRef.current?.focus()
                           }}
@@ -631,7 +647,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                               onClick={() => {
                                 setReferralContactPersonId(p.id.toString())
                                 setReferralContactPersonName(p.displayName || 'Unknown')
-                                setReferralContactSearchTerm('')
                                 setReferralSearchQuery('')
                                 setIsReferralContactPopoverOpen(false)
                                 referralContactInputRef.current?.blur()
@@ -720,16 +735,30 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
           </div>
         )}
 
+        {fieldConfigError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+            Failed to load field configuration: {fieldConfigError.message}
+          </div>
+        )}
+
+        {!session?.clinicId && open && (
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+            No clinic selected. Please select a clinic to create a patient.
+          </div>
+        )}
+
+        {fieldConfigLoading && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+            Loading form fields...
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name fields - First, Middle, Last in 3 columns at the top */}
+          {/* These are already sorted by display_order from processedFields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {processedFields
               .filter((f) => ['first_name', 'middle_name', 'last_name'].includes(f.field_key))
-              .sort((a, b) => {
-                // Sort: first_name, middle_name, last_name
-                const order = ['first_name', 'middle_name', 'last_name']
-                return order.indexOf(a.field_key) - order.indexOf(b.field_key)
-              })
               .map((field) => (
                 <div key={field.id} className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -741,22 +770,115 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
               ))}
           </div>
 
-          {/* All other fields in 2-column grid (excluding email, cell_phone, address fields, and referred_by) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {processedFields
-              .filter((f) =>
-                !['first_name', 'middle_name', 'last_name', 'email', 'cell_phone', 'phone', 'address', 'street_address', 'mailing_address', 'city', 'state', 'zip', 'postal_code', 'referred_by'].includes(f.field_key)
-              )
-              .map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    {field.field_label}
-                    {field.is_required && <span className="text-red-500 ml-1">*</span>}
-                  </label>
-                  {renderField(field)}
-                </div>
-              ))}
-          </div>
+          {/* Render fields in display_order, handling special cases */}
+          {(() => {
+            // Get special fields for reference
+            const emailField = processedFields.find((f) => f.field_key === 'email')
+            const phoneField = processedFields.find((f) => f.field_key === 'cell_phone' || f.field_key === 'phone')
+            const referredByField = processedFields.find((f) => f.field_key === 'referred_by')
+            const addressFields = processedFields.filter((f) =>
+              ['address', 'street_address', 'mailing_address', 'city', 'state', 'zip', 'postal_code'].includes(f.field_key)
+            )
+            
+            // Get the display_order thresholds
+            const emailOrder = emailField?.display_order ?? Infinity
+            const phoneOrder = phoneField?.display_order ?? Infinity
+            const referredByOrder = referredByField?.display_order ?? Infinity
+            const minAddressOrder = addressFields.length > 0 ? Math.min(...addressFields.map(f => f.display_order)) : Infinity
+            const contactSectionOrder = Math.min(emailOrder, phoneOrder)
+            
+            // Split fields into sections based on display_order
+            const fieldsBeforeContact = processedFields.filter((f) => {
+              const key = f.field_key
+              return !['first_name', 'middle_name', 'last_name', 'email', 'cell_phone', 'phone', 'address', 'street_address', 'mailing_address', 'city', 'state', 'zip', 'postal_code', 'referred_by'].includes(key) &&
+                     f.display_order < contactSectionOrder &&
+                     (!referredByField || f.display_order < referredByOrder)
+            })
+            
+            const fieldsBetweenContactAndReferredBy = processedFields.filter((f) => {
+              const key = f.field_key
+              return !['first_name', 'middle_name', 'last_name', 'email', 'cell_phone', 'phone', 'address', 'street_address', 'mailing_address', 'city', 'state', 'zip', 'postal_code', 'referred_by'].includes(key) &&
+                     f.display_order >= contactSectionOrder &&
+                     (!referredByField || f.display_order < referredByOrder)
+            })
+            
+            const fieldsAfterReferredBy = processedFields.filter((f) => {
+              const key = f.field_key
+              return !['first_name', 'middle_name', 'last_name', 'email', 'cell_phone', 'phone', 'address', 'street_address', 'mailing_address', 'city', 'state', 'zip', 'postal_code', 'referred_by'].includes(key) &&
+                     referredByField && f.display_order > referredByOrder
+            })
+            
+            return (
+              <>
+                {/* Fields before contact section */}
+                {fieldsBeforeContact.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {fieldsBeforeContact.map((field) => (
+                      <div key={field.id} className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          {field.field_label}
+                          {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                        </label>
+                        {renderField(field)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Referred By - if it comes before contact section */}
+                {referredByField && !selectedHouseholdHeadId && referredByOrder < contactSectionOrder && (
+                  <div className="space-y-2 pt-4 border-t">
+                    <label className="text-sm font-medium text-gray-700">
+                      {referredByField.field_label}
+                      {referredByField.is_required && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                    {renderField(referredByField)}
+                  </div>
+                )}
+                
+                {/* Fields between contact and referred_by */}
+                {fieldsBetweenContactAndReferredBy.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {fieldsBetweenContactAndReferredBy.map((field) => (
+                      <div key={field.id} className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          {field.field_label}
+                          {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                        </label>
+                        {renderField(field)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Referred By - if it comes after contact section but before address */}
+                {referredByField && !selectedHouseholdHeadId && referredByOrder >= contactSectionOrder && referredByOrder < minAddressOrder && (
+                  <div className="space-y-2 pt-4 border-t">
+                    <label className="text-sm font-medium text-gray-700">
+                      {referredByField.field_label}
+                      {referredByField.is_required && <span className="text-red-500 ml-1">*</span>}
+                    </label>
+                    {renderField(referredByField)}
+                  </div>
+                )}
+                
+                {/* Fields after referred_by */}
+                {fieldsAfterReferredBy.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {fieldsAfterReferredBy.map((field) => (
+                      <div key={field.id} className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          {field.field_label}
+                          {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                        </label>
+                        {renderField(field)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )
+          })()}
 
           {/* Household Head Selection - Right after fields section */}
           <div className="space-y-4 pt-4 border-t">
@@ -773,7 +895,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                       onChange={(e) => {
                         const v = e.target.value
                         setHouseholdHeadQuery(v)
-                        setHouseholdHeadSearchTerm(v)
                         setSelectedHouseholdHeadId(null)
                         setSelectedHouseholdHeadName('')
                         if (!isPopoverOpen && v.trim()) {
@@ -805,7 +926,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                           e.stopPropagation()
                           setSelectedHouseholdHeadId(null)
                           setSelectedHouseholdHeadName('')
-                          setHouseholdHeadSearchTerm('')
                           setHouseholdHeadQuery('')
                           setHouseholdRelationship('child')
                           setHeadHasMailingAddress(false)
@@ -847,7 +967,6 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                                 if (isIneligible) return
                                 setSelectedHouseholdHeadId(p.id)
                                 setSelectedHouseholdHeadName(fullName)
-                                setHouseholdHeadSearchTerm('')
                                 setHouseholdHeadQuery('')
                                 setIsPopoverOpen(false)
                                 householdHeadInputRef.current?.blur()
@@ -896,8 +1015,8 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                                         (cp) => cp.kind === 'email' && cp.is_primary,
                                       ) || cps.find((cp) => cp.kind === 'email')
                                       const primaryPhone = cps.find(
-                                        (cp) => cp.kind === 'phone' && cp.is_primary,
-                                      ) || cps.find((cp) => cp.kind === 'phone')
+                                        (cp) => (cp.kind === 'cell_phone' || cp.kind === 'home_phone' || cp.kind === 'work_phone') && cp.is_primary,
+                                      ) || cps.find((cp) => cp.kind === 'cell_phone' || cp.kind === 'home_phone' || cp.kind === 'work_phone')
 
                                       if (primaryEmail?.value) {
                                         setHeadHasEmail(true)
@@ -1039,24 +1158,24 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
               )}
             </div>
 
-            {/* Referred By - Full width below address section */}
-            {!selectedHouseholdHeadId && processedFields.find((f) => f.field_key === 'referred_by') && (
-              <div className="space-y-2 pt-4 border-t">
-                {(() => {
-                  const referralField = processedFields.find((f) => f.field_key === 'referred_by')
-                  if (!referralField) return null
-                  return (
-                    <>
-                      <label className="text-sm font-medium text-gray-700">
-                        {referralField.field_label}
-                        {referralField.is_required && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      {renderField(referralField)}
-                    </>
-                  )
-                })()}
-              </div>
-            )}
+            {/* Referred By - if it comes after address section */}
+            {!selectedHouseholdHeadId && (() => {
+              const referredByField = processedFields.find((f) => f.field_key === 'referred_by')
+              const addressFields = processedFields.filter((f) =>
+                ['address', 'street_address', 'mailing_address', 'city', 'state', 'zip', 'postal_code'].includes(f.field_key)
+              )
+              const minAddressOrder = addressFields.length > 0 ? Math.min(...addressFields.map(f => f.display_order)) : Infinity
+              
+              return referredByField && referredByField.display_order >= minAddressOrder && (
+                <div className="space-y-2 pt-4 border-t">
+                  <label className="text-sm font-medium text-gray-700">
+                    {referredByField.field_label}
+                    {referredByField.is_required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
+                  {renderField(referredByField)}
+                </div>
+              )
+            })()}
 
             {/* Address fields: Street, Unit/Apt, City, Province, Postal Code */}
             {selectedHouseholdHeadId && !useDifferentAddress && (

@@ -1,0 +1,114 @@
+table:
+  name: imaging_mount
+  schema: public
+object_relationships:
+  - name: template
+    using:
+      foreign_key_constraint_on: template_id
+array_relationships:
+  - name: mount_slots
+    using:
+      foreign_key_constraint_on:
+        column: mount_id
+        table:
+          name: imaging_mount_slot
+          schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - clinic_id
+        - patient_id
+        - template_id
+        - name
+        - description
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+        - is_active
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+      allow_aggregations: false
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: imaging.write
+                      - capability_key:
+                          _eq: system_admin
+      columns:
+        - clinic_id
+        - patient_id
+        - template_id
+        - name
+        - description
+        - is_active
+update_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: imaging.write
+                      - capability_key:
+                          _eq: system_admin
+      columns:
+        - name
+        - description
+        - is_active
+      filter:
+        clinic_id:
+          _eq: X-Hasura-Clinic-Id
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _and:
+          - clinic_id:
+              _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: imaging.write
+                      - capability_key:
+                          _eq: system_admin

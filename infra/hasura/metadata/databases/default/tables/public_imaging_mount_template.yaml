@@ -1,0 +1,17 @@
+table:
+  name: imaging_mount_template
+  schema: public
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - template_key
+        - name
+        - description
+        - slot_definitions
+        - layout_config
+        - created_at
+        - is_active
+      filter: {}
+      allow_aggregations: false

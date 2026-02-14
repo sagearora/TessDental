@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict WSXcRZseaLvXcP9LsaaasIjER5dEEbWqDP1fHR88OSK5njjTDtfcF9l2EEpHDYM
+\restrict pRqJlAk0a6HDH1bkenG06IKbFxi59xqGvpeXrCV9Nhf7IZdsxOazfNO5e3kx9ov
 
 -- Dumped from database version 16.11 (Debian 16.11-1.pgdg13+1)
 -- Dumped by pg_dump version 17.6 (Homebrew)
@@ -126,23 +126,6 @@ CREATE TYPE public.family_member_result AS (
 CREATE TYPE public.override_effect AS ENUM (
     'grant',
     'deny'
-);
-
-
---
--- Name: person_search_result; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.person_search_result AS (
-	person_id bigint,
-	first_name text,
-	last_name text,
-	preferred_name text,
-	dob date,
-	chart_no text,
-	status text,
-	phone_norm text,
-	email_norm text
 );
 
 
@@ -406,6 +389,97 @@ CREATE FUNCTION hdb_catalog.gen_hasura_uuid() RETURNS uuid
 
 
 --
+-- Name: fn_bootstrap_system(text, text, text, text, text, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.fn_bootstrap_system(p_admin_email text, p_admin_password_hash text, p_admin_first_name text, p_admin_last_name text, p_clinic_name text, p_clinic_timezone text) RETURNS SETOF public.bootstrap_result
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  v_user_id uuid;
+  v_clinic_id bigint;
+  v_clinic_user_id bigint;
+  v_role_id bigint;
+BEGIN
+  -- Lock to prevent concurrent bootstraps
+  PERFORM pg_advisory_xact_lock(9223372036854775807);
+
+  -- If any user exists, setup is complete
+  IF EXISTS(SELECT 1 FROM public.app_user) THEN
+    RAISE EXCEPTION 'setup_complete';
+  END IF;
+
+  -- Create admin user
+  INSERT INTO public.app_user (email, password_hash, first_name, last_name, is_active)
+  VALUES (lower(trim(p_admin_email)), p_admin_password_hash, p_admin_first_name, p_admin_last_name, true)
+  RETURNING id INTO v_user_id;
+
+  -- Create clinic
+  INSERT INTO public.clinic (name, timezone, is_active)
+  VALUES (p_clinic_name, coalesce(nullif(p_clinic_timezone, ''), 'America/Toronto'), true)
+  RETURNING id INTO v_clinic_id;
+
+  -- Create clinic_user membership
+  INSERT INTO public.clinic_user (clinic_id, user_id, is_active, joined_at)
+  VALUES (v_clinic_id, v_user_id, true, now())
+  RETURNING id INTO v_clinic_user_id;
+
+  -- Create Administrator role
+  INSERT INTO public.role (clinic_id, name, description, is_active)
+  VALUES (v_clinic_id, 'Administrator', 'System administrator with all capabilities', true)
+  RETURNING id INTO v_role_id;
+
+  -- Assign ALL capabilities from the capability table to the Administrator role
+  INSERT INTO public.role_capability (role_id, capability_key)
+  SELECT v_role_id, c.value
+  FROM public.capability c
+  ON CONFLICT DO NOTHING;
+
+  -- Assign role to user
+  INSERT INTO public.clinic_user_role (clinic_user_id, role_id)
+  VALUES (v_clinic_user_id, v_role_id)
+  ON CONFLICT DO NOTHING;
+
+  -- Log bootstrap event to audit.event
+  INSERT INTO audit.event (
+    occurred_at,
+    actor_user_id,
+    clinic_id,
+    action,
+    entity_type,
+    entity_id,
+    success,
+    payload
+  )
+  VALUES (
+    now(),
+    v_user_id,
+    v_clinic_id,
+    'bootstrap.system',
+    'public.bootstrap',
+    v_user_id::text,
+    true,
+    jsonb_build_object(
+      'admin_user_id', v_user_id,
+      'clinic_id', v_clinic_id,
+      'clinic_user_id', v_clinic_user_id,
+      'role_id', v_role_id
+    )
+  );
+
+  -- Return the bootstrap result
+  RETURN QUERY
+  SELECT 
+    v_user_id as admin_user_id,
+    v_clinic_id as clinic_id,
+    v_clinic_user_id as clinic_user_id,
+    v_role_id as role_id,
+    true as success;
+END;
+$$;
+
+
+--
 -- Name: fn_effective_capabilities(bigint, uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -433,15 +507,12 @@ begin
   select clinic_id into v_patient_clinic_id
   from public.patient
   where person_id = NEW.patient_person_id;
-  
   if v_patient_clinic_id is null then
     raise exception 'Patient with person_id % does not exist', NEW.patient_person_id;
   end if;
-  
   if NEW.clinic_id != v_patient_clinic_id then
     raise exception 'Patient referral clinic_id (%) must match patient clinic_id (%)', NEW.clinic_id, v_patient_clinic_id;
   end if;
-  
   return NEW;
 end;
 $$;
@@ -492,11 +563,9 @@ begin
   select dob into v_dob
   from public.person
   where id = p_person_id;
-  
   if v_dob is null then
     return null;
   end if;
-  
   v_age := extract(year from age(v_dob))::integer;
   return v_age;
 end;
@@ -605,77 +674,25 @@ $$;
 
 
 --
--- Name: fn_person_search_build(bigint); Type: FUNCTION; Schema: public; Owner: -
+-- Name: fn_person_contact_point_set_value_norm(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.fn_person_search_build(p_person_id bigint) RETURNS TABLE(clinic_id bigint, person_id bigint, display_name text, dob date, chart_no text, status text, search_text text, is_active boolean)
-    LANGUAGE sql STABLE
-    AS $$
-  SELECT
-    p.clinic_id,
-    p.id AS person_id,
-    trim(both ' ' from concat_ws(' ',
-      p.first_name,
-      NULLIF(p.preferred_name, ''),
-      p.last_name
-    )) AS display_name,
-    p.dob,
-    pat.chart_no,
-    pat.status,
-    trim(both ' ' from concat_ws(' ',
-      -- names
-      unaccent(lower(concat_ws(' ', p.first_name, p.middle_name, p.last_name, p.preferred_name))),
-      -- patient identifiers
-      unaccent(lower(coalesce(pat.chart_no, ''))),
-      unaccent(lower(coalesce(pat.status::text, ''))),
-      -- emails (citext -> text)
-      coalesce((
-        SELECT string_agg(unaccent(lower(c.value::text)), ' ' ORDER BY c.id)
-        FROM public.person_contact_point c
-        WHERE c.person_id = p.id
-          AND c.is_active = true
-          AND c.kind = 'email'
-      ), ''),
-      -- phones
-      coalesce((
-        SELECT string_agg(c.phone_e164, ' ' ORDER BY c.id)
-        FROM public.person_contact_point c
-        WHERE c.person_id = p.id
-          AND c.is_active = true
-          AND c.kind = 'phone'
-          AND c.phone_e164 IS NOT NULL
-      ), '')
-    )) AS search_text,
-    p.is_active
-  FROM public.person p
-  LEFT JOIN public.patient pat ON pat.person_id = p.id
-  WHERE p.id = p_person_id;
-$$;
-
-
---
--- Name: fn_person_search_refresh(bigint); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.fn_person_search_refresh(p_person_id bigint) RETURNS void
+CREATE FUNCTION public.fn_person_contact_point_set_value_norm() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
+DECLARE
+  v text;
 BEGIN
-  INSERT INTO public.person_search (
-    clinic_id, person_id, display_name, dob, chart_no, status, search_text, is_active, updated_at
-  )
-  SELECT
-    t.clinic_id, t.person_id, t.display_name, t.dob, t.chart_no, t.status, t.search_text, t.is_active, now()
-  FROM public.fn_person_search_build(p_person_id) t
-  ON CONFLICT (clinic_id, person_id)
-  DO UPDATE SET
-    display_name = EXCLUDED.display_name,
-    dob          = EXCLUDED.dob,
-    chart_no     = EXCLUDED.chart_no,
-    status       = EXCLUDED.status,
-    search_text  = EXCLUDED.search_text,
-    is_active    = EXCLUDED.is_active,
-    updated_at   = now();
+  v := coalesce(NEW.value, '');
+  IF NEW.kind = 'email' THEN
+    NEW.value_norm := lower(trim(v));
+  ELSIF NEW.kind = 'phone' THEN
+    -- accepts (519) 240-2222, 5192402222, +1 519 240 2222
+    NEW.value_norm := regexp_replace(v, '\D', '', 'g');
+  ELSE
+    NEW.value_norm := NULL;
+  END IF;
+  RETURN NEW;
 END;
 $$;
 
@@ -749,163 +766,6 @@ COMMENT ON FUNCTION public.fn_search_household_heads(p_clinic_id bigint, p_query
 
 
 --
--- Name: search_people_result; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.search_people_result (
-    person_id bigint NOT NULL,
-    clinic_id bigint NOT NULL,
-    display_name text NOT NULL,
-    matched_on text NOT NULL,
-    rank_score double precision NOT NULL
-);
-
-
---
--- Name: fn_search_people(bigint, text, integer, boolean); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.fn_search_people(p_clinic_id bigint, p_query text, p_limit integer DEFAULT 15, p_include_inactive boolean DEFAULT false) RETURNS SETOF public.search_people_result
-    LANGUAGE sql STABLE
-    AS $$
-  WITH q AS (
-    SELECT
-      trim(coalesce(p_query, '')) AS raw_q,
-      lower(trim(coalesce(p_query, ''))) AS q,
-      regexp_replace(trim(coalesce(p_query, '')), '\D', '', 'g') AS q_phone,
-      greatest(1, least(p_limit, 50)) AS lim
-  ),
-  base AS (
-    SELECT
-      ps.person_id,
-      ps.clinic_id,
-      ps.display_name,
-      ps.search_text,
-      ps.is_active
-    FROM public.person_search ps
-    WHERE ps.clinic_id = p_clinic_id
-      AND (p_include_inactive OR ps.is_active = true)
-  ),
-  scored AS (
-    SELECT
-      b.person_id,
-      b.clinic_id,
-      b.display_name,
-      CASE
-        WHEN (SELECT q_phone FROM q) <> ''
-          AND length((SELECT q_phone FROM q)) >= 7
-          AND b.search_text LIKE '%' || (SELECT q_phone FROM q) || '%'
-          THEN 'phone'
-        WHEN b.search_text ILIKE '%' || (SELECT q FROM q) || '%'
-          THEN 'contains'
-        WHEN b.search_text % (SELECT q FROM q)
-          THEN 'trgm'
-        ELSE 'other'
-      END AS matched_on,
-      CASE
-        WHEN (SELECT q_phone FROM q) <> ''
-          AND length((SELECT q_phone FROM q)) >= 7
-          AND b.search_text LIKE '%' || (SELECT q_phone FROM q) || '%'
-          THEN 1.2
-        ELSE similarity(b.search_text, (SELECT q FROM q))
-      END AS rank_score
-    FROM base b
-    WHERE (SELECT raw_q FROM q) <> ''
-      AND (
-        (
-          (SELECT q_phone FROM q) <> ''
-          AND length((SELECT q_phone FROM q)) >= 7
-          AND b.search_text LIKE '%' || (SELECT q_phone FROM q) || '%'
-        )
-        OR b.search_text ILIKE '%' || (SELECT q FROM q) || '%'
-        OR b.search_text % (SELECT q FROM q)
-      )
-  )
-  SELECT
-    s.person_id,
-    s.clinic_id,
-    s.display_name,
-    s.matched_on,
-    s.rank_score
-  FROM scored s
-  ORDER BY s.rank_score DESC, s.display_name ASC
-  LIMIT (SELECT lim FROM q);
-$$;
-
-
---
--- Name: fn_search_persons(text, integer); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.fn_search_persons(p_query text, p_limit integer DEFAULT 25) RETURNS SETOF public.person_search_result
-    LANGUAGE plpgsql STABLE
-    AS $$
-declare
-  v_clinic_id bigint;
-  q text := lower(trim(coalesce(p_query,'')));
-  digits text := regexp_replace(coalesce(p_query,''), '\D', '', 'g');
-  v_clinic_id_str text;
-begin
-  -- Get clinic_id from Hasura session variable
-  v_clinic_id_str := nullif(current_setting('hasura.user', true), '')::jsonb->>'x-hasura-clinic-id';
-  
-  if v_clinic_id_str is null then
-    raise exception 'missing_clinic_context';
-  end if;
-  
-  v_clinic_id := v_clinic_id_str::bigint;
-
-  if q = '' then
-    return;
-  end if;
-
-  -- phone-like query: digits >= 7
-  if length(digits) >= 7 then
-    return query
-    select
-      ps.person_id,
-      ps.first_name,
-      ps.last_name,
-      ps.preferred_name,
-      ps.dob,
-      ps.chart_no,
-      ps.status,
-      ps.phone_norm,
-      ps.email_norm
-    from public.person_search ps
-    where ps.clinic_id = v_clinic_id
-      and ps.phone_norm like digits || '%'
-    order by ps.phone_norm
-    limit p_limit;
-    return;
-  end if;
-
-  -- Else, use trigram similarity on search_text
-  return query
-  select
-    ps.person_id,
-    ps.first_name,
-    ps.last_name,
-    ps.preferred_name,
-    ps.dob,
-    ps.chart_no,
-    ps.status,
-    ps.phone_norm,
-    ps.email_norm
-  from public.person_search ps
-  where ps.clinic_id = v_clinic_id
-    and (ps.search_text % q or (ps.chart_no is not null and ps.chart_no ilike q || '%'))
-  order by
-    case when ps.chart_no ilike q || '%' then 0 else 1 end,
-    similarity(ps.search_text, q) desc,
-    ps.last_name asc,
-    ps.first_name asc
-  limit p_limit;
-end;
-$$;
-
-
---
 -- Name: fn_validate_household_head(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -921,19 +781,16 @@ begin
     select household_head_id into v_target_household_head_id
     from public.person
     where id = NEW.household_head_id;
-    
     -- If target person doesn't exist, foreign key will catch this
     -- But we also need to check if target has household_head_id = null
     if v_target_household_head_id is not null then
       raise exception 'household_head_id can only point to a person with household_head_id = null (household head). Person % has household_head_id = %', NEW.household_head_id, v_target_household_head_id;
     end if;
-    
     -- Prevent self-reference
     if NEW.household_head_id = NEW.id then
       raise exception 'person cannot be their own household head';
     end if;
   end if;
-  
   return NEW;
 end;
 $$;
@@ -977,7 +834,6 @@ begin
     if NEW.household_relationship = 'self' then
       raise exception 'household_relationship cannot be "self" when household_head_id is set';
     end if;
-    
     -- Household head must be a valid head (household_head_id = null)
     if exists (
       select 1
@@ -988,7 +844,6 @@ begin
       raise exception 'household_head_id must point to a person with household_head_id = null (a household head)';
     end if;
   end if;
-
   -- Keep existing responsible_party_id validations (unchanged)
   if NEW.responsible_party_id is null then
     -- Root person for responsible party
@@ -997,7 +852,6 @@ begin
     if NEW.responsible_party_id = NEW.id then
       raise exception 'responsible_party_id_cannot_reference_self';
     end if;
-
     -- Responsible party must be a root (must have null responsible_party_id)
     if exists (
       select 1
@@ -1008,7 +862,6 @@ begin
       raise exception 'responsible_party_must_be_root_with_null_responsible_party_id';
     end if;
   end if;
-
   -- If NEW is responsible party for others, NEW must be root (responsible_party_id null)
   select exists (
     select 1
@@ -1016,11 +869,9 @@ begin
     where p.responsible_party_id = NEW.id
       and p.is_active = true
   ) into v_is_responsible_for_others;
-
   if v_is_responsible_for_others and NEW.responsible_party_id is not null then
     raise exception 'person_who_is_responsible_party_for_others_must_have_null_responsible_party_id';
   end if;
-
   return NEW;
 end;
 $$;
@@ -1031,149 +882,6 @@ $$;
 --
 
 COMMENT ON FUNCTION public.fn_validate_person_responsible_party() IS 'Validates person relationships: household_relationship is based on household_head_id, responsible_party_id has separate validation';
-
-
---
--- Name: sync_capability_enum_v(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.sync_capability_enum_v() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-    IF NEW.is_deprecated = false THEN
-      INSERT INTO public.capability_enum_v (key, comment)
-      VALUES (NEW.key, NEW.description)
-      ON CONFLICT (key) DO UPDATE SET comment = EXCLUDED.comment;
-    ELSE
-      DELETE FROM public.capability_enum_v WHERE key = NEW.key;
-    END IF;
-  ELSIF TG_OP = 'DELETE' THEN
-    DELETE FROM public.capability_enum_v WHERE key = OLD.key;
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-
---
--- Name: sync_gender_enum_v(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.sync_gender_enum_v() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-    IF NEW.is_active = true THEN
-      INSERT INTO public.gender_enum_v (value, comment)
-      VALUES (NEW.value, NEW.display_name)
-      ON CONFLICT (value) DO UPDATE SET comment = EXCLUDED.comment;
-    ELSE
-      DELETE FROM public.gender_enum_v WHERE value = NEW.value;
-    END IF;
-  ELSIF TG_OP = 'DELETE' THEN
-    DELETE FROM public.gender_enum_v WHERE value = OLD.value;
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-
---
--- Name: sync_patient_status_enum_v(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.sync_patient_status_enum_v() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-    IF NEW.is_active = true THEN
-      INSERT INTO public.patient_status_enum_v (value, comment)
-      VALUES (NEW.value, NEW.display_name)
-      ON CONFLICT (value) DO UPDATE SET comment = EXCLUDED.comment;
-    ELSE
-      DELETE FROM public.patient_status_enum_v WHERE value = NEW.value;
-    END IF;
-  ELSIF TG_OP = 'DELETE' THEN
-    DELETE FROM public.patient_status_enum_v WHERE value = OLD.value;
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-
---
--- Name: sync_referral_kind_enum_v(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.sync_referral_kind_enum_v() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-    IF NEW.is_active = true THEN
-      INSERT INTO public.referral_kind_enum_v (value, comment)
-      VALUES (NEW.value, NEW.display_name)
-      ON CONFLICT (value) DO UPDATE SET comment = EXCLUDED.comment;
-    ELSE
-      DELETE FROM public.referral_kind_enum_v WHERE value = NEW.value;
-    END IF;
-  ELSIF TG_OP = 'DELETE' THEN
-    DELETE FROM public.referral_kind_enum_v WHERE value = OLD.value;
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-
---
--- Name: trg_person_search_from_contact_point(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.trg_person_search_from_contact_point() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-DECLARE
-  v_person_id bigint;
-BEGIN
-  v_person_id := COALESCE(NEW.person_id, OLD.person_id);
-  IF v_person_id IS NOT NULL THEN
-    PERFORM public.fn_person_search_refresh(v_person_id);
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-
---
--- Name: trg_person_search_from_patient(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.trg_person_search_from_patient() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  PERFORM public.fn_person_search_refresh(NEW.person_id);
-  RETURN NEW;
-END;
-$$;
-
-
---
--- Name: trg_person_search_from_person(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.trg_person_search_from_person() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  PERFORM public.fn_person_search_refresh(NEW.id);
-  RETURN NEW;
-END;
-$$;
 
 
 --
@@ -1454,16 +1162,6 @@ ALTER SEQUENCE public.auth_refresh_token_id_seq OWNED BY public.auth_refresh_tok
 CREATE TABLE public.capability (
     value text NOT NULL,
     comment text NOT NULL
-);
-
-
---
--- Name: capability_enum_v; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.capability_enum_v (
-    key text NOT NULL,
-    comment text
 );
 
 
@@ -1842,22 +1540,45 @@ COMMENT ON VIEW public.family_members_v IS 'Given a person_id, returns all famil
 
 
 --
+-- Name: field_config; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.field_config (
+    id bigint NOT NULL,
+    key text NOT NULL,
+    label text NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: field_config_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.field_config_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: field_config_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.field_config_id_seq OWNED BY public.field_config.id;
+
+
+--
 -- Name: gender_enum; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.gender_enum (
     value text NOT NULL,
     comment text NOT NULL
-);
-
-
---
--- Name: gender_enum_v; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.gender_enum_v (
-    value text NOT NULL,
-    comment text
 );
 
 
@@ -2043,16 +1764,14 @@ CREATE VIEW public.operatory_v AS
 CREATE TABLE public.patient_field_config (
     id bigint NOT NULL,
     clinic_id bigint NOT NULL,
-    field_key text NOT NULL,
-    field_label text NOT NULL,
     display_order integer DEFAULT 0 NOT NULL,
     is_displayed boolean DEFAULT true NOT NULL,
     is_required boolean DEFAULT false NOT NULL,
-    is_active boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     created_by uuid,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_by uuid
+    updated_by uuid,
+    field_config_id bigint NOT NULL
 );
 
 
@@ -2106,6 +1825,12 @@ CREATE TABLE public.person_contact_point (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_by uuid,
     phone_e164 text,
+    value_norm text,
+    phone_last10 text GENERATED ALWAYS AS (
+CASE
+    WHEN ((kind = 'phone'::text) AND (value_norm IS NOT NULL) AND (length(value_norm) >= 10)) THEN "right"(value_norm, 10)
+    ELSE NULL::text
+END) STORED,
     CONSTRAINT chk_contact_point_phone_e164_null_for_email CHECK (((kind <> 'email'::text) OR (phone_e164 IS NULL))),
     CONSTRAINT chk_contact_point_phone_e164_required_for_phone CHECK (((kind <> 'phone'::text) OR (phone_e164 IS NOT NULL))),
     CONSTRAINT person_contact_point_kind_check CHECK ((kind = ANY (ARRAY['phone'::text, 'email'::text])))
@@ -2197,16 +1922,6 @@ CREATE TABLE public.patient_status_enum (
 
 
 --
--- Name: patient_status_enum_v; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.patient_status_enum_v (
-    value text NOT NULL,
-    comment text
-);
-
-
---
 -- Name: person_contact_point_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2245,46 +1960,6 @@ ALTER SEQUENCE public.person_id_seq OWNED BY public.person.id;
 
 
 --
--- Name: person_search; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.person_search (
-    clinic_id bigint NOT NULL,
-    person_id bigint NOT NULL,
-    dob date,
-    chart_no text,
-    status text,
-    search_text text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    created_by uuid,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_by uuid,
-    is_active boolean DEFAULT true NOT NULL,
-    display_name text
-);
-
-
---
--- Name: person_search_v; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.person_search_v AS
- SELECT clinic_id,
-    person_id,
-    display_name,
-    dob,
-    chart_no,
-    status,
-    search_text,
-    is_active,
-    created_at,
-    created_by,
-    updated_at,
-    updated_by
-   FROM public.person_search;
-
-
---
 -- Name: person_with_responsible_party_v; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -2318,16 +1993,6 @@ CREATE VIEW public.person_with_responsible_party_v AS
 CREATE TABLE public.referral_kind_enum (
     value text NOT NULL,
     comment text NOT NULL
-);
-
-
---
--- Name: referral_kind_enum_v; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.referral_kind_enum_v (
-    value text NOT NULL,
-    comment text
 );
 
 
@@ -2501,6 +2166,13 @@ ALTER TABLE ONLY public.clinic_hours ALTER COLUMN id SET DEFAULT nextval('public
 --
 
 ALTER TABLE ONLY public.clinic_user ALTER COLUMN id SET DEFAULT nextval('public.clinic_user_id_seq'::regclass);
+
+
+--
+-- Name: field_config id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_config ALTER COLUMN id SET DEFAULT nextval('public.field_config_id_seq'::regclass);
 
 
 --
@@ -2686,14 +2358,6 @@ ALTER TABLE ONLY public.auth_refresh_token
 
 
 --
--- Name: capability_enum_v capability_enum_v_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.capability_enum_v
-    ADD CONSTRAINT capability_enum_v_pkey PRIMARY KEY (key);
-
-
---
 -- Name: capability capability_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2750,19 +2414,27 @@ ALTER TABLE ONLY public.clinic_user_role
 
 
 --
+-- Name: field_config field_config_key_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_config
+    ADD CONSTRAINT field_config_key_key UNIQUE (key);
+
+
+--
+-- Name: field_config field_config_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.field_config
+    ADD CONSTRAINT field_config_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: gender_enum gender_enum_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.gender_enum
     ADD CONSTRAINT gender_enum_pkey PRIMARY KEY (value);
-
-
---
--- Name: gender_enum_v gender_enum_v_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.gender_enum_v
-    ADD CONSTRAINT gender_enum_v_pkey PRIMARY KEY (value);
 
 
 --
@@ -2806,11 +2478,11 @@ ALTER TABLE ONLY public.operatory
 
 
 --
--- Name: patient_field_config patient_field_config_clinic_id_field_key_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: patient_field_config patient_field_config_clinic_id_field_config_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_field_config
-    ADD CONSTRAINT patient_field_config_clinic_id_field_key_key UNIQUE (clinic_id, field_key);
+    ADD CONSTRAINT patient_field_config_clinic_id_field_config_id_key UNIQUE (clinic_id, field_config_id);
 
 
 --
@@ -2854,14 +2526,6 @@ ALTER TABLE ONLY public.patient_status_enum
 
 
 --
--- Name: patient_status_enum_v patient_status_enum_v_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.patient_status_enum_v
-    ADD CONSTRAINT patient_status_enum_v_pkey PRIMARY KEY (value);
-
-
---
 -- Name: person_contact_point person_contact_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2878,27 +2542,11 @@ ALTER TABLE ONLY public.person
 
 
 --
--- Name: person_search person_search_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.person_search
-    ADD CONSTRAINT person_search_pkey PRIMARY KEY (clinic_id, person_id);
-
-
---
 -- Name: referral_kind_enum referral_kind_enum_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.referral_kind_enum
     ADD CONSTRAINT referral_kind_enum_pkey PRIMARY KEY (value);
-
-
---
--- Name: referral_kind_enum_v referral_kind_enum_v_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.referral_kind_enum_v
-    ADD CONSTRAINT referral_kind_enum_v_pkey PRIMARY KEY (value);
 
 
 --
@@ -2947,34 +2595,6 @@ ALTER TABLE ONLY public.user_profile
 
 ALTER TABLE ONLY public.user_provider_identifier
     ADD CONSTRAINT user_provider_identifier_pkey PRIMARY KEY (id);
-
-
---
--- Name: idx_audit_event_action; Type: INDEX; Schema: audit; Owner: -
---
-
-CREATE INDEX idx_audit_event_action ON audit.event USING btree (action, occurred_at DESC);
-
-
---
--- Name: idx_audit_event_actor; Type: INDEX; Schema: audit; Owner: -
---
-
-CREATE INDEX idx_audit_event_actor ON audit.event USING btree (actor_user_id, occurred_at DESC);
-
-
---
--- Name: idx_audit_event_clinic; Type: INDEX; Schema: audit; Owner: -
---
-
-CREATE INDEX idx_audit_event_clinic ON audit.event USING btree (clinic_id, occurred_at DESC);
-
-
---
--- Name: idx_audit_event_time; Type: INDEX; Schema: audit; Owner: -
---
-
-CREATE INDEX idx_audit_event_time ON audit.event USING btree (occurred_at DESC);
 
 
 --
@@ -3104,6 +2724,13 @@ CREATE INDEX idx_clinic_user_user ON public.clinic_user USING btree (user_id);
 
 
 --
+-- Name: idx_field_config_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_field_config_key ON public.field_config USING btree (key);
+
+
+--
 -- Name: idx_imaging_asset_storage_unique; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3142,7 +2769,14 @@ CREATE INDEX idx_operatory_clinic ON public.operatory USING btree (clinic_id);
 -- Name: idx_patient_field_config_clinic_order; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_patient_field_config_clinic_order ON public.patient_field_config USING btree (clinic_id, display_order) WHERE (is_active = true);
+CREATE INDEX idx_patient_field_config_clinic_order ON public.patient_field_config USING btree (clinic_id, display_order);
+
+
+--
+-- Name: idx_patient_field_config_field_config_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_patient_field_config_field_config_id ON public.patient_field_config USING btree (field_config_id);
 
 
 --
@@ -3199,13 +2833,6 @@ CREATE INDEX idx_person_responsible_party ON public.person USING btree (responsi
 --
 
 CREATE INDEX idx_person_responsible_party_reverse ON public.person USING btree (clinic_id, responsible_party_id, is_active) WHERE (responsible_party_id IS NOT NULL);
-
-
---
--- Name: idx_person_search_chart; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_person_search_chart ON public.person_search USING btree (clinic_id, chart_no);
 
 
 --
@@ -3293,10 +2920,52 @@ CREATE INDEX imaging_study_active_patient_idx ON public.imaging_study USING btre
 
 
 --
+-- Name: pcp_active_email_norm_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pcp_active_email_norm_idx ON public.person_contact_point USING btree (value_norm) WHERE ((is_active = true) AND (kind = 'email'::text));
+
+
+--
+-- Name: pcp_active_phone_last10_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX pcp_active_phone_last10_idx ON public.person_contact_point USING btree (phone_last10) WHERE ((is_active = true) AND (kind = 'phone'::text) AND (phone_last10 IS NOT NULL));
+
+
+--
 -- Name: person_active_clinic_last_first_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX person_active_clinic_last_first_idx ON public.person USING btree (clinic_id, last_name, first_name) WHERE (is_active = true);
+
+
+--
+-- Name: person_active_first_name_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX person_active_first_name_prefix_idx ON public.person USING btree (clinic_id, lower(first_name) text_pattern_ops) WHERE (is_active = true);
+
+
+--
+-- Name: person_active_last_name_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX person_active_last_name_prefix_idx ON public.person USING btree (clinic_id, lower(last_name) text_pattern_ops) WHERE (is_active = true);
+
+
+--
+-- Name: person_active_middle_name_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX person_active_middle_name_prefix_idx ON public.person USING btree (clinic_id, lower(middle_name) text_pattern_ops) WHERE ((is_active = true) AND (middle_name IS NOT NULL));
+
+
+--
+-- Name: person_active_preferred_name_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX person_active_preferred_name_prefix_idx ON public.person USING btree (clinic_id, lower(preferred_name) text_pattern_ops) WHERE ((is_active = true) AND (preferred_name IS NOT NULL));
 
 
 --
@@ -3321,38 +2990,17 @@ CREATE INDEX person_contact_point_active_phone_e164_idx ON public.person_contact
 
 
 --
--- Name: person_search_search_text_trgm_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX person_search_search_text_trgm_idx ON public.person_search USING gin (search_text public.gin_trgm_ops) WHERE (is_active = true);
-
-
---
--- Name: person_contact_point person_search_refresh_on_contact_point; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER person_search_refresh_on_contact_point AFTER INSERT OR DELETE OR UPDATE ON public.person_contact_point FOR EACH ROW EXECUTE FUNCTION public.trg_person_search_from_contact_point();
-
-
---
--- Name: patient person_search_refresh_on_patient; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER person_search_refresh_on_patient AFTER INSERT OR UPDATE OF chart_no, status ON public.patient FOR EACH ROW EXECUTE FUNCTION public.trg_person_search_from_patient();
-
-
---
--- Name: person person_search_refresh_on_person; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER person_search_refresh_on_person AFTER INSERT OR UPDATE OF first_name, middle_name, last_name, preferred_name, dob, is_active ON public.person FOR EACH ROW EXECUTE FUNCTION public.trg_person_search_from_person();
-
-
---
 -- Name: app_user tr_audit_row_change; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.app_user FOR EACH ROW EXECUTE FUNCTION audit.fn_row_change_to_event();
+
+
+--
+-- Name: clinic tr_audit_row_change; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.clinic FOR EACH ROW EXECUTE FUNCTION audit.fn_row_change_to_event();
 
 
 --
@@ -3367,6 +3015,13 @@ CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.cl
 --
 
 CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.clinic_user FOR EACH ROW EXECUTE FUNCTION audit.fn_row_change_to_event();
+
+
+--
+-- Name: clinic_user_role tr_audit_row_change; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.clinic_user_role FOR EACH ROW EXECUTE FUNCTION audit.fn_row_change_to_event();
 
 
 --
@@ -3440,6 +3095,20 @@ CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.re
 
 
 --
+-- Name: role tr_audit_row_change; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.role FOR EACH ROW EXECUTE FUNCTION audit.fn_row_change_to_event();
+
+
+--
+-- Name: role_capability tr_audit_row_change; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tr_audit_row_change AFTER INSERT OR DELETE OR UPDATE ON public.role_capability FOR EACH ROW EXECUTE FUNCTION audit.fn_row_change_to_event();
+
+
+--
 -- Name: user_profile tr_audit_row_change; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -3461,10 +3130,10 @@ CREATE TRIGGER tr_ensure_patient_referral_clinic_match BEFORE INSERT OR UPDATE O
 
 
 --
--- Name: person_contact_point tr_normalize_contact_point; Type: TRIGGER; Schema: public; Owner: -
+-- Name: person_contact_point tr_person_contact_point_set_value_norm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER tr_normalize_contact_point BEFORE INSERT OR UPDATE ON public.person_contact_point FOR EACH ROW EXECUTE FUNCTION public.fn_normalize_contact_point();
+CREATE TRIGGER tr_person_contact_point_set_value_norm BEFORE INSERT OR UPDATE OF kind, value ON public.person_contact_point FOR EACH ROW EXECUTE FUNCTION public.fn_person_contact_point_set_value_norm();
 
 
 --
@@ -3552,13 +3221,6 @@ CREATE TRIGGER tr_stamp_audit_columns BEFORE INSERT OR UPDATE ON public.person_c
 
 
 --
--- Name: person_search tr_stamp_audit_columns; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER tr_stamp_audit_columns BEFORE INSERT OR UPDATE ON public.person_search FOR EACH ROW EXECUTE FUNCTION audit.fn_stamp_audit_columns();
-
-
---
 -- Name: referral_source tr_stamp_audit_columns; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -3577,27 +3239,6 @@ CREATE TRIGGER tr_stamp_audit_columns BEFORE INSERT OR UPDATE ON public.user_pro
 --
 
 CREATE TRIGGER tr_stamp_audit_columns BEFORE INSERT OR UPDATE ON public.user_provider_identifier FOR EACH ROW EXECUTE FUNCTION audit.fn_stamp_audit_columns();
-
-
---
--- Name: gender_enum tr_sync_gender_enum_v; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER tr_sync_gender_enum_v AFTER INSERT OR DELETE OR UPDATE ON public.gender_enum FOR EACH ROW EXECUTE FUNCTION public.sync_gender_enum_v();
-
-
---
--- Name: patient_status_enum tr_sync_patient_status_enum_v; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER tr_sync_patient_status_enum_v AFTER INSERT OR DELETE OR UPDATE ON public.patient_status_enum FOR EACH ROW EXECUTE FUNCTION public.sync_patient_status_enum_v();
-
-
---
--- Name: referral_kind_enum tr_sync_referral_kind_enum_v; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER tr_sync_referral_kind_enum_v AFTER INSERT OR DELETE OR UPDATE ON public.referral_kind_enum FOR EACH ROW EXECUTE FUNCTION public.sync_referral_kind_enum_v();
 
 
 --
@@ -3771,19 +3412,19 @@ ALTER TABLE ONLY public.clinic_user
 
 
 --
--- Name: patient fk_patient_status_v; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: patient fk_patient_status; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient
-    ADD CONSTRAINT fk_patient_status_v FOREIGN KEY (status) REFERENCES public.patient_status_enum_v(value);
+    ADD CONSTRAINT fk_patient_status FOREIGN KEY (status) REFERENCES public.patient_status_enum(value);
 
 
 --
--- Name: person fk_person_gender_v; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: person fk_person_gender; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.person
-    ADD CONSTRAINT fk_person_gender_v FOREIGN KEY (gender) REFERENCES public.gender_enum_v(value);
+    ADD CONSTRAINT fk_person_gender FOREIGN KEY (gender) REFERENCES public.gender_enum(value);
 
 
 --
@@ -3907,6 +3548,14 @@ ALTER TABLE ONLY public.patient_field_config
 
 
 --
+-- Name: patient_field_config patient_field_config_field_config_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.patient_field_config
+    ADD CONSTRAINT patient_field_config_field_config_id_fkey FOREIGN KEY (field_config_id) REFERENCES public.field_config(id) ON DELETE CASCADE;
+
+
+--
 -- Name: patient_field_config patient_field_config_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3971,11 +3620,11 @@ ALTER TABLE ONLY public.patient_referral
 
 
 --
--- Name: patient_referral patient_referral_referral_kind_v_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: patient_referral patient_referral_referral_kind_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.patient_referral
-    ADD CONSTRAINT patient_referral_referral_kind_v_fkey FOREIGN KEY (referral_kind) REFERENCES public.referral_kind_enum_v(value);
+    ADD CONSTRAINT patient_referral_referral_kind_fkey FOREIGN KEY (referral_kind) REFERENCES public.referral_kind_enum(value);
 
 
 --
@@ -3992,22 +3641,6 @@ ALTER TABLE ONLY public.patient_referral
 
 ALTER TABLE ONLY public.patient_referral
     ADD CONSTRAINT patient_referral_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.app_user(id);
-
-
---
--- Name: person_search patient_search_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.person_search
-    ADD CONSTRAINT patient_search_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.app_user(id);
-
-
---
--- Name: person_search patient_search_updated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.person_search
-    ADD CONSTRAINT patient_search_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.app_user(id);
 
 
 --
@@ -4198,5 +3831,5 @@ ALTER TABLE ONLY public.user_provider_identifier
 -- PostgreSQL database dump complete
 --
 
-\unrestrict WSXcRZseaLvXcP9LsaaasIjER5dEEbWqDP1fHR88OSK5njjTDtfcF9l2EEpHDYM
+\unrestrict pRqJlAk0a6HDH1bkenG06IKbFxi59xqGvpeXrCV9Nhf7IZdsxOazfNO5e3kx9ov
 

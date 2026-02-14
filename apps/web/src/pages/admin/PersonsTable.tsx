@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Settings2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGetPersonsQuery } from '@/gql/generated'
 import { useAuth } from '@/contexts/AuthContext'
-import { PatientSearch } from '@/components/patient/PatientSearch'
+import { PersonSearch } from '@/components/patient/PersonSearch'
 import {
   Dialog,
   DialogContent,
@@ -245,7 +245,7 @@ export function PersonsTable() {
               </CardDescription>
             </div>
             <div className="w-80">
-              <PatientSearch
+              <PersonSearch
                 placeholder="Search by name, phone, or chart number..."
                 limit={50}
                 onSelect={handlePatientSelect}

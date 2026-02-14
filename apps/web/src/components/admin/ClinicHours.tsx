@@ -65,7 +65,7 @@ export function ClinicHours({ clinicId, onSuccess }: ClinicHoursProps) {
       .filter((key): key is string => key !== null && key !== undefined) || []
   )
 
-  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic.manage') || capabilities.has('system.admin'))
+  const hasClinicManageCapability = !capabilitiesLoading && (capabilities.has('clinic_manage') || capabilities.has('system_admin'))
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 

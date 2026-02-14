@@ -1,8 +1,8 @@
-import { createPool } from "./db";
-import { getDatabaseUrl, getEnvSummaryForDisplay } from "./env";
-import { promptInit } from "./prompts";
-import { InitInputSchema } from "./validate";
-import { bootstrapSystem, isBootstrapped } from "./bootstrap";
+import { createPool } from "./db.js";
+import { getDatabaseUrl, getEnvSummaryForDisplay } from "./env.js";
+import { promptInit } from "./prompts.js";
+import { InitInputSchema } from "./validate.js";
+import { bootstrapSystem, isBootstrapped } from "./bootstrap.js";
 
 async function main() {
   const databaseUrl = getDatabaseUrl();

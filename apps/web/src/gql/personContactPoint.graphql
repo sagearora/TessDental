@@ -1,7 +1,6 @@
 mutation CreatePersonContactPoint(
   $personId: bigint!
-  $kind: String!
-  $label: String
+  $kind: contact_kind_enum_enum!
   $value: citext!
   $phoneE164: String
   $isPrimary: Boolean
@@ -10,7 +9,6 @@ mutation CreatePersonContactPoint(
     object: {
       person_id: $personId
       kind: $kind
-      label: $label
       value: $value
       phone_e164: $phoneE164
       is_primary: $isPrimary
@@ -20,7 +18,6 @@ mutation CreatePersonContactPoint(
     id
     person_id
     kind
-    label
     value
     phone_e164
     is_primary
@@ -30,7 +27,6 @@ mutation CreatePersonContactPoint(
 
 mutation UpdatePersonContactPoint(
   $id: bigint!
-  $label: String
   $value: citext
   $phoneE164: String
   $isPrimary: Boolean
@@ -38,7 +34,6 @@ mutation UpdatePersonContactPoint(
   update_person_contact_point_by_pk(
     pk_columns: { id: $id }
     _set: {
-      label: $label
       value: $value
       phone_e164: $phoneE164
       is_primary: $isPrimary
@@ -46,7 +41,6 @@ mutation UpdatePersonContactPoint(
   ) {
     id
     kind
-    label
     value
     phone_e164
     is_primary

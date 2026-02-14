@@ -1,0 +1,41 @@
+# Query to get the current person for the authenticated user
+# Note: RLS will automatically filter by clinic_id from JWT
+query GetCurrentPerson($userId: uuid!) {
+  clinic_user_v(
+    where: { 
+      is_active: { _eq: true }
+      user_id: { _eq: $userId }
+    }
+    limit: 1
+  ) {
+    id
+    current_person_id
+    person {
+      id
+      first_name
+      last_name
+      preferred_name
+      clinic_id
+    }
+  }
+}
+
+# Mutation to update the current person for the authenticated user
+# Note: RLS will automatically filter by clinic_id and user_id from JWT
+mutation UpdateCurrentPerson($personId: bigint) {
+  update_clinic_user(
+    where: { 
+      is_active: { _eq: true }
+      # user_id will be filtered by RLS automatically via X-Hasura-User-Id
+    }
+    _set: { current_person_id: $personId }
+  ) {
+    affected_rows
+    returning {
+      id
+      clinic_id
+      user_id
+      current_person_id
+    }
+  }
+}

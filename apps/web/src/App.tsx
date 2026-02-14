@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ApolloProvider } from '@apollo/client/react'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { Header } from './components/Header'
 import { AdminLayout } from './components/AdminLayout'
 import { DefaultLayout } from './components/DefaultLayout'
 import { Login } from './pages/Login'
@@ -17,21 +16,16 @@ import { ReferralSourceManagement } from './pages/admin/ReferralSourceManagement
 import { PersonsTable } from './pages/admin/PersonsTable'
 import { PersonProfile } from './pages/profile/PersonProfile'
 import { Imaging } from './pages/Imaging'
+import { Notes } from './pages/Notes'
+import { Odontogram } from './pages/Odontogram'
+import { Perio } from './pages/Perio'
+import { Forms } from './pages/Forms'
+import { Billing } from './pages/Billing'
+import { Insurance } from './pages/Insurance'
+import { Prescriptions } from './pages/Prescriptions'
+import { Documents } from './pages/Documents'
+import { Dashboard } from './pages/Dashboard'
 import { apolloClient } from './apollo/client'
-
-function AppPage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">TessDental</h1>
-          <p className="text-gray-600">Welcome to your dental practice management system</p>
-        </div>
-      </main>
-    </div>
-  )
-}
 
 function AppRoutes() {
   return (
@@ -39,14 +33,6 @@ function AppRoutes() {
       <Route
         path="/login"
         element={<Login />}
-      />
-      <Route
-        path="/app"
-        element={
-          <ProtectedRoute>
-            <AppPage />
-          </ProtectedRoute>
-        }
       />
       <Route
         path="/admin"
@@ -74,13 +60,18 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
+        <Route path="/" element={<Dashboard />} />
         <Route path="profile/:personId" element={<PersonProfile />} />
-        <Route path="imaging" element={<Imaging />} />
+        <Route path="notes/:personId" element={<Notes />} />
+        <Route path="odontogram/:personId" element={<Odontogram />} />
+        <Route path="perio/:personId" element={<Perio />} />
+        <Route path="imaging/:personId" element={<Imaging />} />
+        <Route path="forms/:personId" element={<Forms />} />
+        <Route path="billing/:personId" element={<Billing />} />
+        <Route path="insurance/:personId" element={<Insurance />} />
+        <Route path="prescriptions/:personId" element={<Prescriptions />} />
+        <Route path="documents/:personId" element={<Documents />} />
       </Route>
-      <Route
-        path="/"
-        element={<Navigate to="/app" replace />}
-      />
     </Routes>
   )
 }

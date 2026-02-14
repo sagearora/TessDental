@@ -28,6 +28,27 @@ import {
   useUpdatePersonMailingAddressMutation,
   useUpdatePersonBillingAddressMutation,
 } from '@/gql/generated'
+import { useMutation } from '@apollo/client/react'
+import { gql } from '@apollo/client'
+
+const UPDATE_CURRENT_PERSON = gql`
+  mutation UpdateCurrentPerson($personId: bigint) {
+    update_clinic_user(
+      where: { 
+        is_active: { _eq: true }
+      }
+      _set: { current_person_id: $personId }
+    ) {
+      affected_rows
+      returning {
+        id
+        clinic_id
+        user_id
+        current_person_id
+      }
+    }
+  }
+`
 import { useAuth } from '@/contexts/AuthContext'
 import { InlineEditableField } from '@/components/profile/InlineEditableField'
 import { InlineEditableSelect } from '@/components/profile/InlineEditableSelect'
@@ -61,14 +82,12 @@ export function PersonProfile() {
   
   // Responsible party inline search state
   const [isEditingResponsibleParty, setIsEditingResponsibleParty] = useState(false)
-  const [responsiblePartySearchTerm, setResponsiblePartySearchTerm] = useState('')
   const [selectedResponsiblePartyName, setSelectedResponsiblePartyName] = useState<string>('')
   const [isResponsiblePartyPopoverOpen, setIsResponsiblePartyPopoverOpen] = useState(false)
   const responsiblePartyInputRef = useRef<HTMLInputElement>(null)
   
   // Household head inline search state
   const [isEditingHouseholdHead, setIsEditingHouseholdHead] = useState(false)
-  const [householdHeadSearchTerm, setHouseholdHeadSearchTerm] = useState('')
   const [selectedHouseholdHeadId, setSelectedHouseholdHeadId] = useState<number | null>(null)
   const [selectedHouseholdHeadName, setSelectedHouseholdHeadName] = useState<string>('')
   const [householdRelationship, setHouseholdRelationship] = useState<string>('self')
@@ -108,6 +127,7 @@ export function PersonProfile() {
   const [createAddress] = useCreateAddressMutation()
   const [updatePersonMailingAddress] = useUpdatePersonMailingAddressMutation()
   const [updatePersonBillingAddress] = useUpdatePersonBillingAddressMutation()
+  const [updateCurrentPerson] = useMutation(UPDATE_CURRENT_PERSON)
   
   // Address dialog state
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = useState(false)
@@ -200,6 +220,21 @@ export function PersonProfile() {
       }
     }
   }, [person])
+  
+  // Set current_person_id when profile page loads
+  useEffect(() => {
+    if (personIdNum && session?.user.id) {
+      updateCurrentPerson({
+        variables: {
+          personId: personIdNum,
+        },
+        refetchQueries: ['GetCurrentPerson'],
+      }).catch((error: unknown) => {
+        // Log error but don't block page load
+        console.error('Failed to update current person:', error)
+      })
+    }
+  }, [personIdNum, session?.user.id, updateCurrentPerson])
   
   // Check if person is already a household head (has household_members)
   const isHouseholdHead = person?.household_members && person.household_members.length > 0
@@ -313,7 +348,7 @@ const billingSameAsMailing =
           throw new Error('Status is required')
         }
         await updatePatientStatus({
-          variables: { personId: person.patient.person_id, status: value },
+          variables: { personId: person.patient.person_id, status: value as 'active' | 'archived' | 'deceased' | 'deleted' | 'inactive' },
         })
       } else if (field === 'family_doctor_name') {
         await updatePatientFamilyDoctorName({
@@ -334,12 +369,12 @@ const billingSameAsMailing =
     }
   }
 
-  // Helper function to get contact point by label and kind
-  const getContactPoint = (label: string | null, kind: 'phone' | 'email') => {
+  // Helper function to get contact point by kind (enum value)
+  const getContactPoint = (kind: 'email' | 'cell_phone' | 'home_phone' | 'work_phone') => {
     if (!person?.person_contact_point) return null
     // Note: person_contact_point query filters for is_active=true, so all returned contacts are active
     return person.person_contact_point.find(
-      (cp) => cp.kind === kind && cp.label === label
+      (cp) => cp.kind === kind
     ) || null
   }
 
@@ -371,13 +406,12 @@ const billingSameAsMailing =
 
   // Handler for updating/creating contact points
   const handleContactPointChange = async (
-    label: string | null,
-    kind: 'phone' | 'email',
+    kind: 'email' | 'cell_phone' | 'home_phone' | 'work_phone',
     value: string
   ) => {
     if (!person) return
 
-    const existingContact = getContactPoint(label, kind)
+    const existingContact = getContactPoint(kind)
     const trimmedValue = value.trim()
 
     try {
@@ -390,7 +424,7 @@ const billingSameAsMailing =
         }
       } else if (existingContact) {
         // Update existing contact
-        const phoneE164 = kind === 'phone' ? normalizePhoneToE164(trimmedValue) : null
+        const phoneE164 = kind !== 'email' ? normalizePhoneToE164(trimmedValue) : null
         await updatePersonContactPoint({
           variables: {
             id: existingContact.id,
@@ -400,15 +434,14 @@ const billingSameAsMailing =
         })
       } else {
         // Create new contact
-        const phoneE164 = kind === 'phone' ? normalizePhoneToE164(trimmedValue) : null
-        if (kind === 'phone' && !phoneE164) {
+        const phoneE164 = kind !== 'email' ? normalizePhoneToE164(trimmedValue) : null
+        if (kind !== 'email' && !phoneE164) {
           throw new Error('Invalid phone number format. Please enter a valid phone number.')
         }
         await createPersonContactPoint({
           variables: {
             personId: person.id,
             kind: kind,
-            label: label,
             value: trimmedValue as any, // citext type
             phoneE164: phoneE164,
             isPrimary: false,
@@ -492,7 +525,6 @@ const billingSameAsMailing =
       }
 
       await refetch()
-      setResponsiblePartySearchTerm('')
       setIsResponsiblePartyPopoverOpen(false)
     } catch (err: any) {
       console.error('Error updating responsible party:', err)
@@ -506,8 +538,9 @@ const billingSameAsMailing =
     try {
       // When clearing household head (null), set relationship to null as well
       // When setting household head, use the provided relationship (default to 'self' if not provided)
-      const relationshipToSet = newHouseholdHeadId 
-        ? (newRelationship || 'self')
+      // Map 'guardian' to 'other' since it's not in the enum
+      const relationshipToSet: 'self' | 'child' | 'spouse' | 'parent' | 'sibling' | 'other' | null = newHouseholdHeadId 
+        ? ((newRelationship === 'guardian' ? 'other' : (newRelationship || 'self')) as 'self' | 'child' | 'spouse' | 'parent' | 'sibling' | 'other')
         : null
       
       await updatePersonHouseholdHead({
@@ -519,7 +552,6 @@ const billingSameAsMailing =
       })
 
       await refetch()
-      setHouseholdHeadSearchTerm('')
       setIsHouseholdHeadPopoverOpen(false)
     } catch (err: any) {
       console.error('Error updating household head:', err)
@@ -650,7 +682,6 @@ const billingSameAsMailing =
                           onChange={(e) => {
                             const v = e.target.value
                             setFamilyRootQuery(v)
-                            setResponsiblePartySearchTerm(v)
                             setSelectedResponsiblePartyId(null)
                             setSelectedResponsiblePartyName('')
                             if (!isResponsiblePartyPopoverOpen && v.trim()) {
@@ -681,7 +712,6 @@ const billingSameAsMailing =
                               e.stopPropagation()
                               setSelectedResponsiblePartyId(null)
                               setSelectedResponsiblePartyName('')
-                              setResponsiblePartySearchTerm('')
                               setFamilyRootQuery('')
                               responsiblePartyInputRef.current?.focus()
                             }}
@@ -708,7 +738,6 @@ const billingSameAsMailing =
                                     onClick={() => {
                                       setSelectedResponsiblePartyId(p.id)
                                       setSelectedResponsiblePartyName(fullName)
-                                      setResponsiblePartySearchTerm('')
                                       setFamilyRootQuery('')
                                       setIsResponsiblePartyPopoverOpen(false)
                                       responsiblePartyInputRef.current?.blur()
@@ -762,7 +791,6 @@ const billingSameAsMailing =
                       variant="ghost"
                       onClick={() => {
                         setIsEditingResponsibleParty(false)
-                        setResponsiblePartySearchTerm('')
                         setSelectedResponsiblePartyId(person?.responsible_party_id || null)
                         if (person?.responsible_party) {
                           const rpName = `${person.responsible_party.first_name} ${person.responsible_party.last_name}${person.responsible_party.preferred_name ? ` (${person.responsible_party.preferred_name})` : ''}`
@@ -851,7 +879,6 @@ const billingSameAsMailing =
                               e.stopPropagation()
                               setSelectedHouseholdHeadId(null)
                               setSelectedHouseholdHeadName('')
-                              setHouseholdHeadSearchTerm('')
                               setHouseholdRelationship('self')
                               householdHeadInputRef.current?.focus()
                             }}
@@ -966,7 +993,6 @@ const billingSameAsMailing =
                         variant="ghost"
                         onClick={() => {
                           setIsEditingHouseholdHead(false)
-                          setHouseholdHeadSearchTerm('')
                           setSelectedHouseholdHeadId(person?.household_head_id || null)
                           if (person?.household_head) {
                             const hhName = `${person.household_head.first_name} ${person.household_head.last_name}${person.household_head.preferred_name ? ` (${person.household_head.preferred_name})` : ''}`
@@ -1089,8 +1115,8 @@ const billingSameAsMailing =
                   <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
                   <div className="flex-1">
                     <InlineEditableField
-                      value={getContactPoint('Cell', 'phone')?.value || ''}
-                      onSave={(value) => handleContactPointChange('Cell', 'phone', value)}
+                      value={getContactPoint('cell_phone')?.value || ''}
+                      onSave={(value) => handleContactPointChange('cell_phone', value)}
                       label="Cell Phone"
                       type="tel"
                       placeholder="(555) 123-4567"
@@ -1103,8 +1129,8 @@ const billingSameAsMailing =
                   <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
                   <div className="flex-1">
                     <InlineEditableField
-                      value={getContactPoint('Home', 'phone')?.value || ''}
-                      onSave={(value) => handleContactPointChange('Home', 'phone', value)}
+                      value={getContactPoint('home_phone')?.value || ''}
+                      onSave={(value) => handleContactPointChange('home_phone', value)}
                       label="Home Phone"
                       type="tel"
                       placeholder="(555) 123-4567"
@@ -1117,8 +1143,8 @@ const billingSameAsMailing =
                   <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
                   <div className="flex-1">
                     <InlineEditableField
-                      value={getContactPoint('Work', 'phone')?.value || ''}
-                      onSave={(value) => handleContactPointChange('Work', 'phone', value)}
+                      value={getContactPoint('work_phone')?.value || ''}
+                      onSave={(value) => handleContactPointChange('work_phone', value)}
                       label="Work Phone"
                       type="tel"
                       placeholder="(555) 123-4567"
@@ -1131,8 +1157,8 @@ const billingSameAsMailing =
                   <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
                   <div className="flex-1">
                     <InlineEditableField
-                      value={getContactPoint(null, 'email')?.value || ''}
-                      onSave={(value) => handleContactPointChange(null, 'email', value)}
+                      value={getContactPoint('email')?.value || ''}
+                      onSave={(value) => handleContactPointChange('email', value)}
                       label="Email"
                       type="email"
                       placeholder="email@example.com"
@@ -1763,7 +1789,6 @@ const billingSameAsMailing =
 
                         await refetch()
                         setIsHouseholdHeadDialogOpen(false)
-                        setHouseholdHeadSearchTerm('')
                         setSelectedHouseholdHeadId(null)
                       } catch (error) {
                         console.error('Error clearing household head:', error)
@@ -1781,7 +1806,6 @@ const billingSameAsMailing =
                   variant="outline"
                   onClick={() => {
                     setIsHouseholdHeadDialogOpen(false)
-                    setHouseholdHeadSearchTerm('')
                     setSelectedHouseholdHeadId(null)
                   }}
                 >
@@ -1796,7 +1820,8 @@ const billingSameAsMailing =
                       }
 
                       // If relationship is not set, default to 'other'
-                      const relationship = responsiblePartyRelationship || 'other'
+                      // Map 'guardian' to 'other' since it's not in the enum
+                      const relationship = (responsiblePartyRelationship === 'guardian' ? 'other' : (responsiblePartyRelationship || 'other')) as 'self' | 'child' | 'spouse' | 'parent' | 'sibling' | 'other'
 
                       await updatePersonHouseholdHead({
                         variables: {
@@ -1808,7 +1833,6 @@ const billingSameAsMailing =
 
                       await refetch()
                       setIsHouseholdHeadDialogOpen(false)
-                      setHouseholdHeadSearchTerm('')
                       setSelectedHouseholdHeadId(null)
                       setResponsiblePartyRelationship('child')
                     } catch (error) {

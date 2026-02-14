@@ -1,0 +1,109 @@
+table:
+  name: imaging_mount_slot
+  schema: public
+object_relationships:
+  - name: mount
+    using:
+      foreign_key_constraint_on: mount_id
+  - name: asset
+    using:
+      foreign_key_constraint_on: asset_id
+select_permissions:
+  - role: clinic_user
+    permission:
+      columns:
+        - id
+        - mount_id
+        - asset_id
+        - slot_id
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+        - is_active
+      filter:
+        mount:
+          clinic_id:
+            _eq: X-Hasura-Clinic-Id
+      allow_aggregations: false
+insert_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - mount:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: imaging.write
+                      - capability_key:
+                          _eq: system_admin
+      columns:
+        - mount_id
+        - asset_id
+        - slot_id
+        - is_active
+update_permissions:
+  - role: clinic_user
+    permission:
+      check:
+        _and:
+          - mount:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: imaging.write
+                      - capability_key:
+                          _eq: system_admin
+      columns:
+        - asset_id
+        - is_active
+      filter:
+        mount:
+          clinic_id:
+            _eq: X-Hasura-Clinic-Id
+delete_permissions:
+  - role: clinic_user
+    permission:
+      filter:
+        _and:
+          - mount:
+              clinic_id:
+                _eq: X-Hasura-Clinic-Id
+          - _exists:
+              _table:
+                name: clinic_user_effective_capabilities_v
+                schema: public
+              _where:
+                _and:
+                  - clinic_id:
+                      _eq: X-Hasura-Clinic-Id
+                  - user_id:
+                      _eq: X-Hasura-User-Id
+                  - _or:
+                      - capability_key:
+                          _eq: imaging.write
+                      - capability_key:
+                          _eq: system_admin

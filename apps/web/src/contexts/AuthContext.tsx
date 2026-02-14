@@ -178,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Reset Apollo client to use new token
     resetApolloClient()
 
-    navigate('/app')
+    navigate('/')
   }
 
   const logout = async () => {
