@@ -37,6 +37,7 @@ lerna-debug.log*
 
 # Hasura
 infra/hasura/.hasura/
+cli-hasura-windows-amd64.exe
 
 # Playwright
 test-results/
