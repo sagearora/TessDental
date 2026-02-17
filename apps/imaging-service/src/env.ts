@@ -43,4 +43,7 @@ export const env = {
 
   // NFS settings
   IMAGING_NFS_BASE_DIR: optionalEnv('IMAGING_NFS_BASE_DIR', '/data/imaging'),
+
+  // Public URL for bridge upload (returned in upload-token response)
+  IMAGING_PUBLIC_URL: optionalEnv('IMAGING_PUBLIC_URL', 'http://localhost:4010'),
 }

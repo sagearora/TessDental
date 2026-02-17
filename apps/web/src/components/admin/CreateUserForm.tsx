@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createUser } from '@/api/userManagement'
-import { useGetRolesQuery } from '@/gql/generated'
 import { validatePassword, getPasswordRequirements } from '@/lib/password'
 
 interface CreateUserFormProps {

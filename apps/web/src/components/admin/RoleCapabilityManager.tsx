@@ -19,12 +19,12 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
   const [isAdding, setIsAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const assignedCapabilityKeys = new Set(
-    roleCapsData?.role_capability?.map((rc) => rc.capability_key) || []
+  const assignedCapabilityKeys = new Set<string>(
+    roleCapsData?.role_capability?.map((rc) => String(rc.capability_key)) || []
   )
   const allCapabilities = allCapsData?.capability || []
   const availableCapabilities = allCapabilities.filter(
-    (cap) => !assignedCapabilityKeys.has(cap.value as string)
+    (cap) => !assignedCapabilityKeys.has(String(cap.value))
   )
 
   const handleAddCapability = async () => {
@@ -62,7 +62,7 @@ export function RoleCapabilityManager({ roleId, clinicId, onUpdate }: RoleCapabi
   }
 
   const assignedCapabilities = allCapabilities.filter((cap) =>
-    assignedCapabilityKeys.has(cap.value as string)
+    assignedCapabilityKeys.has(String(cap.value))
   )
 
   // Group all together since module field doesn't exist in capability table

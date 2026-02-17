@@ -9,8 +9,176 @@ import { generateStorageKey, generateThumbKey, generateWebKey } from '../lib/sto
 import { generateThumb, generateWebVersion } from '../lib/thumbnails.js'
 import { computeSha256, computeSha256FromBuffer } from '../lib/sha256.js'
 import { env } from '../env.js'
+import { signUploadToken, verifyUploadToken, UPLOAD_TOKEN_EXPIRES_IN_SEC, type UploadTokenClaims } from '../jwt.js'
+import { extractToken } from '../middleware/auth.js'
 
 export async function assetsRoutes(fastify: FastifyInstance) {
+  // Issue short-lived upload token for bridge (patient-only, no studyId)
+  fastify.post<{ Body: { patientId?: number; modality?: string; imageSource?: string } }>(
+    '/imaging/assets/upload-token',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request: AuthenticatedRequest, reply) => {
+      const hasCapability = await requireCapability(request, reply, 'imaging_write')
+      if (!hasCapability) return
+
+      const body = (request.body || {}) as { patientId?: number; modality?: string; imageSource?: string }
+      const patientId = body.patientId
+      if (patientId == null || typeof patientId !== 'number') {
+        return reply.status(400).send({ error: 'Missing or invalid patientId' })
+      }
+      const modality = body.modality ?? 'PHOTO'
+      const imageSource = body.imageSource ?? null
+
+      const auditContext = request.auditContext!
+      const uploadToken = signUploadToken({
+        userId: auditContext.actorUserId,
+        clinicId: Number(auditContext.clinicId),
+        patientId,
+        modality: String(modality),
+        imageSource: imageSource != null ? String(imageSource) : null,
+      })
+      return {
+        uploadToken,
+        expiresIn: UPLOAD_TOKEN_EXPIRES_IN_SEC,
+        uploadUrl: env.IMAGING_PUBLIC_URL,
+      }
+    }
+  )
+
+  // Bridge upload: auth by upload token only; asset created with study_id = null
+  fastify.post('/imaging/assets/upload-bridge', async (request, reply) => {
+    const token = extractToken(request)
+    if (!token) {
+      return reply.status(401).send({ error: 'Missing or invalid authorization header' })
+    }
+    let claims: UploadTokenClaims
+    try {
+      claims = verifyUploadToken(token)
+    } catch {
+      return reply.status(401).send({ error: 'Invalid or expired token' })
+    }
+
+    const clinicId = claims.clinicId
+    const userId = claims.sub
+    const patientIdNum = claims.patientId
+    const modalityStr = claims.modality
+    const imageSourceStr = claims.imageSource
+
+    const data = await request.file()
+    if (!data) {
+      return reply.status(400).send({ error: 'No file provided' })
+    }
+
+    const fields = data.fields as Record<string, { value: string }>
+    const capturedAt = fields.capturedAt
+    const sourceDevice = fields.sourceDevice
+    const name = fields.name
+
+    const capturedAtDate = capturedAt?.value ? new Date(capturedAt.value) : new Date()
+    const sourceDeviceStr = sourceDevice?.value ? String(sourceDevice.value) : null
+    const nameStr = name?.value ? String(name.value).trim() || null : null
+
+    const maxBytes = env.IMAGING_MAX_UPLOAD_MB * 1024 * 1024
+    const chunks: Buffer[] = []
+    for await (const chunk of data.file) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+    }
+    const fileBuffer = Buffer.concat(chunks)
+    if (fileBuffer.length > maxBytes) {
+      return reply.status(400).send({ error: `File too large. Maximum size: ${env.IMAGING_MAX_UPLOAD_MB}MB` })
+    }
+
+    const sha256 = computeSha256FromBuffer(fileBuffer)
+    let mimeType = data.mimetype || 'application/octet-stream'
+    if (mimeType === 'application/octet-stream' && data.filename) {
+      const ext = data.filename.split('.').pop()?.toLowerCase()
+      if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg'
+      else if (ext === 'png') mimeType = 'image/png'
+    }
+
+    const pool = getPool()
+    const client = await pool.connect()
+    const storage = getStorageAdapter()
+
+    try {
+      await client.query('BEGIN')
+      const studyIdNum = null
+
+      const assetResult = await client.query(
+        `INSERT INTO public.imaging_asset 
+         (clinic_id, patient_id, study_id, modality, mime_type, size_bytes, sha256, 
+          storage_backend, storage_key, captured_at, source_device, name, image_source, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         RETURNING id`,
+        [
+          clinicId,
+          patientIdNum,
+          studyIdNum,
+          modalityStr,
+          mimeType,
+          fileBuffer.length,
+          sha256,
+          env.IMAGING_STORAGE_BACKEND,
+          '',
+          capturedAtDate,
+          sourceDeviceStr,
+          nameStr,
+          imageSourceStr,
+          userId,
+        ]
+      )
+      const assetId = assetResult.rows[0].id
+
+      const extension = mimeType.split('/')[1] || 'bin'
+      const storageKey = generateStorageKey(
+        clinicId,
+        patientIdNum,
+        0,
+        'originals',
+        assetId,
+        capturedAtDate,
+        extension
+      )
+      await client.query(`UPDATE public.imaging_asset SET storage_key = $1 WHERE id = $2`, [storageKey, assetId])
+
+      const originalStream = Readable.from(fileBuffer)
+      await storage.put(storageKey, originalStream, mimeType)
+
+      let thumbKey: string | null = null
+      let webKey: string | null = null
+      if (env.IMAGING_THUMBS_ENABLED && mimeType.startsWith('image/')) {
+        try {
+          const thumbBuffer = await generateThumb(fileBuffer)
+          thumbKey = generateThumbKey(clinicId, patientIdNum, 0, assetId)
+          const thumbStream = Readable.from(thumbBuffer)
+          await storage.put(thumbKey, thumbStream, 'image/webp')
+          const webBuffer = await generateWebVersion(fileBuffer)
+          webKey = generateWebKey(clinicId, patientIdNum, 0, assetId, capturedAtDate)
+          const webStream = Readable.from(webBuffer)
+          await storage.put(webKey, webStream, 'image/webp')
+          await client.query(`UPDATE public.imaging_asset SET thumb_key = $1, web_key = $2 WHERE id = $3`, [
+            thumbKey,
+            webKey,
+            assetId,
+          ])
+        } catch (thumbError) {
+          console.error('Thumbnail generation error:', thumbError)
+        }
+      }
+
+      await client.query('COMMIT')
+      return reply.send({ assetId })
+    } catch (error: any) {
+      await client.query('ROLLBACK')
+      console.error('Upload bridge error:', error)
+      return reply.status(500).send({ error: 'Internal server error', details: error?.message })
+    } finally {
+      client.release()
+    }
+  })
+
   // Bulk upload endpoint
   fastify.post(
     '/imaging/assets/upload-batch',
@@ -680,13 +848,22 @@ export async function assetsRoutes(fastify: FastifyInstance) {
     }
   )
 
-  // Update asset endpoint (name and image_source)
-  fastify.patch<{ Params: { assetId: string }; Body: { name?: string; imageSource?: string } }>(
+  // Update asset endpoint (name, image_source, captured_at)
+  fastify.patch<{
+    Params: { assetId: string }
+    Body: { name?: string; imageSource?: string; capturedAt?: string }
+  }>(
     '/imaging/assets/:assetId',
     {
       preHandler: [fastify.authenticate],
     },
-    async (request: AuthenticatedRequest & { params: { assetId: string }; body: { name?: string; imageSource?: string } }, reply) => {
+    async (
+      request: AuthenticatedRequest & {
+        params: { assetId: string }
+        body: { name?: string; imageSource?: string; capturedAt?: string }
+      },
+      reply
+    ) => {
       // Check capability
       const hasCapability = await requireCapability(request, reply, 'imaging_write')
       if (!hasCapability) {
@@ -696,10 +873,24 @@ export async function assetsRoutes(fastify: FastifyInstance) {
       const assetId = Number(request.params.assetId)
       const auditContext = request.auditContext!
       const clinicId = Number(auditContext.clinicId)
-      const { name, imageSource } = request.body
+      const { name, imageSource, capturedAt } = request.body
 
-      if (!name && !imageSource) {
-        return reply.status(400).send({ error: 'At least one field (name or imageSource) must be provided' })
+      const hasName = name !== undefined
+      const hasImageSource = imageSource !== undefined
+      const hasCapturedAt = capturedAt !== undefined && capturedAt !== null && capturedAt !== ''
+      if (!hasName && !hasImageSource && !hasCapturedAt) {
+        return reply.status(400).send({
+          error: 'At least one field (name, imageSource, or capturedAt) must be provided',
+        })
+      }
+
+      let capturedAtDate: Date | null = null
+      if (hasCapturedAt && capturedAt) {
+        const parsed = new Date(capturedAt)
+        if (Number.isNaN(parsed.getTime())) {
+          return reply.status(400).send({ error: 'Invalid capturedAt; must be a valid ISO date or date-time' })
+        }
+        capturedAtDate = parsed
       }
 
       const pool = getPool()
@@ -727,11 +918,10 @@ export async function assetsRoutes(fastify: FastifyInstance) {
 
         if (name !== undefined) {
           updates.push(`name = $${paramIndex++}`)
-          params.push(name.trim() || null)
+          params.push(typeof name === 'string' ? name.trim() || null : null)
         }
 
         if (imageSource !== undefined) {
-          // Validate imageSource enum value
           const validSources = ['intraoral', 'panoramic', 'webcam', 'scanner', 'photo']
           if (!validSources.includes(imageSource)) {
             await client.query('ROLLBACK')
@@ -739,6 +929,11 @@ export async function assetsRoutes(fastify: FastifyInstance) {
           }
           updates.push(`image_source = $${paramIndex++}`)
           params.push(imageSource)
+        }
+
+        if (capturedAtDate !== null) {
+          updates.push(`captured_at = $${paramIndex++}`)
+          params.push(capturedAtDate)
         }
 
         updates.push(`updated_by = $${paramIndex++}`)
@@ -755,23 +950,27 @@ export async function assetsRoutes(fastify: FastifyInstance) {
 
         await client.query('COMMIT')
 
-        // Get updated asset
+        // Get updated asset including captured_at for client
         const result = await client.query(
-          `SELECT id, name, image_source, updated_at, updated_by
+          `SELECT id, name, image_source, captured_at, updated_at, updated_by
            FROM public.imaging_asset
            WHERE id = $1`,
           [assetId]
         )
 
-        // Log update
+        const row = result.rows[0]
+        if (row && row.captured_at instanceof Date) {
+          row.captured_at = row.captured_at.toISOString()
+        }
+
         await logAuditEvent(auditContext, {
           action: 'imaging.asset.update',
           entityTable: 'imaging_asset',
           entityId: assetId,
-          payload: { name, image_source: imageSource },
+          payload: { name, image_source: imageSource, captured_at: capturedAt ?? undefined },
         })
 
-        return result.rows[0]
+        return row
       } catch (error) {
         await client.query('ROLLBACK')
         console.error('Update asset error:', error)

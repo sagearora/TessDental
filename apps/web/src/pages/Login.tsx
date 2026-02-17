@@ -20,9 +20,7 @@ export function Login() {
   const { login } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [requiresClinicSelection, setRequiresClinicSelection] = useState(false)
-  const [clinics, setClinics] = useState<number[]>([])
-  const [selectedClinicId, setSelectedClinicId] = useState<number | null>(null)
+  const [selectedClinicId] = useState<number | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const {
@@ -30,7 +28,8 @@ export function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+resolver: zodResolver(loginSchema as any),
   })
 
   const onSubmit = async (data: LoginFormData) => {

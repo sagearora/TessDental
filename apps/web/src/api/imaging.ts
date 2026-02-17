@@ -1,5 +1,7 @@
 const IMAGING_API_URL = import.meta.env.VITE_IMAGING_API_URL || 'http://localhost:4010'
 
+import { authFetch } from '@/lib/onUnauthorized'
+
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('accessToken')
   return {
@@ -65,56 +67,33 @@ export interface ImagingStudy {
   source: string | null
 }
 
-export interface MountSlotDefinition {
-  slot_id: string
-  label: string
-  row: number
-  col: number
-}
-
-export interface MountTemplate {
-  id?: number
-  template_key: string
-  name: string
-  description: string | null
-  slot_definitions: MountSlotDefinition[]
-  layout_config?: {
-    rows?: number
-    cols?: number
-    aspectRatio?: string
-  } | null
-  is_active?: boolean
-}
-
-export interface ImagingMount {
-  id: number
-  clinic_id: number
-  patient_id: number
-  template_id: number
-  name: string | null
-  description: string | null
-  created_at: string
-  created_by: string | null
-  updated_at: string
-  updated_by: string | null
-  is_active: boolean
-  template?: MountTemplate
-  slots?: ImagingMountSlot[]
-}
-
-export interface ImagingMountSlot {
-  id: number
-  mount_id: number
-  asset_id: number | null
-  slot_id: string
-  created_at: string
-  created_by: string | null
-  asset?: ImagingAsset | null
-}
+// Mount/template types and API are in @/api/mounts (Hasura GraphQL). Re-export for convenience.
+export type {
+  ImagingMount,
+  ImagingMountSlot,
+  MountTemplateShape,
+  SystemMountTemplate,
+  ClinicMountTemplate,
+} from '@/api/mounts'
+export {
+  listSystemMountTemplates,
+  listClinicMountTemplates,
+  listMounts,
+  getMount,
+  createMount,
+  updateMount,
+  deleteMount,
+  assignAssetToMountSlot,
+  removeAssetFromMountSlot,
+  getMountTemplate,
+  getNextEmptySlotId,
+  normalizeMount,
+  copySystemTemplateToClinic,
+} from '@/api/mounts'
 
 // Health check
 export async function checkHealth() {
-  const response = await fetch(`${IMAGING_API_URL}/health`)
+  const response = await authFetch(`${IMAGING_API_URL}/health`)
   if (!response.ok) {
     throw new Error('Health check failed')
   }
@@ -123,7 +102,7 @@ export async function checkHealth() {
 
 // Create study
 export async function createStudy(data: CreateStudyRequest): Promise<CreateStudyResponse> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/studies`, {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/studies`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -162,7 +141,7 @@ export async function uploadAsset(data: UploadAssetRequest): Promise<UploadAsset
   }
   formData.append('file', data.file)
 
-  const response = await fetch(`${IMAGING_API_URL}/imaging/assets/upload`, {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets/upload`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: formData,
@@ -173,6 +152,41 @@ export async function uploadAsset(data: UploadAssetRequest): Promise<UploadAsset
     throw new Error(error.error || 'Failed to upload asset')
   }
 
+  return response.json()
+}
+
+// Capture bridge upload token (patient-only, no studyId)
+export interface GetCaptureUploadTokenParams {
+  patientId: number
+  modality?: string
+  imageSource?: string | null
+}
+
+export interface GetCaptureUploadTokenResponse {
+  uploadToken: string
+  expiresIn: number
+  uploadUrl: string
+}
+
+export async function getCaptureUploadToken(
+  params: GetCaptureUploadTokenParams
+): Promise<GetCaptureUploadTokenResponse> {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets/upload-token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({
+      patientId: params.patientId,
+      modality: params.modality ?? 'PHOTO',
+      imageSource: params.imageSource ?? null,
+    }),
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to get upload token')
+  }
   return response.json()
 }
 
@@ -236,7 +250,7 @@ export async function uploadMultipleAssets(
     formData.append('file', file)
   }
 
-  const response = await fetch(`${IMAGING_API_URL}/imaging/assets/upload-batch`, {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets/upload-batch`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: formData,
@@ -256,7 +270,7 @@ export async function listAssets(patientId?: number, studyId?: number): Promise<
   if (patientId) params.append('patientId', String(patientId))
   if (studyId) params.append('studyId', String(studyId))
 
-  const response = await fetch(`${IMAGING_API_URL}/imaging/assets?${params.toString()}`, {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets?${params.toString()}`, {
     headers: getAuthHeaders(),
   })
 
@@ -276,7 +290,7 @@ export function getAssetUrl(assetId: number, variant: 'original' | 'web' | 'thum
 // Get asset as blob URL (for use in img tags with auth)
 export async function getAssetBlobUrl(assetId: number, variant: 'original' | 'web' | 'thumb' = 'web'): Promise<string> {
   const url = getAssetUrl(assetId, variant)
-  const response = await fetch(url, {
+  const response = await authFetch(url, {
     headers: getAuthHeaders(),
   })
 
@@ -292,10 +306,11 @@ export async function getAssetBlobUrl(assetId: number, variant: 'original' | 'we
 export interface UpdateAssetRequest {
   name?: string | null
   imageSource?: 'intraoral' | 'panoramic' | 'webcam' | 'scanner' | 'photo' | null
+  capturedAt?: string | null
 }
 
 export async function updateAsset(assetId: number, data: UpdateAssetRequest): Promise<ImagingAsset> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/assets/${assetId}`, {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets/${assetId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -314,7 +329,7 @@ export async function updateAsset(assetId: number, data: UpdateAssetRequest): Pr
 
 // Delete asset
 export async function deleteAsset(assetId: number): Promise<void> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/assets/${assetId}`, {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets/${assetId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   })
@@ -325,145 +340,3 @@ export async function deleteAsset(assetId: number): Promise<void> {
   }
 }
 
-// Mount API functions
-export interface CreateMountRequest {
-  patientId: number
-  templateId: number
-  name?: string | null
-  description?: string | null
-}
-
-export async function createMount(data: CreateMountRequest): Promise<ImagingMount> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/mounts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create mount')
-  }
-
-  return response.json()
-}
-
-export async function listMounts(patientId?: number): Promise<ImagingMount[]> {
-  const params = new URLSearchParams()
-  if (patientId) params.append('patientId', String(patientId))
-
-  const response = await fetch(`${IMAGING_API_URL}/imaging/mounts?${params.toString()}`, {
-    headers: getAuthHeaders(),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to list mounts')
-  }
-
-  return response.json()
-}
-
-export async function getMount(mountId: number): Promise<ImagingMount> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/mounts/${mountId}`, {
-    headers: getAuthHeaders(),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to get mount')
-  }
-
-  return response.json()
-}
-
-export interface UpdateMountRequest {
-  name?: string | null
-  description?: string | null
-}
-
-export async function updateMount(mountId: number, data: UpdateMountRequest): Promise<ImagingMount> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/mounts/${mountId}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update mount')
-  }
-
-  return response.json()
-}
-
-export async function assignAssetToMountSlot(
-  mountId: number,
-  slotId: string,
-  assetId: number
-): Promise<ImagingMountSlot> {
-  const response = await fetch(
-    `${IMAGING_API_URL}/imaging/mounts/${mountId}/slots/${encodeURIComponent(slotId)}/assign`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-      },
-      body: JSON.stringify({ assetId }),
-    }
-  )
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to assign asset to mount slot')
-  }
-
-  return response.json()
-}
-
-export async function removeAssetFromMountSlot(mountId: number, slotId: string): Promise<void> {
-  const response = await fetch(
-    `${IMAGING_API_URL}/imaging/mounts/${mountId}/slots/${encodeURIComponent(slotId)}`,
-    {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    }
-  )
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to remove asset from mount slot')
-  }
-}
-
-export async function deleteMount(mountId: number): Promise<void> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/mounts/${mountId}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete mount')
-  }
-}
-
-export async function listMountTemplates(): Promise<MountTemplate[]> {
-  const response = await fetch(`${IMAGING_API_URL}/imaging/mount-templates`, {
-    headers: getAuthHeaders(),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to list mount templates')
-  }
-
-  return response.json()
-}

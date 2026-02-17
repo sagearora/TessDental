@@ -44,3 +44,5 @@
 - "!include public_imaging_mount_template.yaml"
 - "!include public_imaging_mount.yaml"
 - "!include public_imaging_mount_slot.yaml"
+- "!include public_imaging_clinic_mount_settings.yaml"
+- "!include public_imaging_clinic_mount_template.yaml"

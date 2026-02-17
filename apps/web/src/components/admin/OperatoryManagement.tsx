@@ -32,13 +32,9 @@ export function OperatoryManagement({ clinicId }: OperatoryManagementProps) {
     skip: !clinicId,
   })
 
-  const { data: clinicsData } = useGetUserClinicsQuery({
+  useGetUserClinicsQuery({
     skip: !session,
   })
-
-  const currentClinicUser = clinicsData?.clinic_user_v?.find(
-    (cu) => cu.clinic_id === session?.clinicId && cu.user_id === session?.user?.id
-  )
 
   const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
     variables: { 

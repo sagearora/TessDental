@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "ViAY/dGhFS/OXuIZzLjzZpskMG6pX917PRIoMEzqQWKRqsv747ZLHg3QifrU6UPceS9SGWHzieVg1iMTnXFUdQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\AD-Terminal3\\Documents\\GitHub\\TessDental\\apps\\simplecapture.win\\Tools\\IconGen\\IconGen.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\AD-Terminal3\\.nuget\\packages\\magick.net-q8-anycpu\\14.10.2\\magick.net-q8-anycpu.14.10.2.nupkg.sha512",
+    "C:\\Users\\AD-Terminal3\\.nuget\\packages\\magick.net.core\\14.10.2\\magick.net.core.14.10.2.nupkg.sha512"
+  ],
+  "logs": []
+}

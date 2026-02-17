@@ -14,6 +14,7 @@ import { AuditExport } from './pages/admin/AuditExport'
 import { PatientFieldConfig } from './pages/admin/PatientFieldConfig'
 import { ReferralSourceManagement } from './pages/admin/ReferralSourceManagement'
 import { PersonsTable } from './pages/admin/PersonsTable'
+import { ImagingTemplates } from './pages/admin/ImagingTemplates'
 import { PersonProfile } from './pages/profile/PersonProfile'
 import { Imaging } from './pages/Imaging'
 import { Notes } from './pages/Notes'
@@ -51,6 +52,7 @@ function AppRoutes() {
         <Route path="patients/persons" element={<PersonsTable />} />
         <Route path="patients/fields" element={<PatientFieldConfig />} />
         <Route path="patients/referral-sources" element={<ReferralSourceManagement />} />
+        <Route path="imaging" element={<ImagingTemplates />} />
         <Route path="audit" element={<AuditExport />} />
       </Route>
       <Route

@@ -12,7 +12,14 @@ import { Label } from '@/components/ui/label'
 import { Upload, X, Loader2, AlertCircle, FileImage } from 'lucide-react'
 import { WebcamCapture } from './WebcamCapture'
 import { ScannerCapture } from './ScannerCapture'
-import { uploadMultipleAssets } from '@/api/imaging'
+import { uploadMultipleAssets, getCaptureUploadToken } from '@/api/imaging'
+import {
+  getNextEmptySlotId,
+  getMountTemplate,
+  getEffectiveSlotOrder,
+  assignAssetToMountSlot,
+  type ImagingMount,
+} from '@/api/mounts'
 
 type UploadSource = 'hard_drive' | 'webcam' | 'capture_device'
 
@@ -30,6 +37,12 @@ interface CaptureImageDialogProps {
   patientId: number
   patientName?: string
   onSuccess?: () => void
+  /** When set, dialog runs in fill mode: assign each upload to next empty slot and relaunch until all filled. */
+  mount?: ImagingMount | null
+  /** Called after assigning an asset to a slot so parent can refresh mount (e.g. getMount). */
+  onMountUpdated?: () => void
+  /** Called when the last slot was just filled (before closing). */
+  onMountFillComplete?: () => void
 }
 
 const STORAGE_KEY_UPLOAD_SOURCE = 'capture-image-dialog-upload-source'
@@ -41,7 +54,17 @@ export function CaptureImageDialog({
   patientId,
   patientName,
   onSuccess,
+  mount,
+  onMountUpdated,
+  onMountFillComplete,
 }: CaptureImageDialogProps) {
+  const fillMode = Boolean(mount)
+  const template = mount ? getMountTemplate(mount) : null
+  const slotOrder = template ? getEffectiveSlotOrder(template, null) : []
+  const nextEmptySlotId = mount ? getNextEmptySlotId(mount, null) : null
+  const filledCount = mount ? (mount.mount_slots ?? mount.slots ?? []).length : 0
+  const allSlotsFilled = fillMode && nextEmptySlotId === null
+
   // Load persisted preferences from localStorage
   const getStoredUploadSource = (): UploadSource => {
     if (typeof window === 'undefined') return 'hard_drive'
@@ -162,13 +185,15 @@ export function CaptureImageDialog({
       return
     }
 
+    const filesToUpload = fillMode ? selectedFiles.slice(0, 1) : selectedFiles
+
     setUploading(true)
     setUploadError(null)
     setUploadResults(null)
 
     try {
       const result = await uploadMultipleAssets({
-        files: selectedFiles,
+        files: filesToUpload,
         patientId,
         modality: 'PHOTO',
         imageSource: fileType as any,
@@ -177,14 +202,32 @@ export function CaptureImageDialog({
       setUploadResults(result.results)
 
       if (result.summary.succeeded > 0) {
-        // Success - close dialog and refresh
-        setSelectedFiles([])
-        onSuccess?.()
-        if (result.summary.failed === 0) {
-          onOpenChange(false)
+        const firstSuccess = result.results.find((r) => r.success && r.assetId != null)
+
+        if (fillMode && mount && firstSuccess?.assetId != null && nextEmptySlotId) {
+          await assignAssetToMountSlot(mount.id, nextEmptySlotId, firstSuccess.assetId)
+          onMountUpdated?.()
+          const willBeAllFilled = filledCount + 1 >= slotOrder.length
+          setSelectedFiles([])
+          setUploadResults(null)
+          setUploadError(null)
+          onSuccess?.()
+          if (willBeAllFilled) {
+            onMountFillComplete?.()
+            onOpenChange(false)
+          }
+          setUploading(false)
+          return
+        }
+
+        if (!fillMode) {
+          setSelectedFiles([])
+          onSuccess?.()
+          if (result.summary.failed === 0) {
+            onOpenChange(false)
+          }
         }
       } else {
-        // All failed
         setUploadError('All files failed to upload. Please check the errors below.')
       }
     } catch (error: any) {
@@ -209,11 +252,35 @@ export function CaptureImageDialog({
       <DialogContent onClose={handleClose} className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            Upload an image for {patientName || `Patient #${patientId}`}
+            {fillMode
+              ? allSlotsFilled
+                ? 'Mount complete'
+                : `Upload image for ${patientName || `Patient #${patientId}`}`
+              : `Upload an image for ${patientName || `Patient #${patientId}`}`}
           </DialogTitle>
         </DialogHeader>
 
+        {fillMode && allSlotsFilled && (
+          <div className="py-4 text-center space-y-4">
+            <p className="text-sm text-gray-600">All placeholders filled.</p>
+            <Button onClick={handleClose}>Done</Button>
+          </div>
+        )}
+
+        {(!fillMode || !allSlotsFilled) && (
+        <>
         <div className="space-y-6">
+          {fillMode && nextEmptySlotId && slotOrder.length > 0 && (
+            <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+              Filling mount: slot {slotOrder.indexOf(nextEmptySlotId) + 1} of {slotOrder.length}
+              {template && Array.isArray(template.slot_definitions) && (() => {
+                const def = (template.slot_definitions as { slot_id: string; label?: string }[]).find(
+                  (d) => d.slot_id === nextEmptySlotId
+                )
+                return def?.label ? ` (${def.label})` : ''
+              })()}
+            </div>
+          )}
           {/* Upload Source Selection */}
           <div>
             <Label className="mb-2 block">Upload files from:</Label>
@@ -296,7 +363,29 @@ export function CaptureImageDialog({
             )}
 
             {uploadSource === 'capture_device' && (
-              <ScannerCapture onCapture={handleScannerCapture} />
+              <ScannerCapture
+                onCapture={handleScannerCapture}
+                getCaptureUploadContext={
+                  fillMode
+                    ? undefined
+                    : async () => {
+                        const r = await getCaptureUploadToken({
+                          patientId,
+                          modality: 'PHOTO',
+                          imageSource: fileType,
+                        })
+                        return { uploadToken: r.uploadToken, uploadUrl: r.uploadUrl }
+                      }
+                }
+                onDirectUploadComplete={
+                  fillMode
+                    ? undefined
+                    : () => {
+                        onSuccess?.()
+                        onOpenChange(false)
+                      }
+                }
+              />
             )}
           </div>
 
@@ -394,11 +483,13 @@ export function CaptureImageDialog({
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload ({selectedFiles.length})
+                Upload ({fillMode ? Math.min(selectedFiles.length, 1) : selectedFiles.length})
               </>
             )}
           </Button>
         </DialogFooter>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   )

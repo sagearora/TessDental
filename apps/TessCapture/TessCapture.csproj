@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>Assets\TessDental.ico</ApplicationIcon>
+    <AssemblyTitle>TessCapture</AssemblyTitle>
+    <Product>TessCapture</Product>
+    <RootNamespace>TessCapture</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Tools\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x86'">
+    <None Include="native\x86\TWAINDSM.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>twaindsm.dll</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <None Include="native\x64\TWAINDSM.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>twaindsm.dll</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.2" />
+    <PackageReference Include="NTwain" Version="4.0.0-beta.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\TessDental.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

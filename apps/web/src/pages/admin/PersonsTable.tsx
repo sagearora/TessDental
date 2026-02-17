@@ -117,10 +117,8 @@ export function PersonsTable() {
 
   const visibleColumns = columns.filter((col) => col.visible)
 
-  const handlePatientSelect = useCallback((result: { person_id?: number | null }) => {
-    if (result.person_id) {
-      setSelectedPatientId(result.person_id)
-    }
+  const handlePatientSelect = useCallback((result: { id: number }) => {
+    setSelectedPatientId(result.id)
     setPage(1) // Reset to first page
   }, [])
 

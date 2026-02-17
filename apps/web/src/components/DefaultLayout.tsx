@@ -11,10 +11,10 @@ export function DefaultLayout() {
   const mainPaddingTop = isAdminPage ? 'pt-16' : 'pt-28'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       <Header />
       <PersonNavigator />
-      <main className={mainPaddingTop}>
+      <main className={`flex-1 min-h-0 overflow-hidden ${mainPaddingTop}`}>
         <Outlet />
       </main>
     </div>

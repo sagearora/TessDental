@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useLocation, Outlet } from 'react-router-dom'
-import { Settings, Users, LayoutDashboard, Shield, FileText, ChevronDown, ChevronRight, UserCircle } from 'lucide-react'
+import { Settings, Users, LayoutDashboard, FileText, ChevronDown, ChevronRight, UserCircle, Layout } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Header } from './Header'
 
@@ -46,6 +46,11 @@ const navigation = [
         href: '/admin/patients/referral-sources',
       },
     ],
+  },
+  {
+    name: 'Imaging',
+    href: '/admin/imaging',
+    icon: Layout,
   },
   {
     name: 'Audit My Data',

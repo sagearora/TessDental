@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { AuthenticatedImage } from './AuthenticatedImage'
-import { ImageIcon, Plus, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ImageIcon, Plus } from 'lucide-react'
 import { assignAssetToMountSlot, removeAssetFromMountSlot, type ImagingMount, type ImagingAsset } from '@/api/imaging'
-import { getMountTemplate } from '@/lib/mount-templates'
 
 interface MountViewProps {
   mount: ImagingMount
@@ -19,10 +17,11 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
   // Initialize slot assignments from mount slots
   useEffect(() => {
     const assignments = new Map<string, ImagingAsset | null>()
-    const slotDefs = mount.template?.slot_definitions || []
-    
+    const raw = mount.template?.slot_definitions
+    const slotDefs = Array.isArray(raw) ? raw : []
+
     // Initialize all slots as empty
-    slotDefs.forEach((slot) => {
+    slotDefs.forEach((slot: { slot_id: string }) => {
       assignments.set(slot.slot_id, null)
     })
 
@@ -45,7 +44,7 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
             thumb_key: slot.asset.thumb_key || null,
             web_key: slot.asset.web_key || null,
             name: slot.asset.name || null,
-            image_source: slot.asset.image_source || null,
+            image_source: (slot.asset.image_source as ImagingAsset['image_source']) || null,
           }
           assignments.set(slot.slot_id, asset)
         }
@@ -107,8 +106,19 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
     }
   }
 
-  const slotDefinitions = mount.template?.slot_definitions || []
-  const layoutConfig = mount.template?.layout_config
+  const slotDefinitions = (mount.template?.slot_definitions || []) as Array<{
+    slot_id: string
+    label: string
+    row: number
+    col: number
+    row_span?: number
+    col_span?: number
+  }>
+  const layoutConfig = mount.template?.layout_config as { rows?: number; cols?: number; aspectRatio?: string } | undefined
+  const defaultTransforms = (mount.template?.default_slot_transformations ?? {}) as Record<
+    string,
+    { rotate?: number; flip_h?: boolean; flip_v?: boolean }
+  >
 
   if (!slotDefinitions.length) {
     return (
@@ -118,11 +128,17 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
     )
   }
 
-  // Calculate grid dimensions
-  const maxRow = Math.max(...slotDefinitions.map((s) => s.row))
-  const maxCol = Math.max(...slotDefinitions.map((s) => s.col))
-  const rows = maxRow + 1
-  const cols = maxCol + 1
+  // Calculate grid dimensions (support row_span/col_span)
+  const maxRow = Math.max(
+    ...slotDefinitions.map((s) => s.row + (s.row_span ?? 1) - 1),
+    0
+  )
+  const maxCol = Math.max(
+    ...slotDefinitions.map((s) => s.col + (s.col_span ?? 1) - 1),
+    0
+  )
+  const rows = layoutConfig?.rows ?? maxRow + 1
+  const cols = layoutConfig?.cols ?? maxCol + 1
 
   // Create grid layout
   const gridStyle: React.CSSProperties = {
@@ -140,6 +156,16 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
           {slotDefinitions.map((slotDef) => {
             const asset = slotAssignments.get(slotDef.slot_id) || null
             const isEmpty = !asset
+            const t = defaultTransforms[slotDef.slot_id]
+            const rotate = t?.rotate ?? 0
+            const flipH = t?.flip_h ?? false
+            const flipV = t?.flip_v ?? false
+            const transformStyle =
+              rotate || flipH || flipV
+                ? {
+                    transform: `rotate(${rotate}deg) scaleX(${flipH ? -1 : 1}) scaleY(${flipV ? -1 : 1})`,
+                  }
+                : undefined
 
             return (
               <div
@@ -154,19 +180,21 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
                   ${isAssigning ? 'opacity-50 cursor-wait' : ''}
                 `}
                 style={{
-                  gridRow: slotDef.row + 1,
-                  gridColumn: slotDef.col + 1,
+                  gridRow: `${slotDef.row + 1} / span ${slotDef.row_span ?? 1}`,
+                  gridColumn: `${slotDef.col + 1} / span ${slotDef.col_span ?? 1}`,
                 }}
                 title={isEmpty ? `Click to assign image to ${slotDef.label}` : `Click to remove image from ${slotDef.label}`}
               >
                 {asset ? (
                   <div className="relative w-full h-full">
-                    <AuthenticatedImage
-                      assetId={asset.id}
-                      variant="thumb"
-                      alt={asset.name || `Asset ${asset.id}`}
-                      className="w-full h-full object-contain"
-                    />
+                    <div className="w-full h-full" style={transformStyle}>
+                      <AuthenticatedImage
+                        assetId={asset.id}
+                        variant="thumb"
+                        alt={asset.name || `Asset ${asset.id}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1">
                       <div className="truncate">{asset.name || 'Untitled'}</div>
                     </div>

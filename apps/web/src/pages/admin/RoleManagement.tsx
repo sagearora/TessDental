@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Shield, Plus, X, Settings } from 'lucide-react'
-import { useGetRolesQuery, useGetCapabilitiesQuery, useGetRoleCapabilitiesQuery } from '@/gql/generated'
+import { useGetRolesQuery } from '@/gql/generated'
 import { useAuth } from '@/contexts/AuthContext'
-import { createRole, updateRole, addCapabilityToRole, removeCapabilityFromRole } from '@/api/userManagement'
 import { CreateRoleForm } from '@/components/admin/CreateRoleForm'
 import { RoleCapabilityManager } from '@/components/admin/RoleCapabilityManager'
 

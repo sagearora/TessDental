@@ -1,0 +1,249 @@
+# System mount templates (read-only, predefined)
+query GetSystemMountTemplates {
+  imaging_mount_template(
+    where: { is_active: { _eq: true } }
+    order_by: { template_key: asc }
+  ) {
+    id
+    template_key
+    name
+    description
+    slot_definitions
+    layout_config
+    slot_capture_order
+    default_slot_transformations
+    is_active
+  }
+}
+
+# Clinic-specific mount templates (copied or custom)
+query GetClinicMountTemplates($clinicId: bigint!) {
+  imaging_clinic_mount_template(
+    where: { clinic_id: { _eq: $clinicId }, is_active: { _eq: true } }
+    order_by: { name: asc }
+  ) {
+    id
+    clinic_id
+    name
+    description
+    slot_definitions
+    layout_config
+    slot_capture_order
+    default_slot_transformations
+    is_active
+  }
+}
+
+# Mounts for a patient (list)
+query GetMountsByPatient($patientId: bigint!, $clinicId: bigint!) {
+  imaging_mount(
+    where: {
+      patient_id: { _eq: $patientId }
+      clinic_id: { _eq: $clinicId }
+      is_active: { _eq: true }
+    }
+    order_by: { created_at: desc }
+  ) {
+    id
+    clinic_id
+    patient_id
+    template_id
+    clinic_template_id
+    name
+    description
+    created_at
+    is_active
+    template {
+      id
+      template_key
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    clinic_template {
+      id
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    mount_slots {
+      id
+      mount_id
+      slot_id
+      asset_id
+      asset {
+        id
+        name
+        captured_at
+        image_source
+      }
+    }
+  }
+}
+
+# Single mount by id (for detail view)
+query GetMountById($id: bigint!) {
+  imaging_mount_by_pk(id: $id) {
+    id
+    clinic_id
+    patient_id
+    template_id
+    clinic_template_id
+    name
+    description
+    created_at
+    created_by
+    updated_at
+    updated_by
+    is_active
+    template {
+      id
+      template_key
+      name
+      description
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    clinic_template {
+      id
+      name
+      description
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    mount_slots {
+      id
+      mount_id
+      slot_id
+      asset_id
+      asset {
+        id
+        name
+        captured_at
+        image_source
+      }
+    }
+  }
+}
+
+mutation InsertImagingMount(
+  $object: imaging_mount_insert_input!
+) {
+  insert_imaging_mount_one(object: $object) {
+    id
+    clinic_id
+    patient_id
+    template_id
+    clinic_template_id
+    name
+    description
+    created_at
+    is_active
+    template {
+      id
+      template_key
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    clinic_template {
+      id
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    mount_slots {
+      id
+      mount_id
+      slot_id
+      asset_id
+    }
+  }
+}
+
+mutation UpdateImagingMount(
+  $id: bigint!
+  $updates: imaging_mount_set_input!
+) {
+  update_imaging_mount_by_pk(pk_columns: { id: $id }, _set: $updates) {
+    id
+    name
+    description
+    updated_at
+  }
+}
+
+mutation DeleteImagingMount($id: bigint!) {
+  delete_imaging_mount_by_pk(id: $id) {
+    id
+  }
+}
+
+# Assign asset to slot: insert or update slot row
+mutation InsertImagingMountSlot($object: imaging_mount_slot_insert_input!) {
+  insert_imaging_mount_slot_one(object: $object) {
+    id
+    mount_id
+    slot_id
+    asset_id
+  }
+}
+
+mutation UpdateImagingMountSlotAsset(
+  $id: bigint!
+  $assetId: bigint
+) {
+  update_imaging_mount_slot_by_pk(
+    pk_columns: { id: $id }
+    _set: { asset_id: $assetId }
+  ) {
+    id
+    mount_id
+    slot_id
+    asset_id
+  }
+}
+
+# Remove asset from slot: delete slot row (by mount_id + slot_id)
+mutation DeleteImagingMountSlotByMountAndSlot(
+  $mountId: bigint!
+  $slotId: String!
+) {
+  delete_imaging_mount_slot(
+    where: {
+      mount_id: { _eq: $mountId }
+      slot_id: { _eq: $slotId }
+    }
+  ) {
+    affected_rows
+  }
+}
+
+# Copy system template to clinic (Admin > Imaging)
+mutation InsertClinicMountTemplate(
+  $object: imaging_clinic_mount_template_insert_input!
+) {
+  insert_imaging_clinic_mount_template_one(object: $object) {
+    id
+    clinic_id
+    name
+    description
+    slot_definitions
+    layout_config
+    slot_capture_order
+    default_slot_transformations
+    is_active
+  }
+}

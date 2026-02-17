@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { resetApolloClient } from '@/apollo/client'
 import { useUpdateCurrentClinicMutation } from '@/gql/generated'
 import { markTokensRefreshed } from '@/lib/authTokens'
+import { setOnUnauthorized } from '@/lib/onUnauthorized'
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:4000'
 
@@ -181,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate('/')
   }
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     const refreshToken = localStorage.getItem('refreshToken')
     
     if (refreshToken) {
@@ -200,7 +201,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     clearAuth()
     navigate('/login')
-  }
+  }, [navigate])
+
+  // When any API gets 401, we logout and redirect to login
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      void logout()
+    })
+    return () => setOnUnauthorized(null)
+  }, [logout])
 
   const refresh = async () => {
     const refreshTokenValue = localStorage.getItem('refreshToken')

@@ -117,7 +117,7 @@ function SortableFieldRow({ field, onToggleDisplay, onToggleRequired }: Sortable
 
 export function PatientFieldConfig() {
   const { session } = useAuth()
-  const [isSaving, setIsSaving] = useState(false)
+  const [_isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { data, loading, refetch } = useGetPatientFieldConfigQuery({

@@ -8,6 +8,7 @@ import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient as createWsClient } from "graphql-ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { refreshTokensIfNeeded } from "@/lib/authTokens";
+import { onUnauthorized } from "@/lib/onUnauthorized";
 
 function getToken(): string | null {
   return localStorage.getItem("accessToken");
@@ -31,7 +32,11 @@ const httpLink = new HttpLink({
     const headers = new Headers(options?.headers ?? {});
     headers.set("Content-Type", "application/json");
     if (token) headers.set("Authorization", `Bearer ${token}`);
-    return fetch(uri, { ...options, headers, method: "POST" }); // force POST
+    const response = await fetch(uri, { ...options, headers, method: "POST" } as RequestInit);
+    if (response.status === 401) {
+      onUnauthorized();
+    }
+    return response;
   },
 });
 

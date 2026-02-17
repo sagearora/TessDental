@@ -1,0 +1,28 @@
+# Subscription for imaging assets by patient (real-time list updates)
+# Used on the Imaging page so new assets (e.g. from TessCapture) appear without refresh
+subscription SubscribeImagingAssetsForPatient($patientId: bigint!, $clinicId: bigint!) {
+  imaging_asset(
+    where: {
+      patient_id: { _eq: $patientId }
+      clinic_id: { _eq: $clinicId }
+      is_active: { _eq: true }
+    }
+    order_by: { captured_at: desc }
+    limit: 100
+  ) {
+    id
+    clinic_id
+    patient_id
+    study_id
+    modality
+    mime_type
+    size_bytes
+    captured_at
+    source_device
+    storage_key
+    thumb_key
+    web_key
+    name
+    image_source
+  }
+}

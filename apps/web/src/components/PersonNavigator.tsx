@@ -65,7 +65,21 @@ export function PersonNavigator() {
   }
 
   // Query current person
-  const { data, loading } = useQuery(GET_CURRENT_PERSON, {
+  interface GetCurrentPersonData {
+    clinic_user_v?: Array<{
+      id: string
+      current_person_id?: number
+      person?: {
+        id: string
+        first_name: string | null
+        last_name: string | null
+        preferred_name: string | null
+        clinic_id: number
+      }
+    }>
+  }
+
+  const { data, loading } = useQuery<GetCurrentPersonData>(GET_CURRENT_PERSON, {
     variables: {
       userId: session?.user.id || '',
     },

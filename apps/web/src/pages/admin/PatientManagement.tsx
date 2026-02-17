@@ -101,7 +101,7 @@ function SortableFieldRow({ field, onToggleDisplay, onToggleRequired }: Sortable
 
 export function PatientManagement() {
   const { session } = useAuth()
-  const [isSaving, setIsSaving] = useState(false)
+  const [_isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { data, loading, refetch } = useGetPatientFieldConfigQuery({
@@ -113,7 +113,15 @@ export function PatientManagement() {
   const [updateFieldConfigDisplay] = useUpdatePatientFieldConfigDisplayMutation()
   const [updateFieldConfigRequired] = useUpdatePatientFieldConfigRequiredMutation()
 
-  const fields = data?.patient_field_config || []
+  const rawFields = data?.patient_field_config || []
+  const fields = rawFields.map((f) => ({
+    id: f.id,
+    field_key: f.field_config?.key ?? '',
+    field_label: f.field_config?.label ?? '',
+    display_order: f.display_order,
+    is_displayed: f.is_displayed,
+    is_required: f.is_required,
+  }))
 
   const sensors = useSensors(
     useSensor(PointerSensor),

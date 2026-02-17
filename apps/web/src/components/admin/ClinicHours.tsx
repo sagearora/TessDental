@@ -43,13 +43,9 @@ export function ClinicHours({ clinicId, onSuccess }: ClinicHoursProps) {
     notifyOnNetworkStatusChange: false,
   })
 
-  const { data: clinicsData } = useGetUserClinicsQuery({
+  useGetUserClinicsQuery({
     skip: !session,
   })
-
-  const currentClinicUser = clinicsData?.clinic_user_v?.find(
-    (cu) => cu.clinic_id === session?.clinicId && cu.user_id === session?.user?.id
-  )
 
   const { data: capabilitiesData, loading: capabilitiesLoading } = useGetUserEffectiveCapabilitiesQuery({
     variables: { 
