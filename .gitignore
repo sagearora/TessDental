@@ -39,6 +39,10 @@ lerna-debug.log*
 infra/hasura/.hasura/
 cli-hasura-windows-amd64.exe
 
+# TessCapture (.NET) build output
+apps/TessCapture/**/bin/
+apps/TessCapture/**/obj/
+
 # Playwright
 test-results/
 playwright-report/
