@@ -1,0 +1,29 @@
+{
+  "name": "@tessdental/pdf-service",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --enable-source-maps dist/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1",
+    "jsonwebtoken": "^9.0.2",
+    "pdfkit": "^0.15.0",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.2.2",
+    "sharp": "^0.33.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/pdfkit": "^0.13.4",
+    "@types/jsonwebtoken": "^9.0.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4"
+  }
+}

@@ -15,6 +15,7 @@ import { ScannerCapture } from './ScannerCapture'
 import { uploadMultipleAssets, getCaptureUploadToken } from '@/api/imaging'
 import {
   getNextEmptySlotId,
+  getEmptySlotIdsInOrderFrom,
   getMountTemplate,
   getEffectiveSlotOrder,
   assignAssetToMountSlot,
@@ -39,10 +40,14 @@ interface CaptureImageDialogProps {
   onSuccess?: () => void
   /** When set, dialog runs in fill mode: assign each upload to next empty slot and relaunch until all filled. */
   mount?: ImagingMount | null
+  /** When set with mount, assigns captured asset to this specific slot instead of next empty slot. */
+  targetSlotId?: string | null
   /** Called after assigning an asset to a slot so parent can refresh mount (e.g. getMount). */
   onMountUpdated?: () => void
   /** Called when the last slot was just filled (before closing). */
   onMountFillComplete?: () => void
+  /** When true, show hint that user can click Done to stop auto-acquisition. */
+  isAutoAcquisition?: boolean
 }
 
 const STORAGE_KEY_UPLOAD_SOURCE = 'capture-image-dialog-upload-source'
@@ -55,15 +60,17 @@ export function CaptureImageDialog({
   patientName,
   onSuccess,
   mount,
+  targetSlotId,
   onMountUpdated,
   onMountFillComplete,
+  isAutoAcquisition,
 }: CaptureImageDialogProps) {
   const fillMode = Boolean(mount)
   const template = mount ? getMountTemplate(mount) : null
   const slotOrder = template ? getEffectiveSlotOrder(template, null) : []
   const nextEmptySlotId = mount ? getNextEmptySlotId(mount, null) : null
   const filledCount = mount ? (mount.mount_slots ?? mount.slots ?? []).length : 0
-  const allSlotsFilled = fillMode && nextEmptySlotId === null
+  const allSlotsFilled = fillMode && nextEmptySlotId === null && !targetSlotId
 
   // Load persisted preferences from localStorage
   const getStoredUploadSource = (): UploadSource => {
@@ -185,7 +192,7 @@ export function CaptureImageDialog({
       return
     }
 
-    const filesToUpload = fillMode ? selectedFiles.slice(0, 1) : selectedFiles
+    const filesToUpload = selectedFiles
 
     setUploading(true)
     setUploadError(null)
@@ -202,30 +209,34 @@ export function CaptureImageDialog({
       setUploadResults(result.results)
 
       if (result.summary.succeeded > 0) {
-        const firstSuccess = result.results.find((r) => r.success && r.assetId != null)
-
-        if (fillMode && mount && firstSuccess?.assetId != null && nextEmptySlotId) {
-          await assignAssetToMountSlot(mount.id, nextEmptySlotId, firstSuccess.assetId)
-          onMountUpdated?.()
-          const willBeAllFilled = filledCount + 1 >= slotOrder.length
-          setSelectedFiles([])
-          setUploadResults(null)
-          setUploadError(null)
-          onSuccess?.()
-          if (willBeAllFilled) {
-            onMountFillComplete?.()
-            onOpenChange(false)
+        if (fillMode && mount) {
+          const firstSlotId = targetSlotId || nextEmptySlotId
+          if (firstSlotId) {
+            const emptySlotIds = getEmptySlotIdsInOrderFrom(mount, firstSlotId)
+            const successfulAssets = result.results.filter(
+              (r): r is typeof r & { assetId: number } => r.success === true && r.assetId != null
+            )
+            const toAssign = Math.min(successfulAssets.length, emptySlotIds.length)
+            for (let i = 0; i < toAssign; i++) {
+              await assignAssetToMountSlot(mount.id, emptySlotIds[i], successfulAssets[i].assetId)
+            }
+            await onMountUpdated?.()
+            setSelectedFiles([])
+            setUploadResults(null)
+            setUploadError(null)
+            onSuccess?.()
+            if (filledCount + toAssign >= slotOrder.length) {
+              onMountFillComplete?.()
+            }
+          } else {
+            setSelectedFiles([])
+            setUploadResults(null)
+            setUploadError(null)
+            onSuccess?.()
           }
-          setUploading(false)
-          return
-        }
-
-        if (!fillMode) {
+        } else if (!fillMode) {
           setSelectedFiles([])
           onSuccess?.()
-          if (result.summary.failed === 0) {
-            onOpenChange(false)
-          }
         }
       } else {
         setUploadError('All files failed to upload. Please check the errors below.')
@@ -270,15 +281,34 @@ export function CaptureImageDialog({
         {(!fillMode || !allSlotsFilled) && (
         <>
         <div className="space-y-6">
-          {fillMode && nextEmptySlotId && slotOrder.length > 0 && (
-            <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-              Filling mount: slot {slotOrder.indexOf(nextEmptySlotId) + 1} of {slotOrder.length}
-              {template && Array.isArray(template.slot_definitions) && (() => {
-                const def = (template.slot_definitions as { slot_id: string; label?: string }[]).find(
-                  (d) => d.slot_id === nextEmptySlotId
-                )
-                return def?.label ? ` (${def.label})` : ''
-              })()}
+          {fillMode && (targetSlotId || nextEmptySlotId) && slotOrder.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                {targetSlotId ? (
+                  <>
+                    Capturing for specific slot
+                    {template && Array.isArray(template.slot_definitions) && (() => {
+                      const def = (template.slot_definitions as { slot_id: string; label?: string }[]).find(
+                        (d) => d.slot_id === targetSlotId
+                      )
+                      return def?.label ? `: ${def.label}` : ''
+                    })()}
+                  </>
+                ) : (
+                  <>
+                    Filling mount: slot {slotOrder.indexOf(nextEmptySlotId!) + 1} of {slotOrder.length}
+                    {template && Array.isArray(template.slot_definitions) && (() => {
+                      const def = (template.slot_definitions as { slot_id: string; label?: string }[]).find(
+                        (d) => d.slot_id === nextEmptySlotId
+                      )
+                      return def?.label ? ` (${def.label})` : ''
+                    })()}
+                  </>
+                )}
+              </div>
+              {isAutoAcquisition && (
+                <p className="text-xs text-gray-500">Click Done to stop auto-acquisition.</p>
+              )}
             </div>
           )}
           {/* Upload Source Selection */}
@@ -483,7 +513,7 @@ export function CaptureImageDialog({
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload ({fillMode ? Math.min(selectedFiles.length, 1) : selectedFiles.length})
+                Upload ({selectedFiles.length})
               </>
             )}
           </Button>

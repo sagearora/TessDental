@@ -36,6 +36,8 @@ interface AssetInfoDialogProps {
   onOpenChange: (open: boolean) => void
   asset: ImagingAsset | null
   onSave?: () => void
+  /** When 'inspect', fields are read-only and only Close is shown. */
+  mode?: 'edit' | 'inspect'
 }
 
 export function AssetInfoDialog({
@@ -43,7 +45,9 @@ export function AssetInfoDialog({
   onOpenChange,
   asset,
   onSave,
+  mode = 'edit',
 }: AssetInfoDialogProps) {
+  const isInspect = mode === 'inspect'
   const [name, setName] = useState('')
   const [capturedAt, setCapturedAt] = useState('')
   const [saving, setSaving] = useState(false)
@@ -104,6 +108,8 @@ export function AssetInfoDialog({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Image name"
                   className="mt-1"
+                  disabled={isInspect}
+                  readOnly={isInspect}
                 />
               </div>
               <div>
@@ -114,6 +120,8 @@ export function AssetInfoDialog({
                   value={capturedAt}
                   onChange={(e) => setCapturedAt(e.target.value)}
                   className="mt-1"
+                  disabled={isInspect}
+                  readOnly={isInspect}
                 />
               </div>
               {error && (
@@ -129,18 +137,20 @@ export function AssetInfoDialog({
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleCancel} disabled={saving}>
-            Cancel
+            {isInspect ? 'Close' : 'Cancel'}
           </Button>
-          <Button type="button" onClick={handleSave} disabled={!asset || saving}>
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving…
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
+          {!isInspect && (
+            <Button type="button" onClick={handleSave} disabled={!asset || saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                'Save'
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

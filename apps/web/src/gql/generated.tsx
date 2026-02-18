@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// @ts-nocheck - Generated file; do not edit. Regenerate with pnpm run codegen.
+// @ts-nocheck
 import { gql } from '@apollo/client';
 import type * as ApolloReactCommon from '@apollo/client/react';
 import * as ApolloReactHooks from '@apollo/client/react';
@@ -2353,6 +2352,13 @@ export type Clinic_Mutation_Response = {
   affected_rows: Scalars['Int']['output'];
   /** data from the rows affected by the mutation */
   returning: Array<Clinic>;
+};
+
+/** input type for inserting object relation for remote table "clinic" */
+export type Clinic_Obj_Rel_Insert_Input = {
+  data: Clinic_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Clinic_On_Conflict>;
 };
 
 /** on_conflict condition type for table "clinic" */
@@ -5361,6 +5367,8 @@ export type Imaging_Asset = {
   clinic_id: Scalars['bigint']['output'];
   created_at: Scalars['timestamptz']['output'];
   created_by?: Maybe<Scalars['uuid']['output']>;
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: Maybe<Scalars['jsonb']['output']>;
   id: Scalars['bigint']['output'];
   /** Source device type for the image capture */
   image_source?: Maybe<Scalars['image_source_enum']['output']>;
@@ -5386,6 +5394,12 @@ export type Imaging_Asset = {
   updated_at: Scalars['timestamptz']['output'];
   updated_by?: Maybe<Scalars['uuid']['output']>;
   web_key?: Maybe<Scalars['String']['output']>;
+};
+
+
+/** columns and relationships of "imaging_asset" */
+export type Imaging_AssetDisplay_AdjustmentsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -5480,6 +5494,12 @@ export type Imaging_Asset_Aggregate_Order_By = {
   variance?: InputMaybe<Imaging_Asset_Variance_Order_By>;
 };
 
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Asset_Append_Input = {
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
 /** input type for inserting array relation for remote table "imaging_asset" */
 export type Imaging_Asset_Arr_Rel_Insert_Input = {
   data: Array<Imaging_Asset_Insert_Input>;
@@ -5515,6 +5535,7 @@ export type Imaging_Asset_Bool_Exp = {
   clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  display_adjustments?: InputMaybe<Jsonb_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
   image_source?: InputMaybe<Image_Source_Enum_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
@@ -5544,6 +5565,24 @@ export type Imaging_Asset_Constraint =
   /** unique or primary key constraint on columns "id" */
   | 'imaging_asset_pkey';
 
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Imaging_Asset_Delete_At_Path_Input = {
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Imaging_Asset_Delete_Elem_Input = {
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Imaging_Asset_Delete_Key_Input = {
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['String']['input']>;
+};
+
 /** input type for incrementing numeric columns in table "imaging_asset" */
 export type Imaging_Asset_Inc_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
@@ -5559,6 +5598,8 @@ export type Imaging_Asset_Insert_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['jsonb']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   /** Source device type for the image capture */
   image_source?: InputMaybe<Scalars['image_source_enum']['input']>;
@@ -5717,6 +5758,7 @@ export type Imaging_Asset_Order_By = {
   clinic_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
+  display_adjustments?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   image_source?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
@@ -5743,6 +5785,12 @@ export type Imaging_Asset_Pk_Columns_Input = {
   id: Scalars['bigint']['input'];
 };
 
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Asset_Prepend_Input = {
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
 /** select columns of table "imaging_asset" */
 export type Imaging_Asset_Select_Column =
   /** column name */
@@ -5753,6 +5801,8 @@ export type Imaging_Asset_Select_Column =
   | 'created_at'
   /** column name */
   | 'created_by'
+  /** column name */
+  | 'display_adjustments'
   /** column name */
   | 'id'
   /** column name */
@@ -5804,6 +5854,8 @@ export type Imaging_Asset_Set_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['jsonb']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   /** Source device type for the image capture */
   image_source?: InputMaybe<Scalars['image_source_enum']['input']>;
@@ -5896,6 +5948,8 @@ export type Imaging_Asset_Stream_Cursor_Value_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
+  /** Optional display-only adjustments (invert, flip_h, flip_v, rotate, gamma, brightness, contrast, sharpen). Applied at render time; original image unchanged. Reversible by clearing. */
+  display_adjustments?: InputMaybe<Scalars['jsonb']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   /** Source device type for the image capture */
   image_source?: InputMaybe<Scalars['image_source_enum']['input']>;
@@ -5947,6 +6001,8 @@ export type Imaging_Asset_Update_Column =
   /** column name */
   | 'created_by'
   /** column name */
+  | 'display_adjustments'
+  /** column name */
   | 'id'
   /** column name */
   | 'image_source'
@@ -5982,8 +6038,18 @@ export type Imaging_Asset_Update_Column =
   | 'web_key';
 
 export type Imaging_Asset_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Imaging_Asset_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Imaging_Asset_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Imaging_Asset_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Imaging_Asset_Delete_Key_Input>;
   /** increments the numeric columns with given value of the filtered values */
   _inc?: InputMaybe<Imaging_Asset_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Imaging_Asset_Prepend_Input>;
   /** sets the columns of the filtered rows to the given values */
   _set?: InputMaybe<Imaging_Asset_Set_Input>;
   /** filter the rows which have to be updated */
@@ -6047,10 +6113,781 @@ export type Imaging_Asset_Variance_Order_By = {
   study_id?: InputMaybe<Order_By>;
 };
 
+/** Clinic overrides for mount template: slot order and per-slot transformations */
+export type Imaging_Clinic_Mount_Settings = {
+  __typename?: 'imaging_clinic_mount_settings';
+  /** An object relationship */
+  clinic: Clinic;
+  clinic_id: Scalars['bigint']['output'];
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id: Scalars['bigint']['output'];
+  slot_order?: Maybe<Scalars['jsonb']['output']>;
+  slot_transformations?: Maybe<Scalars['jsonb']['output']>;
+  /** An object relationship */
+  template: Imaging_Mount_Template;
+  template_id: Scalars['bigint']['output'];
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+
+/** Clinic overrides for mount template: slot order and per-slot transformations */
+export type Imaging_Clinic_Mount_SettingsSlot_OrderArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Clinic overrides for mount template: slot order and per-slot transformations */
+export type Imaging_Clinic_Mount_SettingsSlot_TransformationsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Aggregate = {
+  __typename?: 'imaging_clinic_mount_settings_aggregate';
+  aggregate?: Maybe<Imaging_Clinic_Mount_Settings_Aggregate_Fields>;
+  nodes: Array<Imaging_Clinic_Mount_Settings>;
+};
+
+/** aggregate fields of "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Aggregate_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_aggregate_fields';
+  avg?: Maybe<Imaging_Clinic_Mount_Settings_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Clinic_Mount_Settings_Max_Fields>;
+  min?: Maybe<Imaging_Clinic_Mount_Settings_Min_Fields>;
+  stddev?: Maybe<Imaging_Clinic_Mount_Settings_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Clinic_Mount_Settings_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Clinic_Mount_Settings_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Clinic_Mount_Settings_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Clinic_Mount_Settings_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Clinic_Mount_Settings_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Clinic_Mount_Settings_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Clinic_Mount_Settings_Append_Input = {
+  slot_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Clinic_Mount_Settings_Avg_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_avg_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_clinic_mount_settings". All fields are combined with a logical 'AND'. */
+export type Imaging_Clinic_Mount_Settings_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Bool_Exp>>;
+  clinic?: InputMaybe<Clinic_Bool_Exp>;
+  clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  slot_order?: InputMaybe<Jsonb_Comparison_Exp>;
+  slot_transformations?: InputMaybe<Jsonb_Comparison_Exp>;
+  template?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
+  template_id?: InputMaybe<Bigint_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Constraint =
+  /** unique or primary key constraint on columns "clinic_id", "template_id" */
+  | 'imaging_clinic_mount_settings_clinic_id_template_id_key'
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_clinic_mount_settings_pkey';
+
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Imaging_Clinic_Mount_Settings_Delete_At_Path_Input = {
+  slot_order?: InputMaybe<Array<Scalars['String']['input']>>;
+  slot_transformations?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Imaging_Clinic_Mount_Settings_Delete_Elem_Input = {
+  slot_order?: InputMaybe<Scalars['Int']['input']>;
+  slot_transformations?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Imaging_Clinic_Mount_Settings_Delete_Key_Input = {
+  slot_order?: InputMaybe<Scalars['String']['input']>;
+  slot_transformations?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Inc_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Insert_Input = {
+  clinic?: InputMaybe<Clinic_Obj_Rel_Insert_Input>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  slot_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  template?: InputMaybe<Imaging_Mount_Template_Obj_Rel_Insert_Input>;
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Clinic_Mount_Settings_Max_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_max_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  template_id?: Maybe<Scalars['bigint']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Clinic_Mount_Settings_Min_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_min_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  template_id?: Maybe<Scalars['bigint']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Mutation_Response = {
+  __typename?: 'imaging_clinic_mount_settings_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Clinic_Mount_Settings>;
+};
+
+/** on_conflict condition type for table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_On_Conflict = {
+  constraint: Imaging_Clinic_Mount_Settings_Constraint;
+  update_columns?: Array<Imaging_Clinic_Mount_Settings_Update_Column>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_clinic_mount_settings". */
+export type Imaging_Clinic_Mount_Settings_Order_By = {
+  clinic?: InputMaybe<Clinic_Order_By>;
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  slot_order?: InputMaybe<Order_By>;
+  slot_transformations?: InputMaybe<Order_By>;
+  template?: InputMaybe<Imaging_Mount_Template_Order_By>;
+  template_id?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_clinic_mount_settings */
+export type Imaging_Clinic_Mount_Settings_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Clinic_Mount_Settings_Prepend_Input = {
+  slot_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Select_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'slot_order'
+  /** column name */
+  | 'slot_transformations'
+  /** column name */
+  | 'template_id'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+/** input type for updating data in table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Set_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  slot_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Clinic_Mount_Settings_Stddev_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_stddev_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Clinic_Mount_Settings_Stddev_Pop_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_stddev_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Clinic_Mount_Settings_Stddev_Samp_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_stddev_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Clinic_Mount_Settings_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Clinic_Mount_Settings_Stream_Cursor_Value_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  slot_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  template_id?: InputMaybe<Scalars['bigint']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Clinic_Mount_Settings_Sum_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_sum_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  template_id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "imaging_clinic_mount_settings" */
+export type Imaging_Clinic_Mount_Settings_Update_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'slot_order'
+  /** column name */
+  | 'slot_transformations'
+  /** column name */
+  | 'template_id'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+export type Imaging_Clinic_Mount_Settings_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Imaging_Clinic_Mount_Settings_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Clinic_Mount_Settings_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Imaging_Clinic_Mount_Settings_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Clinic_Mount_Settings_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Clinic_Mount_Settings_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Clinic_Mount_Settings_Var_Pop_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_var_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Clinic_Mount_Settings_Var_Samp_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_var_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Clinic_Mount_Settings_Variance_Fields = {
+  __typename?: 'imaging_clinic_mount_settings_variance_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+  template_id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Clinic-specific mount templates (copied from system or custom-built) */
+export type Imaging_Clinic_Mount_Template = {
+  __typename?: 'imaging_clinic_mount_template';
+  /** An object relationship */
+  clinic: Clinic;
+  clinic_id: Scalars['bigint']['output'];
+  created_at: Scalars['timestamptz']['output'];
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  default_slot_transformations?: Maybe<Scalars['jsonb']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['bigint']['output'];
+  is_active: Scalars['Boolean']['output'];
+  layout_config?: Maybe<Scalars['jsonb']['output']>;
+  name: Scalars['String']['output'];
+  slot_capture_order?: Maybe<Scalars['jsonb']['output']>;
+  slot_definitions: Scalars['jsonb']['output'];
+  updated_at: Scalars['timestamptz']['output'];
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+
+/** Clinic-specific mount templates (copied from system or custom-built) */
+export type Imaging_Clinic_Mount_TemplateDefault_Slot_TransformationsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Clinic-specific mount templates (copied from system or custom-built) */
+export type Imaging_Clinic_Mount_TemplateLayout_ConfigArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Clinic-specific mount templates (copied from system or custom-built) */
+export type Imaging_Clinic_Mount_TemplateSlot_Capture_OrderArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Clinic-specific mount templates (copied from system or custom-built) */
+export type Imaging_Clinic_Mount_TemplateSlot_DefinitionsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** aggregated selection of "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Aggregate = {
+  __typename?: 'imaging_clinic_mount_template_aggregate';
+  aggregate?: Maybe<Imaging_Clinic_Mount_Template_Aggregate_Fields>;
+  nodes: Array<Imaging_Clinic_Mount_Template>;
+};
+
+/** aggregate fields of "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Aggregate_Fields = {
+  __typename?: 'imaging_clinic_mount_template_aggregate_fields';
+  avg?: Maybe<Imaging_Clinic_Mount_Template_Avg_Fields>;
+  count: Scalars['Int']['output'];
+  max?: Maybe<Imaging_Clinic_Mount_Template_Max_Fields>;
+  min?: Maybe<Imaging_Clinic_Mount_Template_Min_Fields>;
+  stddev?: Maybe<Imaging_Clinic_Mount_Template_Stddev_Fields>;
+  stddev_pop?: Maybe<Imaging_Clinic_Mount_Template_Stddev_Pop_Fields>;
+  stddev_samp?: Maybe<Imaging_Clinic_Mount_Template_Stddev_Samp_Fields>;
+  sum?: Maybe<Imaging_Clinic_Mount_Template_Sum_Fields>;
+  var_pop?: Maybe<Imaging_Clinic_Mount_Template_Var_Pop_Fields>;
+  var_samp?: Maybe<Imaging_Clinic_Mount_Template_Var_Samp_Fields>;
+  variance?: Maybe<Imaging_Clinic_Mount_Template_Variance_Fields>;
+};
+
+
+/** aggregate fields of "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Aggregate_FieldsCountArgs = {
+  columns?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Select_Column>>;
+  distinct?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Clinic_Mount_Template_Append_Input = {
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** aggregate avg on columns */
+export type Imaging_Clinic_Mount_Template_Avg_Fields = {
+  __typename?: 'imaging_clinic_mount_template_avg_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Boolean expression to filter rows from the table "imaging_clinic_mount_template". All fields are combined with a logical 'AND'. */
+export type Imaging_Clinic_Mount_Template_Bool_Exp = {
+  _and?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Bool_Exp>>;
+  _not?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+  _or?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Bool_Exp>>;
+  clinic?: InputMaybe<Clinic_Bool_Exp>;
+  clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  created_by?: InputMaybe<Uuid_Comparison_Exp>;
+  default_slot_transformations?: InputMaybe<Jsonb_Comparison_Exp>;
+  description?: InputMaybe<String_Comparison_Exp>;
+  id?: InputMaybe<Bigint_Comparison_Exp>;
+  is_active?: InputMaybe<Boolean_Comparison_Exp>;
+  layout_config?: InputMaybe<Jsonb_Comparison_Exp>;
+  name?: InputMaybe<String_Comparison_Exp>;
+  slot_capture_order?: InputMaybe<Jsonb_Comparison_Exp>;
+  slot_definitions?: InputMaybe<Jsonb_Comparison_Exp>;
+  updated_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  updated_by?: InputMaybe<Uuid_Comparison_Exp>;
+};
+
+/** unique or primary key constraints on table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Constraint =
+  /** unique or primary key constraint on columns "id" */
+  | 'imaging_clinic_mount_template_pkey';
+
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Imaging_Clinic_Mount_Template_Delete_At_Path_Input = {
+  default_slot_transformations?: InputMaybe<Array<Scalars['String']['input']>>;
+  layout_config?: InputMaybe<Array<Scalars['String']['input']>>;
+  slot_capture_order?: InputMaybe<Array<Scalars['String']['input']>>;
+  slot_definitions?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Imaging_Clinic_Mount_Template_Delete_Elem_Input = {
+  default_slot_transformations?: InputMaybe<Scalars['Int']['input']>;
+  layout_config?: InputMaybe<Scalars['Int']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['Int']['input']>;
+  slot_definitions?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Imaging_Clinic_Mount_Template_Delete_Key_Input = {
+  default_slot_transformations?: InputMaybe<Scalars['String']['input']>;
+  layout_config?: InputMaybe<Scalars['String']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['String']['input']>;
+  slot_definitions?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** input type for incrementing numeric columns in table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Inc_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+};
+
+/** input type for inserting data into table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Insert_Input = {
+  clinic?: InputMaybe<Clinic_Obj_Rel_Insert_Input>;
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate max on columns */
+export type Imaging_Clinic_Mount_Template_Max_Fields = {
+  __typename?: 'imaging_clinic_mount_template_max_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** aggregate min on columns */
+export type Imaging_Clinic_Mount_Template_Min_Fields = {
+  __typename?: 'imaging_clinic_mount_template_min_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  created_at?: Maybe<Scalars['timestamptz']['output']>;
+  created_by?: Maybe<Scalars['uuid']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['timestamptz']['output']>;
+  updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+/** response of any mutation on the table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Mutation_Response = {
+  __typename?: 'imaging_clinic_mount_template_mutation_response';
+  /** number of rows affected by the mutation */
+  affected_rows: Scalars['Int']['output'];
+  /** data from the rows affected by the mutation */
+  returning: Array<Imaging_Clinic_Mount_Template>;
+};
+
+/** input type for inserting object relation for remote table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Obj_Rel_Insert_Input = {
+  data: Imaging_Clinic_Mount_Template_Insert_Input;
+  /** upsert condition */
+  on_conflict?: InputMaybe<Imaging_Clinic_Mount_Template_On_Conflict>;
+};
+
+/** on_conflict condition type for table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_On_Conflict = {
+  constraint: Imaging_Clinic_Mount_Template_Constraint;
+  update_columns?: Array<Imaging_Clinic_Mount_Template_Update_Column>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+};
+
+/** Ordering options when selecting data from "imaging_clinic_mount_template". */
+export type Imaging_Clinic_Mount_Template_Order_By = {
+  clinic?: InputMaybe<Clinic_Order_By>;
+  clinic_id?: InputMaybe<Order_By>;
+  created_at?: InputMaybe<Order_By>;
+  created_by?: InputMaybe<Order_By>;
+  default_slot_transformations?: InputMaybe<Order_By>;
+  description?: InputMaybe<Order_By>;
+  id?: InputMaybe<Order_By>;
+  is_active?: InputMaybe<Order_By>;
+  layout_config?: InputMaybe<Order_By>;
+  name?: InputMaybe<Order_By>;
+  slot_capture_order?: InputMaybe<Order_By>;
+  slot_definitions?: InputMaybe<Order_By>;
+  updated_at?: InputMaybe<Order_By>;
+  updated_by?: InputMaybe<Order_By>;
+};
+
+/** primary key columns input for table: imaging_clinic_mount_template */
+export type Imaging_Clinic_Mount_Template_Pk_Columns_Input = {
+  id: Scalars['bigint']['input'];
+};
+
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Clinic_Mount_Template_Prepend_Input = {
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
+/** select columns of table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Select_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'default_slot_transformations'
+  /** column name */
+  | 'description'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'layout_config'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'slot_capture_order'
+  /** column name */
+  | 'slot_definitions'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+/** input type for updating data in table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Set_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate stddev on columns */
+export type Imaging_Clinic_Mount_Template_Stddev_Fields = {
+  __typename?: 'imaging_clinic_mount_template_stddev_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_pop on columns */
+export type Imaging_Clinic_Mount_Template_Stddev_Pop_Fields = {
+  __typename?: 'imaging_clinic_mount_template_stddev_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate stddev_samp on columns */
+export type Imaging_Clinic_Mount_Template_Stddev_Samp_Fields = {
+  __typename?: 'imaging_clinic_mount_template_stddev_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** Streaming cursor of the table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Stream_Cursor_Input = {
+  /** Stream column input with initial value */
+  initial_value: Imaging_Clinic_Mount_Template_Stream_Cursor_Value_Input;
+  /** cursor ordering */
+  ordering?: InputMaybe<Cursor_Ordering>;
+};
+
+/** Initial value of the column from where the streaming should start */
+export type Imaging_Clinic_Mount_Template_Stream_Cursor_Value_Input = {
+  clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  created_by?: InputMaybe<Scalars['uuid']['input']>;
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['bigint']['input']>;
+  is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
+  slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
+  updated_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  updated_by?: InputMaybe<Scalars['uuid']['input']>;
+};
+
+/** aggregate sum on columns */
+export type Imaging_Clinic_Mount_Template_Sum_Fields = {
+  __typename?: 'imaging_clinic_mount_template_sum_fields';
+  clinic_id?: Maybe<Scalars['bigint']['output']>;
+  id?: Maybe<Scalars['bigint']['output']>;
+};
+
+/** update columns of table "imaging_clinic_mount_template" */
+export type Imaging_Clinic_Mount_Template_Update_Column =
+  /** column name */
+  | 'clinic_id'
+  /** column name */
+  | 'created_at'
+  /** column name */
+  | 'created_by'
+  /** column name */
+  | 'default_slot_transformations'
+  /** column name */
+  | 'description'
+  /** column name */
+  | 'id'
+  /** column name */
+  | 'is_active'
+  /** column name */
+  | 'layout_config'
+  /** column name */
+  | 'name'
+  /** column name */
+  | 'slot_capture_order'
+  /** column name */
+  | 'slot_definitions'
+  /** column name */
+  | 'updated_at'
+  /** column name */
+  | 'updated_by';
+
+export type Imaging_Clinic_Mount_Template_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Imaging_Clinic_Mount_Template_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_Key_Input>;
+  /** increments the numeric columns with given value of the filtered values */
+  _inc?: InputMaybe<Imaging_Clinic_Mount_Template_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Imaging_Clinic_Mount_Template_Prepend_Input>;
+  /** sets the columns of the filtered rows to the given values */
+  _set?: InputMaybe<Imaging_Clinic_Mount_Template_Set_Input>;
+  /** filter the rows which have to be updated */
+  where: Imaging_Clinic_Mount_Template_Bool_Exp;
+};
+
+/** aggregate var_pop on columns */
+export type Imaging_Clinic_Mount_Template_Var_Pop_Fields = {
+  __typename?: 'imaging_clinic_mount_template_var_pop_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate var_samp on columns */
+export type Imaging_Clinic_Mount_Template_Var_Samp_Fields = {
+  __typename?: 'imaging_clinic_mount_template_var_samp_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
+/** aggregate variance on columns */
+export type Imaging_Clinic_Mount_Template_Variance_Fields = {
+  __typename?: 'imaging_clinic_mount_template_variance_fields';
+  clinic_id?: Maybe<Scalars['Float']['output']>;
+  id?: Maybe<Scalars['Float']['output']>;
+};
+
 /** Mount instances for organizing imaging assets using predefined templates */
 export type Imaging_Mount = {
   __typename?: 'imaging_mount';
   clinic_id: Scalars['bigint']['output'];
+  /** An object relationship */
+  clinic_template?: Maybe<Imaging_Clinic_Mount_Template>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['bigint']['output']>;
   created_at: Scalars['timestamptz']['output'];
   created_by?: Maybe<Scalars['uuid']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -6064,9 +6901,9 @@ export type Imaging_Mount = {
   name?: Maybe<Scalars['String']['output']>;
   patient_id: Scalars['bigint']['output'];
   /** An object relationship */
-  template: Imaging_Mount_Template;
+  template?: Maybe<Imaging_Mount_Template>;
   /** Reference to the mount template defining the layout */
-  template_id: Scalars['bigint']['output'];
+  template_id?: Maybe<Scalars['bigint']['output']>;
   updated_at: Scalars['timestamptz']['output'];
   updated_by?: Maybe<Scalars['uuid']['output']>;
 };
@@ -6125,6 +6962,8 @@ export type Imaging_Mount_Aggregate_FieldsCountArgs = {
 export type Imaging_Mount_Avg_Fields = {
   __typename?: 'imaging_mount_avg_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -6137,6 +6976,8 @@ export type Imaging_Mount_Bool_Exp = {
   _not?: InputMaybe<Imaging_Mount_Bool_Exp>;
   _or?: InputMaybe<Array<Imaging_Mount_Bool_Exp>>;
   clinic_id?: InputMaybe<Bigint_Comparison_Exp>;
+  clinic_template?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+  clinic_template_id?: InputMaybe<Bigint_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
   created_by?: InputMaybe<Uuid_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
@@ -6160,6 +7001,8 @@ export type Imaging_Mount_Constraint =
 /** input type for incrementing numeric columns in table "imaging_mount" */
 export type Imaging_Mount_Inc_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: InputMaybe<Scalars['bigint']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   patient_id?: InputMaybe<Scalars['bigint']['input']>;
   /** Reference to the mount template defining the layout */
@@ -6169,6 +7012,9 @@ export type Imaging_Mount_Inc_Input = {
 /** input type for inserting data into table "imaging_mount" */
 export type Imaging_Mount_Insert_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  clinic_template?: InputMaybe<Imaging_Clinic_Mount_Template_Obj_Rel_Insert_Input>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -6189,6 +7035,8 @@ export type Imaging_Mount_Insert_Input = {
 export type Imaging_Mount_Max_Fields = {
   __typename?: 'imaging_mount_max_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['bigint']['output']>;
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -6206,6 +7054,8 @@ export type Imaging_Mount_Max_Fields = {
 export type Imaging_Mount_Min_Fields = {
   __typename?: 'imaging_mount_min_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['bigint']['output']>;
   created_at?: Maybe<Scalars['timestamptz']['output']>;
   created_by?: Maybe<Scalars['uuid']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -6245,6 +7095,8 @@ export type Imaging_Mount_On_Conflict = {
 /** Ordering options when selecting data from "imaging_mount". */
 export type Imaging_Mount_Order_By = {
   clinic_id?: InputMaybe<Order_By>;
+  clinic_template?: InputMaybe<Imaging_Clinic_Mount_Template_Order_By>;
+  clinic_template_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
   created_by?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
@@ -6269,6 +7121,8 @@ export type Imaging_Mount_Select_Column =
   /** column name */
   | 'clinic_id'
   /** column name */
+  | 'clinic_template_id'
+  /** column name */
   | 'created_at'
   /** column name */
   | 'created_by'
@@ -6292,6 +7146,8 @@ export type Imaging_Mount_Select_Column =
 /** input type for updating data in table "imaging_mount" */
 export type Imaging_Mount_Set_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -6309,6 +7165,8 @@ export type Imaging_Mount_Set_Input = {
 /** Junction table linking imaging assets to mount slots */
 export type Imaging_Mount_Slot = {
   __typename?: 'imaging_mount_slot';
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: Maybe<Scalars['jsonb']['output']>;
   /** An object relationship */
   asset: Imaging_Asset;
   /** Reference to the imaging asset assigned to this slot */
@@ -6324,6 +7182,12 @@ export type Imaging_Mount_Slot = {
   slot_id: Scalars['String']['output'];
   updated_at: Scalars['timestamptz']['output'];
   updated_by?: Maybe<Scalars['uuid']['output']>;
+};
+
+
+/** Junction table linking imaging assets to mount slots */
+export type Imaging_Mount_SlotAdjustmentsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** aggregated selection of "imaging_mount_slot" */
@@ -6398,6 +7262,12 @@ export type Imaging_Mount_Slot_Aggregate_Order_By = {
   variance?: InputMaybe<Imaging_Mount_Slot_Variance_Order_By>;
 };
 
+/** append existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Mount_Slot_Append_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
 /** input type for inserting array relation for remote table "imaging_mount_slot" */
 export type Imaging_Mount_Slot_Arr_Rel_Insert_Input = {
   data: Array<Imaging_Mount_Slot_Insert_Input>;
@@ -6427,6 +7297,7 @@ export type Imaging_Mount_Slot_Bool_Exp = {
   _and?: InputMaybe<Array<Imaging_Mount_Slot_Bool_Exp>>;
   _not?: InputMaybe<Imaging_Mount_Slot_Bool_Exp>;
   _or?: InputMaybe<Array<Imaging_Mount_Slot_Bool_Exp>>;
+  adjustments?: InputMaybe<Jsonb_Comparison_Exp>;
   asset?: InputMaybe<Imaging_Asset_Bool_Exp>;
   asset_id?: InputMaybe<Bigint_Comparison_Exp>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
@@ -6447,6 +7318,24 @@ export type Imaging_Mount_Slot_Constraint =
   /** unique or primary key constraint on columns "id" */
   | 'imaging_mount_slot_pkey';
 
+/** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+export type Imaging_Mount_Slot_Delete_At_Path_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+/** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+export type Imaging_Mount_Slot_Delete_Elem_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/** delete key/value pair or string element. key/value pairs are matched based on their key value */
+export type Imaging_Mount_Slot_Delete_Key_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['String']['input']>;
+};
+
 /** input type for incrementing numeric columns in table "imaging_mount_slot" */
 export type Imaging_Mount_Slot_Inc_Input = {
   /** Reference to the imaging asset assigned to this slot */
@@ -6457,6 +7346,8 @@ export type Imaging_Mount_Slot_Inc_Input = {
 
 /** input type for inserting data into table "imaging_mount_slot" */
 export type Imaging_Mount_Slot_Insert_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['jsonb']['input']>;
   asset?: InputMaybe<Imaging_Asset_Obj_Rel_Insert_Input>;
   /** Reference to the imaging asset assigned to this slot */
   asset_id?: InputMaybe<Scalars['bigint']['input']>;
@@ -6548,6 +7439,7 @@ export type Imaging_Mount_Slot_On_Conflict = {
 
 /** Ordering options when selecting data from "imaging_mount_slot". */
 export type Imaging_Mount_Slot_Order_By = {
+  adjustments?: InputMaybe<Order_By>;
   asset?: InputMaybe<Imaging_Asset_Order_By>;
   asset_id?: InputMaybe<Order_By>;
   created_at?: InputMaybe<Order_By>;
@@ -6566,8 +7458,16 @@ export type Imaging_Mount_Slot_Pk_Columns_Input = {
   id: Scalars['bigint']['input'];
 };
 
+/** prepend existing jsonb value of filtered columns with new jsonb value */
+export type Imaging_Mount_Slot_Prepend_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['jsonb']['input']>;
+};
+
 /** select columns of table "imaging_mount_slot" */
 export type Imaging_Mount_Slot_Select_Column =
+  /** column name */
+  | 'adjustments'
   /** column name */
   | 'asset_id'
   /** column name */
@@ -6599,6 +7499,8 @@ export type Imaging_Mount_Slot_Select_Column_Imaging_Mount_Slot_Aggregate_Bool_E
 
 /** input type for updating data in table "imaging_mount_slot" */
 export type Imaging_Mount_Slot_Set_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['jsonb']['input']>;
   /** Reference to the imaging asset assigned to this slot */
   asset_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -6673,6 +7575,8 @@ export type Imaging_Mount_Slot_Stream_Cursor_Input = {
 
 /** Initial value of the column from where the streaming should start */
 export type Imaging_Mount_Slot_Stream_Cursor_Value_Input = {
+  /** Optional per-slot display adjustments (same shape as display_adjustments). Overrides template defaults when rendering this slot. */
+  adjustments?: InputMaybe<Scalars['jsonb']['input']>;
   /** Reference to the imaging asset assigned to this slot */
   asset_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
@@ -6706,6 +7610,8 @@ export type Imaging_Mount_Slot_Sum_Order_By = {
 /** update columns of table "imaging_mount_slot" */
 export type Imaging_Mount_Slot_Update_Column =
   /** column name */
+  | 'adjustments'
+  /** column name */
   | 'asset_id'
   /** column name */
   | 'created_at'
@@ -6725,8 +7631,18 @@ export type Imaging_Mount_Slot_Update_Column =
   | 'updated_by';
 
 export type Imaging_Mount_Slot_Updates = {
+  /** append existing jsonb value of filtered columns with new jsonb value */
+  _append?: InputMaybe<Imaging_Mount_Slot_Append_Input>;
+  /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
+  _delete_at_path?: InputMaybe<Imaging_Mount_Slot_Delete_At_Path_Input>;
+  /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
+  _delete_elem?: InputMaybe<Imaging_Mount_Slot_Delete_Elem_Input>;
+  /** delete key/value pair or string element. key/value pairs are matched based on their key value */
+  _delete_key?: InputMaybe<Imaging_Mount_Slot_Delete_Key_Input>;
   /** increments the numeric columns with given value of the filtered values */
   _inc?: InputMaybe<Imaging_Mount_Slot_Inc_Input>;
+  /** prepend existing jsonb value of filtered columns with new jsonb value */
+  _prepend?: InputMaybe<Imaging_Mount_Slot_Prepend_Input>;
   /** sets the columns of the filtered rows to the given values */
   _set?: InputMaybe<Imaging_Mount_Slot_Set_Input>;
   /** filter the rows which have to be updated */
@@ -6788,6 +7704,8 @@ export type Imaging_Mount_Slot_Variance_Order_By = {
 export type Imaging_Mount_Stddev_Fields = {
   __typename?: 'imaging_mount_stddev_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -6798,6 +7716,8 @@ export type Imaging_Mount_Stddev_Fields = {
 export type Imaging_Mount_Stddev_Pop_Fields = {
   __typename?: 'imaging_mount_stddev_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -6808,6 +7728,8 @@ export type Imaging_Mount_Stddev_Pop_Fields = {
 export type Imaging_Mount_Stddev_Samp_Fields = {
   __typename?: 'imaging_mount_stddev_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -6825,6 +7747,8 @@ export type Imaging_Mount_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type Imaging_Mount_Stream_Cursor_Value_Input = {
   clinic_id?: InputMaybe<Scalars['bigint']['input']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: InputMaybe<Scalars['bigint']['input']>;
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
   created_by?: InputMaybe<Scalars['uuid']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -6843,6 +7767,8 @@ export type Imaging_Mount_Stream_Cursor_Value_Input = {
 export type Imaging_Mount_Sum_Fields = {
   __typename?: 'imaging_mount_sum_fields';
   clinic_id?: Maybe<Scalars['bigint']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['bigint']['output']>;
   id?: Maybe<Scalars['bigint']['output']>;
   patient_id?: Maybe<Scalars['bigint']['output']>;
   /** Reference to the mount template defining the layout */
@@ -6853,12 +7779,16 @@ export type Imaging_Mount_Sum_Fields = {
 export type Imaging_Mount_Template = {
   __typename?: 'imaging_mount_template';
   created_at: Scalars['timestamptz']['output'];
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: Maybe<Scalars['jsonb']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['bigint']['output'];
   is_active: Scalars['Boolean']['output'];
   /** Template-specific layout metadata for rendering */
   layout_config?: Maybe<Scalars['jsonb']['output']>;
   name: Scalars['String']['output'];
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: Maybe<Scalars['jsonb']['output']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions: Scalars['jsonb']['output'];
   /** Unique identifier for the template (e.g., "single", "two_horizontal") */
@@ -6867,7 +7797,19 @@ export type Imaging_Mount_Template = {
 
 
 /** Predefined mount templates for organizing imaging assets */
+export type Imaging_Mount_TemplateDefault_Slot_TransformationsArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Predefined mount templates for organizing imaging assets */
 export type Imaging_Mount_TemplateLayout_ConfigArgs = {
+  path?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/** Predefined mount templates for organizing imaging assets */
+export type Imaging_Mount_TemplateSlot_Capture_OrderArgs = {
   path?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -6909,8 +7851,12 @@ export type Imaging_Mount_Template_Aggregate_FieldsCountArgs = {
 
 /** append existing jsonb value of filtered columns with new jsonb value */
 export type Imaging_Mount_Template_Append_Input = {
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
 };
@@ -6927,11 +7873,13 @@ export type Imaging_Mount_Template_Bool_Exp = {
   _not?: InputMaybe<Imaging_Mount_Template_Bool_Exp>;
   _or?: InputMaybe<Array<Imaging_Mount_Template_Bool_Exp>>;
   created_at?: InputMaybe<Timestamptz_Comparison_Exp>;
+  default_slot_transformations?: InputMaybe<Jsonb_Comparison_Exp>;
   description?: InputMaybe<String_Comparison_Exp>;
   id?: InputMaybe<Bigint_Comparison_Exp>;
   is_active?: InputMaybe<Boolean_Comparison_Exp>;
   layout_config?: InputMaybe<Jsonb_Comparison_Exp>;
   name?: InputMaybe<String_Comparison_Exp>;
+  slot_capture_order?: InputMaybe<Jsonb_Comparison_Exp>;
   slot_definitions?: InputMaybe<Jsonb_Comparison_Exp>;
   template_key?: InputMaybe<String_Comparison_Exp>;
 };
@@ -6945,24 +7893,36 @@ export type Imaging_Mount_Template_Constraint =
 
 /** delete the field or element with specified path (for JSON arrays, negative integers count from the end) */
 export type Imaging_Mount_Template_Delete_At_Path_Input = {
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Array<Scalars['String']['input']>>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 /** delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array */
 export type Imaging_Mount_Template_Delete_Elem_Input = {
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['Int']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['Int']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['Int']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** delete key/value pair or string element. key/value pairs are matched based on their key value */
 export type Imaging_Mount_Template_Delete_Key_Input = {
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['String']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['String']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['String']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['String']['input']>;
 };
@@ -6975,12 +7935,16 @@ export type Imaging_Mount_Template_Inc_Input = {
 /** input type for inserting data into table "imaging_mount_template" */
 export type Imaging_Mount_Template_Insert_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['jsonb']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
   /** Unique identifier for the template (e.g., "single", "two_horizontal") */
@@ -7035,11 +7999,13 @@ export type Imaging_Mount_Template_On_Conflict = {
 /** Ordering options when selecting data from "imaging_mount_template". */
 export type Imaging_Mount_Template_Order_By = {
   created_at?: InputMaybe<Order_By>;
+  default_slot_transformations?: InputMaybe<Order_By>;
   description?: InputMaybe<Order_By>;
   id?: InputMaybe<Order_By>;
   is_active?: InputMaybe<Order_By>;
   layout_config?: InputMaybe<Order_By>;
   name?: InputMaybe<Order_By>;
+  slot_capture_order?: InputMaybe<Order_By>;
   slot_definitions?: InputMaybe<Order_By>;
   template_key?: InputMaybe<Order_By>;
 };
@@ -7051,8 +8017,12 @@ export type Imaging_Mount_Template_Pk_Columns_Input = {
 
 /** prepend existing jsonb value of filtered columns with new jsonb value */
 export type Imaging_Mount_Template_Prepend_Input = {
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['jsonb']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
 };
@@ -7061,6 +8031,8 @@ export type Imaging_Mount_Template_Prepend_Input = {
 export type Imaging_Mount_Template_Select_Column =
   /** column name */
   | 'created_at'
+  /** column name */
+  | 'default_slot_transformations'
   /** column name */
   | 'description'
   /** column name */
@@ -7072,6 +8044,8 @@ export type Imaging_Mount_Template_Select_Column =
   /** column name */
   | 'name'
   /** column name */
+  | 'slot_capture_order'
+  /** column name */
   | 'slot_definitions'
   /** column name */
   | 'template_key';
@@ -7079,12 +8053,16 @@ export type Imaging_Mount_Template_Select_Column =
 /** input type for updating data in table "imaging_mount_template" */
 export type Imaging_Mount_Template_Set_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['jsonb']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
   /** Unique identifier for the template (e.g., "single", "two_horizontal") */
@@ -7120,12 +8098,16 @@ export type Imaging_Mount_Template_Stream_Cursor_Input = {
 /** Initial value of the column from where the streaming should start */
 export type Imaging_Mount_Template_Stream_Cursor_Value_Input = {
   created_at?: InputMaybe<Scalars['timestamptz']['input']>;
+  /** Per-slot default transform: {"slot_1":{"rotate":90,"flip_h":false,"flip_v":false},...} */
+  default_slot_transformations?: InputMaybe<Scalars['jsonb']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   id?: InputMaybe<Scalars['bigint']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   /** Template-specific layout metadata for rendering */
   layout_config?: InputMaybe<Scalars['jsonb']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  /** Array of slot_id in order for assigning new captures (e.g. ["slot_1","slot_2"]) */
+  slot_capture_order?: InputMaybe<Scalars['jsonb']['input']>;
   /** JSONB array of slot definitions: [{"slot_id": "slot_1", "label": "Position 1", "row": 0, "col": 0}, ...] */
   slot_definitions?: InputMaybe<Scalars['jsonb']['input']>;
   /** Unique identifier for the template (e.g., "single", "two_horizontal") */
@@ -7143,6 +8125,8 @@ export type Imaging_Mount_Template_Update_Column =
   /** column name */
   | 'created_at'
   /** column name */
+  | 'default_slot_transformations'
+  /** column name */
   | 'description'
   /** column name */
   | 'id'
@@ -7152,6 +8136,8 @@ export type Imaging_Mount_Template_Update_Column =
   | 'layout_config'
   /** column name */
   | 'name'
+  /** column name */
+  | 'slot_capture_order'
   /** column name */
   | 'slot_definitions'
   /** column name */
@@ -7199,6 +8185,8 @@ export type Imaging_Mount_Update_Column =
   /** column name */
   | 'clinic_id'
   /** column name */
+  | 'clinic_template_id'
+  /** column name */
   | 'created_at'
   /** column name */
   | 'created_by'
@@ -7232,6 +8220,8 @@ export type Imaging_Mount_Updates = {
 export type Imaging_Mount_Var_Pop_Fields = {
   __typename?: 'imaging_mount_var_pop_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -7242,6 +8232,8 @@ export type Imaging_Mount_Var_Pop_Fields = {
 export type Imaging_Mount_Var_Samp_Fields = {
   __typename?: 'imaging_mount_var_samp_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -7252,6 +8244,8 @@ export type Imaging_Mount_Var_Samp_Fields = {
 export type Imaging_Mount_Variance_Fields = {
   __typename?: 'imaging_mount_variance_fields';
   clinic_id?: Maybe<Scalars['Float']['output']>;
+  /** When set, mount uses this clinic template; otherwise template_id (system template) */
+  clinic_template_id?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['Float']['output']>;
   patient_id?: Maybe<Scalars['Float']['output']>;
   /** Reference to the mount template defining the layout */
@@ -8027,6 +9021,14 @@ export type Mutation_Root = {
   delete_imaging_asset?: Maybe<Imaging_Asset_Mutation_Response>;
   /** delete single row from the table: "imaging_asset" */
   delete_imaging_asset_by_pk?: Maybe<Imaging_Asset>;
+  /** delete data from the table: "imaging_clinic_mount_settings" */
+  delete_imaging_clinic_mount_settings?: Maybe<Imaging_Clinic_Mount_Settings_Mutation_Response>;
+  /** delete single row from the table: "imaging_clinic_mount_settings" */
+  delete_imaging_clinic_mount_settings_by_pk?: Maybe<Imaging_Clinic_Mount_Settings>;
+  /** delete data from the table: "imaging_clinic_mount_template" */
+  delete_imaging_clinic_mount_template?: Maybe<Imaging_Clinic_Mount_Template_Mutation_Response>;
+  /** delete single row from the table: "imaging_clinic_mount_template" */
+  delete_imaging_clinic_mount_template_by_pk?: Maybe<Imaging_Clinic_Mount_Template>;
   /** delete data from the table: "imaging_mount" */
   delete_imaging_mount?: Maybe<Imaging_Mount_Mutation_Response>;
   /** delete single row from the table: "imaging_mount" */
@@ -8183,6 +9185,14 @@ export type Mutation_Root = {
   insert_imaging_asset?: Maybe<Imaging_Asset_Mutation_Response>;
   /** insert a single row into the table: "imaging_asset" */
   insert_imaging_asset_one?: Maybe<Imaging_Asset>;
+  /** insert data into the table: "imaging_clinic_mount_settings" */
+  insert_imaging_clinic_mount_settings?: Maybe<Imaging_Clinic_Mount_Settings_Mutation_Response>;
+  /** insert a single row into the table: "imaging_clinic_mount_settings" */
+  insert_imaging_clinic_mount_settings_one?: Maybe<Imaging_Clinic_Mount_Settings>;
+  /** insert data into the table: "imaging_clinic_mount_template" */
+  insert_imaging_clinic_mount_template?: Maybe<Imaging_Clinic_Mount_Template_Mutation_Response>;
+  /** insert a single row into the table: "imaging_clinic_mount_template" */
+  insert_imaging_clinic_mount_template_one?: Maybe<Imaging_Clinic_Mount_Template>;
   /** insert data into the table: "imaging_mount" */
   insert_imaging_mount?: Maybe<Imaging_Mount_Mutation_Response>;
   /** insert a single row into the table: "imaging_mount" */
@@ -8373,6 +9383,18 @@ export type Mutation_Root = {
   update_imaging_asset_by_pk?: Maybe<Imaging_Asset>;
   /** update multiples rows of table: "imaging_asset" */
   update_imaging_asset_many?: Maybe<Array<Maybe<Imaging_Asset_Mutation_Response>>>;
+  /** update data of the table: "imaging_clinic_mount_settings" */
+  update_imaging_clinic_mount_settings?: Maybe<Imaging_Clinic_Mount_Settings_Mutation_Response>;
+  /** update single row of the table: "imaging_clinic_mount_settings" */
+  update_imaging_clinic_mount_settings_by_pk?: Maybe<Imaging_Clinic_Mount_Settings>;
+  /** update multiples rows of table: "imaging_clinic_mount_settings" */
+  update_imaging_clinic_mount_settings_many?: Maybe<Array<Maybe<Imaging_Clinic_Mount_Settings_Mutation_Response>>>;
+  /** update data of the table: "imaging_clinic_mount_template" */
+  update_imaging_clinic_mount_template?: Maybe<Imaging_Clinic_Mount_Template_Mutation_Response>;
+  /** update single row of the table: "imaging_clinic_mount_template" */
+  update_imaging_clinic_mount_template_by_pk?: Maybe<Imaging_Clinic_Mount_Template>;
+  /** update multiples rows of table: "imaging_clinic_mount_template" */
+  update_imaging_clinic_mount_template_many?: Maybe<Array<Maybe<Imaging_Clinic_Mount_Template_Mutation_Response>>>;
   /** update data of the table: "imaging_mount" */
   update_imaging_mount?: Maybe<Imaging_Mount_Mutation_Response>;
   /** update single row of the table: "imaging_mount" */
@@ -8689,6 +9711,30 @@ export type Mutation_RootDelete_Imaging_AssetArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_Imaging_Asset_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Clinic_Mount_SettingsArgs = {
+  where: Imaging_Clinic_Mount_Settings_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Clinic_Mount_Settings_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Clinic_Mount_TemplateArgs = {
+  where: Imaging_Clinic_Mount_Template_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootDelete_Imaging_Clinic_Mount_Template_By_PkArgs = {
   id: Scalars['bigint']['input'];
 };
 
@@ -9185,6 +10231,34 @@ export type Mutation_RootInsert_Imaging_AssetArgs = {
 export type Mutation_RootInsert_Imaging_Asset_OneArgs = {
   object: Imaging_Asset_Insert_Input;
   on_conflict?: InputMaybe<Imaging_Asset_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Clinic_Mount_SettingsArgs = {
+  objects: Array<Imaging_Clinic_Mount_Settings_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Clinic_Mount_Settings_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Clinic_Mount_Settings_OneArgs = {
+  object: Imaging_Clinic_Mount_Settings_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Clinic_Mount_Settings_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Clinic_Mount_TemplateArgs = {
+  objects: Array<Imaging_Clinic_Mount_Template_Insert_Input>;
+  on_conflict?: InputMaybe<Imaging_Clinic_Mount_Template_On_Conflict>;
+};
+
+
+/** mutation root */
+export type Mutation_RootInsert_Imaging_Clinic_Mount_Template_OneArgs = {
+  object: Imaging_Clinic_Mount_Template_Insert_Input;
+  on_conflict?: InputMaybe<Imaging_Clinic_Mount_Template_On_Conflict>;
 };
 
 
@@ -9840,7 +10914,12 @@ export type Mutation_RootUpdate_Household_Relationship_Enum_ManyArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_Imaging_AssetArgs = {
+  _append?: InputMaybe<Imaging_Asset_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Asset_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Asset_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Asset_Delete_Key_Input>;
   _inc?: InputMaybe<Imaging_Asset_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Asset_Prepend_Input>;
   _set?: InputMaybe<Imaging_Asset_Set_Input>;
   where: Imaging_Asset_Bool_Exp;
 };
@@ -9848,7 +10927,12 @@ export type Mutation_RootUpdate_Imaging_AssetArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_Imaging_Asset_By_PkArgs = {
+  _append?: InputMaybe<Imaging_Asset_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Asset_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Asset_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Asset_Delete_Key_Input>;
   _inc?: InputMaybe<Imaging_Asset_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Asset_Prepend_Input>;
   _set?: InputMaybe<Imaging_Asset_Set_Input>;
   pk_columns: Imaging_Asset_Pk_Columns_Input;
 };
@@ -9857,6 +10941,70 @@ export type Mutation_RootUpdate_Imaging_Asset_By_PkArgs = {
 /** mutation root */
 export type Mutation_RootUpdate_Imaging_Asset_ManyArgs = {
   updates: Array<Imaging_Asset_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Clinic_Mount_SettingsArgs = {
+  _append?: InputMaybe<Imaging_Clinic_Mount_Settings_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_Key_Input>;
+  _inc?: InputMaybe<Imaging_Clinic_Mount_Settings_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Clinic_Mount_Settings_Prepend_Input>;
+  _set?: InputMaybe<Imaging_Clinic_Mount_Settings_Set_Input>;
+  where: Imaging_Clinic_Mount_Settings_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Clinic_Mount_Settings_By_PkArgs = {
+  _append?: InputMaybe<Imaging_Clinic_Mount_Settings_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Clinic_Mount_Settings_Delete_Key_Input>;
+  _inc?: InputMaybe<Imaging_Clinic_Mount_Settings_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Clinic_Mount_Settings_Prepend_Input>;
+  _set?: InputMaybe<Imaging_Clinic_Mount_Settings_Set_Input>;
+  pk_columns: Imaging_Clinic_Mount_Settings_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Clinic_Mount_Settings_ManyArgs = {
+  updates: Array<Imaging_Clinic_Mount_Settings_Updates>;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Clinic_Mount_TemplateArgs = {
+  _append?: InputMaybe<Imaging_Clinic_Mount_Template_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_Key_Input>;
+  _inc?: InputMaybe<Imaging_Clinic_Mount_Template_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Clinic_Mount_Template_Prepend_Input>;
+  _set?: InputMaybe<Imaging_Clinic_Mount_Template_Set_Input>;
+  where: Imaging_Clinic_Mount_Template_Bool_Exp;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Clinic_Mount_Template_By_PkArgs = {
+  _append?: InputMaybe<Imaging_Clinic_Mount_Template_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Clinic_Mount_Template_Delete_Key_Input>;
+  _inc?: InputMaybe<Imaging_Clinic_Mount_Template_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Clinic_Mount_Template_Prepend_Input>;
+  _set?: InputMaybe<Imaging_Clinic_Mount_Template_Set_Input>;
+  pk_columns: Imaging_Clinic_Mount_Template_Pk_Columns_Input;
+};
+
+
+/** mutation root */
+export type Mutation_RootUpdate_Imaging_Clinic_Mount_Template_ManyArgs = {
+  updates: Array<Imaging_Clinic_Mount_Template_Updates>;
 };
 
 
@@ -9884,7 +11032,12 @@ export type Mutation_RootUpdate_Imaging_Mount_ManyArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_Imaging_Mount_SlotArgs = {
+  _append?: InputMaybe<Imaging_Mount_Slot_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Mount_Slot_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Mount_Slot_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Mount_Slot_Delete_Key_Input>;
   _inc?: InputMaybe<Imaging_Mount_Slot_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Mount_Slot_Prepend_Input>;
   _set?: InputMaybe<Imaging_Mount_Slot_Set_Input>;
   where: Imaging_Mount_Slot_Bool_Exp;
 };
@@ -9892,7 +11045,12 @@ export type Mutation_RootUpdate_Imaging_Mount_SlotArgs = {
 
 /** mutation root */
 export type Mutation_RootUpdate_Imaging_Mount_Slot_By_PkArgs = {
+  _append?: InputMaybe<Imaging_Mount_Slot_Append_Input>;
+  _delete_at_path?: InputMaybe<Imaging_Mount_Slot_Delete_At_Path_Input>;
+  _delete_elem?: InputMaybe<Imaging_Mount_Slot_Delete_Elem_Input>;
+  _delete_key?: InputMaybe<Imaging_Mount_Slot_Delete_Key_Input>;
   _inc?: InputMaybe<Imaging_Mount_Slot_Inc_Input>;
+  _prepend?: InputMaybe<Imaging_Mount_Slot_Prepend_Input>;
   _set?: InputMaybe<Imaging_Mount_Slot_Set_Input>;
   pk_columns: Imaging_Mount_Slot_Pk_Columns_Input;
 };
@@ -14660,6 +15818,18 @@ export type Query_Root = {
   imaging_asset_aggregate: Imaging_Asset_Aggregate;
   /** fetch data from the table: "imaging_asset" using primary key columns */
   imaging_asset_by_pk?: Maybe<Imaging_Asset>;
+  /** fetch data from the table: "imaging_clinic_mount_settings" */
+  imaging_clinic_mount_settings: Array<Imaging_Clinic_Mount_Settings>;
+  /** fetch aggregated fields from the table: "imaging_clinic_mount_settings" */
+  imaging_clinic_mount_settings_aggregate: Imaging_Clinic_Mount_Settings_Aggregate;
+  /** fetch data from the table: "imaging_clinic_mount_settings" using primary key columns */
+  imaging_clinic_mount_settings_by_pk?: Maybe<Imaging_Clinic_Mount_Settings>;
+  /** fetch data from the table: "imaging_clinic_mount_template" */
+  imaging_clinic_mount_template: Array<Imaging_Clinic_Mount_Template>;
+  /** fetch aggregated fields from the table: "imaging_clinic_mount_template" */
+  imaging_clinic_mount_template_aggregate: Imaging_Clinic_Mount_Template_Aggregate;
+  /** fetch data from the table: "imaging_clinic_mount_template" using primary key columns */
+  imaging_clinic_mount_template_by_pk?: Maybe<Imaging_Clinic_Mount_Template>;
   /** fetch data from the table: "imaging_mount" */
   imaging_mount: Array<Imaging_Mount>;
   /** fetch aggregated fields from the table: "imaging_mount" */
@@ -15261,6 +16431,52 @@ export type Query_RootImaging_Asset_AggregateArgs = {
 
 
 export type Query_RootImaging_Asset_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootImaging_Clinic_Mount_SettingsArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Clinic_Mount_Settings_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Clinic_Mount_Settings_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Query_RootImaging_Clinic_Mount_TemplateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Clinic_Mount_Template_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+};
+
+
+export type Query_RootImaging_Clinic_Mount_Template_By_PkArgs = {
   id: Scalars['bigint']['input'];
 };
 
@@ -17349,6 +18565,22 @@ export type Subscription_Root = {
   imaging_asset_by_pk?: Maybe<Imaging_Asset>;
   /** fetch data from the table in a streaming manner: "imaging_asset" */
   imaging_asset_stream: Array<Imaging_Asset>;
+  /** fetch data from the table: "imaging_clinic_mount_settings" */
+  imaging_clinic_mount_settings: Array<Imaging_Clinic_Mount_Settings>;
+  /** fetch aggregated fields from the table: "imaging_clinic_mount_settings" */
+  imaging_clinic_mount_settings_aggregate: Imaging_Clinic_Mount_Settings_Aggregate;
+  /** fetch data from the table: "imaging_clinic_mount_settings" using primary key columns */
+  imaging_clinic_mount_settings_by_pk?: Maybe<Imaging_Clinic_Mount_Settings>;
+  /** fetch data from the table in a streaming manner: "imaging_clinic_mount_settings" */
+  imaging_clinic_mount_settings_stream: Array<Imaging_Clinic_Mount_Settings>;
+  /** fetch data from the table: "imaging_clinic_mount_template" */
+  imaging_clinic_mount_template: Array<Imaging_Clinic_Mount_Template>;
+  /** fetch aggregated fields from the table: "imaging_clinic_mount_template" */
+  imaging_clinic_mount_template_aggregate: Imaging_Clinic_Mount_Template_Aggregate;
+  /** fetch data from the table: "imaging_clinic_mount_template" using primary key columns */
+  imaging_clinic_mount_template_by_pk?: Maybe<Imaging_Clinic_Mount_Template>;
+  /** fetch data from the table in a streaming manner: "imaging_clinic_mount_template" */
+  imaging_clinic_mount_template_stream: Array<Imaging_Clinic_Mount_Template>;
   /** fetch data from the table: "imaging_mount" */
   imaging_mount: Array<Imaging_Mount>;
   /** fetch aggregated fields from the table: "imaging_mount" */
@@ -18148,6 +19380,66 @@ export type Subscription_RootImaging_Asset_StreamArgs = {
   batch_size: Scalars['Int']['input'];
   cursor: Array<InputMaybe<Imaging_Asset_Stream_Cursor_Input>>;
   where?: InputMaybe<Imaging_Asset_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_SettingsArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_Settings_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Settings_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_Settings_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_Settings_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Clinic_Mount_Settings_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Settings_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_TemplateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_Template_AggregateArgs = {
+  distinct_on?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Select_Column>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  order_by?: InputMaybe<Array<Imaging_Clinic_Mount_Template_Order_By>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_Template_By_PkArgs = {
+  id: Scalars['bigint']['input'];
+};
+
+
+export type Subscription_RootImaging_Clinic_Mount_Template_StreamArgs = {
+  batch_size: Scalars['Int']['input'];
+  cursor: Array<InputMaybe<Imaging_Clinic_Mount_Template_Stream_Cursor_Input>>;
+  where?: InputMaybe<Imaging_Clinic_Mount_Template_Bool_Exp>;
 };
 
 
@@ -19909,6 +21201,93 @@ export type SearchHouseholdHeadsQueryVariables = Exact<{
 
 export type SearchHouseholdHeadsQuery = { __typename?: 'query_root', fn_search_household_heads: Array<{ __typename?: 'search_household_heads_result', person_id: number, clinic_id: number, display_name: string, first_name: string, last_name: string, preferred_name?: string | null, household_head_id?: number | null, rank_score: any }> };
 
+export type SubscribeImagingAssetsForPatientSubscriptionVariables = Exact<{
+  patientId: Scalars['bigint']['input'];
+  clinicId: Scalars['bigint']['input'];
+}>;
+
+
+export type SubscribeImagingAssetsForPatientSubscription = { __typename?: 'subscription_root', imaging_asset: Array<{ __typename?: 'imaging_asset', id: number, clinic_id: number, patient_id: number, study_id?: number | null, modality: string, mime_type: string, size_bytes: number, captured_at: string, source_device?: string | null, storage_key: string, thumb_key?: string | null, web_key?: string | null, name?: string | null, image_source?: any | null }> };
+
+export type GetSystemMountTemplatesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSystemMountTemplatesQuery = { __typename?: 'query_root', imaging_mount_template: Array<{ __typename?: 'imaging_mount_template', id: number, template_key: string, name: string, description?: string | null, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null, is_active: boolean }> };
+
+export type GetClinicMountTemplatesQueryVariables = Exact<{
+  clinicId: Scalars['bigint']['input'];
+}>;
+
+
+export type GetClinicMountTemplatesQuery = { __typename?: 'query_root', imaging_clinic_mount_template: Array<{ __typename?: 'imaging_clinic_mount_template', id: number, clinic_id: number, name: string, description?: string | null, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null, is_active: boolean }> };
+
+export type GetMountsByPatientQueryVariables = Exact<{
+  patientId: Scalars['bigint']['input'];
+  clinicId: Scalars['bigint']['input'];
+}>;
+
+
+export type GetMountsByPatientQuery = { __typename?: 'query_root', imaging_mount: Array<{ __typename?: 'imaging_mount', id: number, clinic_id: number, patient_id: number, template_id?: number | null, clinic_template_id?: number | null, name?: string | null, description?: string | null, created_at: string, is_active: boolean, template?: { __typename?: 'imaging_mount_template', id: number, template_key: string, name: string, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null } | null, clinic_template?: { __typename?: 'imaging_clinic_mount_template', id: number, name: string, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null } | null, mount_slots: Array<{ __typename?: 'imaging_mount_slot', id: number, mount_id: number, slot_id: string, asset_id: number, asset: { __typename?: 'imaging_asset', id: number, name?: string | null, captured_at: string, image_source?: any | null } }> }> };
+
+export type GetMountByIdQueryVariables = Exact<{
+  id: Scalars['bigint']['input'];
+}>;
+
+
+export type GetMountByIdQuery = { __typename?: 'query_root', imaging_mount_by_pk?: { __typename?: 'imaging_mount', id: number, clinic_id: number, patient_id: number, template_id?: number | null, clinic_template_id?: number | null, name?: string | null, description?: string | null, created_at: string, created_by?: string | null, updated_at: string, updated_by?: string | null, is_active: boolean, template?: { __typename?: 'imaging_mount_template', id: number, template_key: string, name: string, description?: string | null, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null } | null, clinic_template?: { __typename?: 'imaging_clinic_mount_template', id: number, name: string, description?: string | null, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null } | null, mount_slots: Array<{ __typename?: 'imaging_mount_slot', id: number, mount_id: number, slot_id: string, asset_id: number, asset: { __typename?: 'imaging_asset', id: number, name?: string | null, captured_at: string, image_source?: any | null } }> } | null };
+
+export type InsertImagingMountMutationVariables = Exact<{
+  object: Imaging_Mount_Insert_Input;
+}>;
+
+
+export type InsertImagingMountMutation = { __typename?: 'mutation_root', insert_imaging_mount_one?: { __typename?: 'imaging_mount', id: number, clinic_id: number, patient_id: number, template_id?: number | null, clinic_template_id?: number | null, name?: string | null, description?: string | null, created_at: string, is_active: boolean, template?: { __typename?: 'imaging_mount_template', id: number, template_key: string, name: string, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null } | null, clinic_template?: { __typename?: 'imaging_clinic_mount_template', id: number, name: string, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null } | null, mount_slots: Array<{ __typename?: 'imaging_mount_slot', id: number, mount_id: number, slot_id: string, asset_id: number }> } | null };
+
+export type UpdateImagingMountMutationVariables = Exact<{
+  id: Scalars['bigint']['input'];
+  updates: Imaging_Mount_Set_Input;
+}>;
+
+
+export type UpdateImagingMountMutation = { __typename?: 'mutation_root', update_imaging_mount_by_pk?: { __typename?: 'imaging_mount', id: number, name?: string | null, description?: string | null, updated_at: string } | null };
+
+export type DeleteImagingMountMutationVariables = Exact<{
+  id: Scalars['bigint']['input'];
+}>;
+
+
+export type DeleteImagingMountMutation = { __typename?: 'mutation_root', delete_imaging_mount_by_pk?: { __typename?: 'imaging_mount', id: number } | null };
+
+export type InsertImagingMountSlotMutationVariables = Exact<{
+  object: Imaging_Mount_Slot_Insert_Input;
+}>;
+
+
+export type InsertImagingMountSlotMutation = { __typename?: 'mutation_root', insert_imaging_mount_slot_one?: { __typename?: 'imaging_mount_slot', id: number, mount_id: number, slot_id: string, asset_id: number } | null };
+
+export type UpdateImagingMountSlotAssetMutationVariables = Exact<{
+  id: Scalars['bigint']['input'];
+  assetId?: InputMaybe<Scalars['bigint']['input']>;
+}>;
+
+
+export type UpdateImagingMountSlotAssetMutation = { __typename?: 'mutation_root', update_imaging_mount_slot_by_pk?: { __typename?: 'imaging_mount_slot', id: number, mount_id: number, slot_id: string, asset_id: number } | null };
+
+export type DeleteImagingMountSlotByMountAndSlotMutationVariables = Exact<{
+  mountId: Scalars['bigint']['input'];
+  slotId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteImagingMountSlotByMountAndSlotMutation = { __typename?: 'mutation_root', delete_imaging_mount_slot?: { __typename?: 'imaging_mount_slot_mutation_response', affected_rows: number } | null };
+
+export type InsertClinicMountTemplateMutationVariables = Exact<{
+  object: Imaging_Clinic_Mount_Template_Insert_Input;
+}>;
+
+
+export type InsertClinicMountTemplateMutation = { __typename?: 'mutation_root', insert_imaging_clinic_mount_template_one?: { __typename?: 'imaging_clinic_mount_template', id: number, clinic_id: number, name: string, description?: string | null, slot_definitions: any, layout_config?: any | null, slot_capture_order?: any | null, default_slot_transformations?: any | null, is_active: boolean } | null };
+
 export type GetOperatoriesQueryVariables = Exact<{
   clinicId: Scalars['bigint']['input'];
 }>;
@@ -21554,6 +22933,617 @@ export type SearchHouseholdHeadsQueryHookResult = ReturnType<typeof useSearchHou
 export type SearchHouseholdHeadsLazyQueryHookResult = ReturnType<typeof useSearchHouseholdHeadsLazyQuery>;
 export type SearchHouseholdHeadsSuspenseQueryHookResult = ReturnType<typeof useSearchHouseholdHeadsSuspenseQuery>;
 export type SearchHouseholdHeadsQueryResult = ApolloReactCommon.QueryResult<SearchHouseholdHeadsQuery, SearchHouseholdHeadsQueryVariables>;
+export const SubscribeImagingAssetsForPatientDocument = gql`
+    subscription SubscribeImagingAssetsForPatient($patientId: bigint!, $clinicId: bigint!) {
+  imaging_asset(
+    where: {patient_id: {_eq: $patientId}, clinic_id: {_eq: $clinicId}, is_active: {_eq: true}}
+    order_by: {captured_at: desc}
+    limit: 100
+  ) {
+    id
+    clinic_id
+    patient_id
+    study_id
+    modality
+    mime_type
+    size_bytes
+    captured_at
+    source_device
+    storage_key
+    thumb_key
+    web_key
+    name
+    image_source
+  }
+}
+    `;
+
+/**
+ * __useSubscribeImagingAssetsForPatientSubscription__
+ *
+ * To run a query within a React component, call `useSubscribeImagingAssetsForPatientSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useSubscribeImagingAssetsForPatientSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSubscribeImagingAssetsForPatientSubscription({
+ *   variables: {
+ *      patientId: // value for 'patientId'
+ *      clinicId: // value for 'clinicId'
+ *   },
+ * });
+ */
+export function useSubscribeImagingAssetsForPatientSubscription(baseOptions: ApolloReactHooks.SubscriptionHookOptions<SubscribeImagingAssetsForPatientSubscription, SubscribeImagingAssetsForPatientSubscriptionVariables> & ({ variables: SubscribeImagingAssetsForPatientSubscriptionVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useSubscription<SubscribeImagingAssetsForPatientSubscription, SubscribeImagingAssetsForPatientSubscriptionVariables>(SubscribeImagingAssetsForPatientDocument, options);
+      }
+export type SubscribeImagingAssetsForPatientSubscriptionHookResult = ReturnType<typeof useSubscribeImagingAssetsForPatientSubscription>;
+export type SubscribeImagingAssetsForPatientSubscriptionResult = ApolloReactCommon.SubscriptionResult<SubscribeImagingAssetsForPatientSubscription>;
+export const GetSystemMountTemplatesDocument = gql`
+    query GetSystemMountTemplates {
+  imaging_mount_template(
+    where: {is_active: {_eq: true}}
+    order_by: {template_key: asc}
+  ) {
+    id
+    template_key
+    name
+    description
+    slot_definitions
+    layout_config
+    slot_capture_order
+    default_slot_transformations
+    is_active
+  }
+}
+    `;
+
+/**
+ * __useGetSystemMountTemplatesQuery__
+ *
+ * To run a query within a React component, call `useGetSystemMountTemplatesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSystemMountTemplatesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSystemMountTemplatesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetSystemMountTemplatesQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>(GetSystemMountTemplatesDocument, options);
+      }
+export function useGetSystemMountTemplatesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>(GetSystemMountTemplatesDocument, options);
+        }
+// @ts-ignore
+export function useGetSystemMountTemplatesSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>;
+export function useGetSystemMountTemplatesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetSystemMountTemplatesQuery | undefined, GetSystemMountTemplatesQueryVariables>;
+export function useGetSystemMountTemplatesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>(GetSystemMountTemplatesDocument, options);
+        }
+export type GetSystemMountTemplatesQueryHookResult = ReturnType<typeof useGetSystemMountTemplatesQuery>;
+export type GetSystemMountTemplatesLazyQueryHookResult = ReturnType<typeof useGetSystemMountTemplatesLazyQuery>;
+export type GetSystemMountTemplatesSuspenseQueryHookResult = ReturnType<typeof useGetSystemMountTemplatesSuspenseQuery>;
+export type GetSystemMountTemplatesQueryResult = ApolloReactCommon.QueryResult<GetSystemMountTemplatesQuery, GetSystemMountTemplatesQueryVariables>;
+export const GetClinicMountTemplatesDocument = gql`
+    query GetClinicMountTemplates($clinicId: bigint!) {
+  imaging_clinic_mount_template(
+    where: {clinic_id: {_eq: $clinicId}, is_active: {_eq: true}}
+    order_by: {name: asc}
+  ) {
+    id
+    clinic_id
+    name
+    description
+    slot_definitions
+    layout_config
+    slot_capture_order
+    default_slot_transformations
+    is_active
+  }
+}
+    `;
+
+/**
+ * __useGetClinicMountTemplatesQuery__
+ *
+ * To run a query within a React component, call `useGetClinicMountTemplatesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetClinicMountTemplatesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetClinicMountTemplatesQuery({
+ *   variables: {
+ *      clinicId: // value for 'clinicId'
+ *   },
+ * });
+ */
+export function useGetClinicMountTemplatesQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables> & ({ variables: GetClinicMountTemplatesQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>(GetClinicMountTemplatesDocument, options);
+      }
+export function useGetClinicMountTemplatesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>(GetClinicMountTemplatesDocument, options);
+        }
+// @ts-ignore
+export function useGetClinicMountTemplatesSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>;
+export function useGetClinicMountTemplatesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetClinicMountTemplatesQuery | undefined, GetClinicMountTemplatesQueryVariables>;
+export function useGetClinicMountTemplatesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>(GetClinicMountTemplatesDocument, options);
+        }
+export type GetClinicMountTemplatesQueryHookResult = ReturnType<typeof useGetClinicMountTemplatesQuery>;
+export type GetClinicMountTemplatesLazyQueryHookResult = ReturnType<typeof useGetClinicMountTemplatesLazyQuery>;
+export type GetClinicMountTemplatesSuspenseQueryHookResult = ReturnType<typeof useGetClinicMountTemplatesSuspenseQuery>;
+export type GetClinicMountTemplatesQueryResult = ApolloReactCommon.QueryResult<GetClinicMountTemplatesQuery, GetClinicMountTemplatesQueryVariables>;
+export const GetMountsByPatientDocument = gql`
+    query GetMountsByPatient($patientId: bigint!, $clinicId: bigint!) {
+  imaging_mount(
+    where: {patient_id: {_eq: $patientId}, clinic_id: {_eq: $clinicId}, is_active: {_eq: true}}
+    order_by: {created_at: desc}
+  ) {
+    id
+    clinic_id
+    patient_id
+    template_id
+    clinic_template_id
+    name
+    description
+    created_at
+    is_active
+    template {
+      id
+      template_key
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    clinic_template {
+      id
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    mount_slots {
+      id
+      mount_id
+      slot_id
+      asset_id
+      asset {
+        id
+        name
+        captured_at
+        image_source
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetMountsByPatientQuery__
+ *
+ * To run a query within a React component, call `useGetMountsByPatientQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetMountsByPatientQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetMountsByPatientQuery({
+ *   variables: {
+ *      patientId: // value for 'patientId'
+ *      clinicId: // value for 'clinicId'
+ *   },
+ * });
+ */
+export function useGetMountsByPatientQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetMountsByPatientQuery, GetMountsByPatientQueryVariables> & ({ variables: GetMountsByPatientQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>(GetMountsByPatientDocument, options);
+      }
+export function useGetMountsByPatientLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>(GetMountsByPatientDocument, options);
+        }
+// @ts-ignore
+export function useGetMountsByPatientSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>;
+export function useGetMountsByPatientSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetMountsByPatientQuery | undefined, GetMountsByPatientQueryVariables>;
+export function useGetMountsByPatientSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>(GetMountsByPatientDocument, options);
+        }
+export type GetMountsByPatientQueryHookResult = ReturnType<typeof useGetMountsByPatientQuery>;
+export type GetMountsByPatientLazyQueryHookResult = ReturnType<typeof useGetMountsByPatientLazyQuery>;
+export type GetMountsByPatientSuspenseQueryHookResult = ReturnType<typeof useGetMountsByPatientSuspenseQuery>;
+export type GetMountsByPatientQueryResult = ApolloReactCommon.QueryResult<GetMountsByPatientQuery, GetMountsByPatientQueryVariables>;
+export const GetMountByIdDocument = gql`
+    query GetMountById($id: bigint!) {
+  imaging_mount_by_pk(id: $id) {
+    id
+    clinic_id
+    patient_id
+    template_id
+    clinic_template_id
+    name
+    description
+    created_at
+    created_by
+    updated_at
+    updated_by
+    is_active
+    template {
+      id
+      template_key
+      name
+      description
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    clinic_template {
+      id
+      name
+      description
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    mount_slots {
+      id
+      mount_id
+      slot_id
+      asset_id
+      asset {
+        id
+        name
+        captured_at
+        image_source
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetMountByIdQuery__
+ *
+ * To run a query within a React component, call `useGetMountByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetMountByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetMountByIdQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetMountByIdQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetMountByIdQuery, GetMountByIdQueryVariables> & ({ variables: GetMountByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetMountByIdQuery, GetMountByIdQueryVariables>(GetMountByIdDocument, options);
+      }
+export function useGetMountByIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetMountByIdQuery, GetMountByIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetMountByIdQuery, GetMountByIdQueryVariables>(GetMountByIdDocument, options);
+        }
+// @ts-ignore
+export function useGetMountByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SuspenseQueryHookOptions<GetMountByIdQuery, GetMountByIdQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetMountByIdQuery, GetMountByIdQueryVariables>;
+export function useGetMountByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetMountByIdQuery, GetMountByIdQueryVariables>): ApolloReactHooks.UseSuspenseQueryResult<GetMountByIdQuery | undefined, GetMountByIdQueryVariables>;
+export function useGetMountByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetMountByIdQuery, GetMountByIdQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetMountByIdQuery, GetMountByIdQueryVariables>(GetMountByIdDocument, options);
+        }
+export type GetMountByIdQueryHookResult = ReturnType<typeof useGetMountByIdQuery>;
+export type GetMountByIdLazyQueryHookResult = ReturnType<typeof useGetMountByIdLazyQuery>;
+export type GetMountByIdSuspenseQueryHookResult = ReturnType<typeof useGetMountByIdSuspenseQuery>;
+export type GetMountByIdQueryResult = ApolloReactCommon.QueryResult<GetMountByIdQuery, GetMountByIdQueryVariables>;
+export const InsertImagingMountDocument = gql`
+    mutation InsertImagingMount($object: imaging_mount_insert_input!) {
+  insert_imaging_mount_one(object: $object) {
+    id
+    clinic_id
+    patient_id
+    template_id
+    clinic_template_id
+    name
+    description
+    created_at
+    is_active
+    template {
+      id
+      template_key
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    clinic_template {
+      id
+      name
+      slot_definitions
+      layout_config
+      slot_capture_order
+      default_slot_transformations
+    }
+    mount_slots {
+      id
+      mount_id
+      slot_id
+      asset_id
+    }
+  }
+}
+    `;
+export type InsertImagingMountMutationFn = ApolloReactCommon.MutationFunction<InsertImagingMountMutation, InsertImagingMountMutationVariables>;
+
+/**
+ * __useInsertImagingMountMutation__
+ *
+ * To run a mutation, you first call `useInsertImagingMountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useInsertImagingMountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [insertImagingMountMutation, { data, loading, error }] = useInsertImagingMountMutation({
+ *   variables: {
+ *      object: // value for 'object'
+ *   },
+ * });
+ */
+export function useInsertImagingMountMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<InsertImagingMountMutation, InsertImagingMountMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<InsertImagingMountMutation, InsertImagingMountMutationVariables>(InsertImagingMountDocument, options);
+      }
+export type InsertImagingMountMutationHookResult = ReturnType<typeof useInsertImagingMountMutation>;
+export type InsertImagingMountMutationResult = ApolloReactCommon.MutationResult<InsertImagingMountMutation>;
+export type InsertImagingMountMutationOptions = ApolloReactCommon.BaseMutationOptions<InsertImagingMountMutation, InsertImagingMountMutationVariables>;
+export const UpdateImagingMountDocument = gql`
+    mutation UpdateImagingMount($id: bigint!, $updates: imaging_mount_set_input!) {
+  update_imaging_mount_by_pk(pk_columns: {id: $id}, _set: $updates) {
+    id
+    name
+    description
+    updated_at
+  }
+}
+    `;
+export type UpdateImagingMountMutationFn = ApolloReactCommon.MutationFunction<UpdateImagingMountMutation, UpdateImagingMountMutationVariables>;
+
+/**
+ * __useUpdateImagingMountMutation__
+ *
+ * To run a mutation, you first call `useUpdateImagingMountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateImagingMountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateImagingMountMutation, { data, loading, error }] = useUpdateImagingMountMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      updates: // value for 'updates'
+ *   },
+ * });
+ */
+export function useUpdateImagingMountMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateImagingMountMutation, UpdateImagingMountMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateImagingMountMutation, UpdateImagingMountMutationVariables>(UpdateImagingMountDocument, options);
+      }
+export type UpdateImagingMountMutationHookResult = ReturnType<typeof useUpdateImagingMountMutation>;
+export type UpdateImagingMountMutationResult = ApolloReactCommon.MutationResult<UpdateImagingMountMutation>;
+export type UpdateImagingMountMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateImagingMountMutation, UpdateImagingMountMutationVariables>;
+export const DeleteImagingMountDocument = gql`
+    mutation DeleteImagingMount($id: bigint!) {
+  delete_imaging_mount_by_pk(id: $id) {
+    id
+  }
+}
+    `;
+export type DeleteImagingMountMutationFn = ApolloReactCommon.MutationFunction<DeleteImagingMountMutation, DeleteImagingMountMutationVariables>;
+
+/**
+ * __useDeleteImagingMountMutation__
+ *
+ * To run a mutation, you first call `useDeleteImagingMountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteImagingMountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteImagingMountMutation, { data, loading, error }] = useDeleteImagingMountMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteImagingMountMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteImagingMountMutation, DeleteImagingMountMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeleteImagingMountMutation, DeleteImagingMountMutationVariables>(DeleteImagingMountDocument, options);
+      }
+export type DeleteImagingMountMutationHookResult = ReturnType<typeof useDeleteImagingMountMutation>;
+export type DeleteImagingMountMutationResult = ApolloReactCommon.MutationResult<DeleteImagingMountMutation>;
+export type DeleteImagingMountMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteImagingMountMutation, DeleteImagingMountMutationVariables>;
+export const InsertImagingMountSlotDocument = gql`
+    mutation InsertImagingMountSlot($object: imaging_mount_slot_insert_input!) {
+  insert_imaging_mount_slot_one(object: $object) {
+    id
+    mount_id
+    slot_id
+    asset_id
+  }
+}
+    `;
+export type InsertImagingMountSlotMutationFn = ApolloReactCommon.MutationFunction<InsertImagingMountSlotMutation, InsertImagingMountSlotMutationVariables>;
+
+/**
+ * __useInsertImagingMountSlotMutation__
+ *
+ * To run a mutation, you first call `useInsertImagingMountSlotMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useInsertImagingMountSlotMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [insertImagingMountSlotMutation, { data, loading, error }] = useInsertImagingMountSlotMutation({
+ *   variables: {
+ *      object: // value for 'object'
+ *   },
+ * });
+ */
+export function useInsertImagingMountSlotMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<InsertImagingMountSlotMutation, InsertImagingMountSlotMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<InsertImagingMountSlotMutation, InsertImagingMountSlotMutationVariables>(InsertImagingMountSlotDocument, options);
+      }
+export type InsertImagingMountSlotMutationHookResult = ReturnType<typeof useInsertImagingMountSlotMutation>;
+export type InsertImagingMountSlotMutationResult = ApolloReactCommon.MutationResult<InsertImagingMountSlotMutation>;
+export type InsertImagingMountSlotMutationOptions = ApolloReactCommon.BaseMutationOptions<InsertImagingMountSlotMutation, InsertImagingMountSlotMutationVariables>;
+export const UpdateImagingMountSlotAssetDocument = gql`
+    mutation UpdateImagingMountSlotAsset($id: bigint!, $assetId: bigint) {
+  update_imaging_mount_slot_by_pk(
+    pk_columns: {id: $id}
+    _set: {asset_id: $assetId}
+  ) {
+    id
+    mount_id
+    slot_id
+    asset_id
+  }
+}
+    `;
+export type UpdateImagingMountSlotAssetMutationFn = ApolloReactCommon.MutationFunction<UpdateImagingMountSlotAssetMutation, UpdateImagingMountSlotAssetMutationVariables>;
+
+/**
+ * __useUpdateImagingMountSlotAssetMutation__
+ *
+ * To run a mutation, you first call `useUpdateImagingMountSlotAssetMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateImagingMountSlotAssetMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateImagingMountSlotAssetMutation, { data, loading, error }] = useUpdateImagingMountSlotAssetMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      assetId: // value for 'assetId'
+ *   },
+ * });
+ */
+export function useUpdateImagingMountSlotAssetMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateImagingMountSlotAssetMutation, UpdateImagingMountSlotAssetMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateImagingMountSlotAssetMutation, UpdateImagingMountSlotAssetMutationVariables>(UpdateImagingMountSlotAssetDocument, options);
+      }
+export type UpdateImagingMountSlotAssetMutationHookResult = ReturnType<typeof useUpdateImagingMountSlotAssetMutation>;
+export type UpdateImagingMountSlotAssetMutationResult = ApolloReactCommon.MutationResult<UpdateImagingMountSlotAssetMutation>;
+export type UpdateImagingMountSlotAssetMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateImagingMountSlotAssetMutation, UpdateImagingMountSlotAssetMutationVariables>;
+export const DeleteImagingMountSlotByMountAndSlotDocument = gql`
+    mutation DeleteImagingMountSlotByMountAndSlot($mountId: bigint!, $slotId: String!) {
+  delete_imaging_mount_slot(
+    where: {mount_id: {_eq: $mountId}, slot_id: {_eq: $slotId}}
+  ) {
+    affected_rows
+  }
+}
+    `;
+export type DeleteImagingMountSlotByMountAndSlotMutationFn = ApolloReactCommon.MutationFunction<DeleteImagingMountSlotByMountAndSlotMutation, DeleteImagingMountSlotByMountAndSlotMutationVariables>;
+
+/**
+ * __useDeleteImagingMountSlotByMountAndSlotMutation__
+ *
+ * To run a mutation, you first call `useDeleteImagingMountSlotByMountAndSlotMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteImagingMountSlotByMountAndSlotMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteImagingMountSlotByMountAndSlotMutation, { data, loading, error }] = useDeleteImagingMountSlotByMountAndSlotMutation({
+ *   variables: {
+ *      mountId: // value for 'mountId'
+ *      slotId: // value for 'slotId'
+ *   },
+ * });
+ */
+export function useDeleteImagingMountSlotByMountAndSlotMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteImagingMountSlotByMountAndSlotMutation, DeleteImagingMountSlotByMountAndSlotMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeleteImagingMountSlotByMountAndSlotMutation, DeleteImagingMountSlotByMountAndSlotMutationVariables>(DeleteImagingMountSlotByMountAndSlotDocument, options);
+      }
+export type DeleteImagingMountSlotByMountAndSlotMutationHookResult = ReturnType<typeof useDeleteImagingMountSlotByMountAndSlotMutation>;
+export type DeleteImagingMountSlotByMountAndSlotMutationResult = ApolloReactCommon.MutationResult<DeleteImagingMountSlotByMountAndSlotMutation>;
+export type DeleteImagingMountSlotByMountAndSlotMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteImagingMountSlotByMountAndSlotMutation, DeleteImagingMountSlotByMountAndSlotMutationVariables>;
+export const InsertClinicMountTemplateDocument = gql`
+    mutation InsertClinicMountTemplate($object: imaging_clinic_mount_template_insert_input!) {
+  insert_imaging_clinic_mount_template_one(object: $object) {
+    id
+    clinic_id
+    name
+    description
+    slot_definitions
+    layout_config
+    slot_capture_order
+    default_slot_transformations
+    is_active
+  }
+}
+    `;
+export type InsertClinicMountTemplateMutationFn = ApolloReactCommon.MutationFunction<InsertClinicMountTemplateMutation, InsertClinicMountTemplateMutationVariables>;
+
+/**
+ * __useInsertClinicMountTemplateMutation__
+ *
+ * To run a mutation, you first call `useInsertClinicMountTemplateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useInsertClinicMountTemplateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [insertClinicMountTemplateMutation, { data, loading, error }] = useInsertClinicMountTemplateMutation({
+ *   variables: {
+ *      object: // value for 'object'
+ *   },
+ * });
+ */
+export function useInsertClinicMountTemplateMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<InsertClinicMountTemplateMutation, InsertClinicMountTemplateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<InsertClinicMountTemplateMutation, InsertClinicMountTemplateMutationVariables>(InsertClinicMountTemplateDocument, options);
+      }
+export type InsertClinicMountTemplateMutationHookResult = ReturnType<typeof useInsertClinicMountTemplateMutation>;
+export type InsertClinicMountTemplateMutationResult = ApolloReactCommon.MutationResult<InsertClinicMountTemplateMutation>;
+export type InsertClinicMountTemplateMutationOptions = ApolloReactCommon.BaseMutationOptions<InsertClinicMountTemplateMutation, InsertClinicMountTemplateMutationVariables>;
 export const GetOperatoriesDocument = gql`
     query GetOperatories($clinicId: bigint!) {
   operatory_v(where: {clinic_id: {_eq: $clinicId}}, order_by: {name: asc}) {

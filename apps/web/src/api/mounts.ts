@@ -6,24 +6,59 @@
 import { gql } from '@apollo/client'
 import { apolloClient } from '@/apollo/client'
 
-// --- Types (aligned with Hasura schema and plan 1.5) ---
+// --- Constants (canvas-only, print-ready 2000×1000) ---
+
+export const MOUNT_CANVAS_WIDTH = 2000
+export const MOUNT_CANVAS_HEIGHT = 1000
+
+// --- Display adjustments (non-destructive; stored, reversible) ---
+
+export interface DisplayAdjustments {
+  invert?: boolean
+  flip_h?: boolean
+  flip_v?: boolean
+  rotate?: number
+  gamma?: number
+  brightness?: number
+  contrast?: number
+  sharpen?: number
+}
+
+// --- Types (canvas-only layout; legacy row/col optional for migration) ---
 
 export interface MountSlotDefinition {
   slot_id: string
   label: string
-  row: number
-  col: number
+  /** Canvas coords (mount pixels 0..2000, 0..1000) */
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  /** Legacy grid (used only to derive canvas coords until migration) */
+  row?: number
+  col?: number
   row_span?: number
   col_span?: number
 }
 
 export interface LayoutConfig {
-  type?: string
+  type?: 'canvas' | 'grid'
+  width?: number
+  height?: number
   rows?: number
   cols?: number
   rowHeights?: (number | string)[]
   colWidths?: (number | string)[]
   aspectRatio?: string
+}
+
+export interface NormalizedCanvasSlot {
+  slot_id: string
+  label: string
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 export interface MountTemplateShape {
@@ -33,7 +68,7 @@ export interface MountTemplateShape {
   slot_definitions: MountSlotDefinition[] | unknown
   layout_config?: LayoutConfig | null
   slot_capture_order?: string[] | null
-  default_slot_transformations?: Record<string, { rotate?: number; flip_h?: boolean; flip_v?: boolean }> | null
+  default_slot_transformations?: Record<string, DisplayAdjustments> | null
 }
 
 export interface ImagingMountSlot {
@@ -41,6 +76,7 @@ export interface ImagingMountSlot {
   mount_id: number
   slot_id: string
   asset_id: number | null
+  adjustments?: DisplayAdjustments | null
   asset?: {
     id: number
     name?: string | null
@@ -49,6 +85,7 @@ export interface ImagingMountSlot {
     modality?: string
     thumb_key?: string | null
     web_key?: string | null
+    display_adjustments?: DisplayAdjustments | null
   } | null
 }
 
@@ -91,8 +128,61 @@ export function getMountTemplate(mount: ImagingMount): MountTemplateShape | null
 }
 
 /**
+ * Normalized canvas layout for rendering. Always returns 2000×1000 canvas with slots in pixel coords.
+ * If template is canvas-shaped, uses x,y,width,height; if grid-shaped (legacy), derives from row/col/span.
+ */
+export function getMountLayout(template: MountTemplateShape | null): {
+  width: number
+  height: number
+  slots: NormalizedCanvasSlot[]
+} | null {
+  if (!template) return null
+  const raw = template.slot_definitions
+  const defs = Array.isArray(raw) ? (raw as MountSlotDefinition[]) : []
+  if (defs.length === 0) return null
+
+  const layout = template.layout_config as LayoutConfig | undefined
+  const isCanvas =
+    layout?.type === 'canvas' &&
+    defs.every((s) => typeof s.x === 'number' && typeof s.y === 'number' && typeof s.width === 'number' && typeof s.height === 'number')
+
+  if (isCanvas) {
+    return {
+      width: layout?.width ?? MOUNT_CANVAS_WIDTH,
+      height: layout?.height ?? MOUNT_CANVAS_HEIGHT,
+      slots: defs.map((s) => ({
+        slot_id: s.slot_id,
+        label: s.label ?? s.slot_id,
+        x: s.x!,
+        y: s.y!,
+        width: s.width!,
+        height: s.height!,
+      })),
+    }
+  }
+
+  // Legacy grid: derive canvas rects
+  const rows = layout?.rows ?? Math.max(0, ...defs.map((s) => (s.row ?? 0) + (s.row_span ?? 1))) + 1
+  const cols = layout?.cols ?? Math.max(0, ...defs.map((s) => (s.col ?? 0) + (s.col_span ?? 1))) + 1
+  const cellW = MOUNT_CANVAS_WIDTH / cols
+  const cellH = MOUNT_CANVAS_HEIGHT / rows
+  return {
+    width: MOUNT_CANVAS_WIDTH,
+    height: MOUNT_CANVAS_HEIGHT,
+    slots: defs.map((s) => ({
+      slot_id: s.slot_id,
+      label: s.label ?? s.slot_id,
+      x: (s.col ?? 0) * cellW,
+      y: (s.row ?? 0) * cellH,
+      width: (s.col_span ?? 1) * cellW,
+      height: (s.row_span ?? 1) * cellH,
+    })),
+  }
+}
+
+/**
  * Effective slot order for auto-assigning captures: clinic slot_order overrides template slot_capture_order,
- * otherwise derive from slot_definitions (row, then col).
+ * otherwise derive from slot_definitions (canvas: top-to-bottom, left-to-right; grid: row then col).
  */
 export function getEffectiveSlotOrder(
   template: MountTemplateShape,
@@ -108,7 +198,17 @@ export function getEffectiveSlotOrder(
   const defs = Array.isArray(template.slot_definitions)
     ? (template.slot_definitions as MountSlotDefinition[])
     : []
-  defs.sort((a, b) => (a.row !== b.row ? a.row - b.row : a.col - b.col))
+  const layout = getMountLayout(template)
+  if (layout) {
+    layout.slots.sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x))
+    return layout.slots.map((s) => s.slot_id)
+  }
+  defs.sort((a, b) => {
+    const rA = a.row ?? 0
+    const rB = b.row ?? 0
+    if (rA !== rB) return rA - rB
+    return (a.col ?? 0) - (b.col ?? 0)
+  })
   return defs.map((d) => d.slot_id)
 }
 
@@ -131,11 +231,53 @@ export function getNextEmptySlotId(mount: ImagingMount, clinicSlotOrder?: string
   const template = getMountTemplate(mount)
   if (!template) return null
   const order = getEffectiveSlotOrder(template, clinicSlotOrder)
-  const filled = new Set((mount.mount_slots ?? mount.slots ?? []).map((s) => s.slot_id))
+  const filled = new Set(
+    (mount.mount_slots ?? mount.slots ?? []).filter((s) => s.asset_id != null).map((s) => s.slot_id)
+  )
   for (const slotId of order) {
     if (!filled.has(slotId)) return slotId
   }
   return null
+}
+
+/**
+ * Empty slot ids in capture order starting from fromSlotId (inclusive).
+ * Used for "Continue Auto-Acquisition" to fill placeholders in order.
+ */
+export function getEmptySlotIdsInOrderFrom(
+  mount: ImagingMount,
+  fromSlotId: string,
+  clinicSlotOrder?: string[] | null
+): string[] {
+  const template = getMountTemplate(mount)
+  if (!template) return []
+  const order = getEffectiveSlotOrder(template, clinicSlotOrder)
+  const filled = new Set(
+    (mount.mount_slots ?? mount.slots ?? []).filter((s) => s.asset_id != null).map((s) => s.slot_id)
+  )
+  const result: string[] = []
+  let started = false
+  for (const slotId of order) {
+    if (slotId === fromSlotId) started = true
+    if (started && !filled.has(slotId)) result.push(slotId)
+  }
+  return result
+}
+
+/**
+ * Slot ids in capture order starting from fromSlotId (inclusive) through the end.
+ * Used for "Continue Auto-Acquisition" so the first capture assigns to the clicked slot (replace or fill), then subsequent slots in order.
+ */
+export function getSlotIdsInOrderFrom(
+  mount: ImagingMount,
+  fromSlotId: string,
+  clinicSlotOrder?: string[] | null
+): string[] {
+  const template = getMountTemplate(mount)
+  if (!template) return []
+  const order = getEffectiveSlotOrder(template, clinicSlotOrder)
+  const index = order.indexOf(fromSlotId)
+  return index >= 0 ? order.slice(index) : []
 }
 
 // --- GraphQL documents (inline so codegen is not required) ---
@@ -448,6 +590,7 @@ export async function listMounts(patientId: number, clinicId: number): Promise<I
   const result = await apolloClient.query<{ imaging_mount: ImagingMount[] }>({
     query: GET_MOUNTS_BY_PATIENT,
     variables: { patientId, clinicId },
+    fetchPolicy: 'network-only',
   })
   const rows = result.data?.imaging_mount ?? []
   return rows.map(normalizeMount)
@@ -457,6 +600,7 @@ export async function getMount(mountId: number): Promise<ImagingMount> {
   const result = await apolloClient.query<{ imaging_mount_by_pk: ImagingMount | null }>({
     query: GET_MOUNT_BY_ID,
     variables: { id: mountId },
+    fetchPolicy: 'network-only', // always refetch so mount preview updates after capture/assign
   })
   const mount = result.data?.imaging_mount_by_pk
   if (!mount) throw new Error('Mount not found')
@@ -547,6 +691,46 @@ export async function removeAssetFromMountSlot(mountId: number, slotId: string):
   await apolloClient.mutate({
     mutation: DELETE_IMAGING_MOUNT_SLOT_BY_MOUNT_AND_SLOT,
     variables: { mountId, slotId },
+  })
+}
+
+/** Update display adjustments for a mount slot (requires migration 1771060000000 applied). */
+export async function updateMountSlotAdjustments(
+  mountSlotId: number,
+  adjustments: DisplayAdjustments | null
+): Promise<void> {
+  await apolloClient.mutate({
+    mutation: gql`
+      mutation UpdateImagingMountSlotAdjustments($id: bigint!, $adjustments: jsonb) {
+        update_imaging_mount_slot_by_pk(
+          pk_columns: { id: $id }
+          _set: { adjustments: $adjustments }
+        ) {
+          id
+        }
+      }
+    `,
+    variables: { id: mountSlotId, adjustments },
+  })
+}
+
+/** Update display adjustments for an asset (requires migration 1771060000000 applied). */
+export async function updateAssetDisplayAdjustments(
+  assetId: number,
+  displayAdjustments: DisplayAdjustments | null
+): Promise<void> {
+  await apolloClient.mutate({
+    mutation: gql`
+      mutation UpdateImagingAssetDisplayAdjustments($id: bigint!, $display_adjustments: jsonb) {
+        update_imaging_asset_by_pk(
+          pk_columns: { id: $id }
+          _set: { display_adjustments: $display_adjustments }
+        ) {
+          id
+        }
+      }
+    `,
+    variables: { id: assetId, display_adjustments: displayAdjustments },
   })
 }
 

@@ -16,6 +16,7 @@ select_permissions:
         - mount_id
         - asset_id
         - slot_id
+        - adjustments
         - created_at
         - created_by
         - updated_at
@@ -53,6 +54,7 @@ insert_permissions:
         - mount_id
         - asset_id
         - slot_id
+        - adjustments
         - is_active
 update_permissions:
   - role: clinic_user
@@ -79,6 +81,7 @@ update_permissions:
                           _eq: system_admin
       columns:
         - asset_id
+        - adjustments
         - is_active
       filter:
         mount:

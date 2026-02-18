@@ -1,55 +1,70 @@
 import { useState, useEffect } from 'react'
-import { AuthenticatedImage } from './AuthenticatedImage'
-import { ImageIcon, Plus } from 'lucide-react'
 import { assignAssetToMountSlot, removeAssetFromMountSlot, type ImagingMount, type ImagingAsset } from '@/api/imaging'
+import {
+  getMountTemplate,
+  getMountLayout,
+  getEffectiveSlotOrder,
+  type DisplayAdjustments,
+} from '@/api/mounts'
+import { mergeDisplayAdjustments } from '@/lib/display-adjustments'
+import type { MountCanvasSlotAssignment } from './MountCanvas'
+import { MountCanvas } from './MountCanvas'
 
 interface MountViewProps {
   mount: ImagingMount
   availableAssets?: ImagingAsset[]
   onMountUpdate?: () => void
   onSlotClick?: (slotId: string, currentAssetId: number | null) => void
+  onSlotDoubleClick?: (slotId: string, asset: ImagingAsset | null) => void
+  onSlotRightClick?: (slotId: string, event: React.MouseEvent) => void
 }
 
-export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotClick }: MountViewProps) {
+const IMAGING_ASSET_DROP_TYPE = 'application/x-tess-imaging-asset'
+
+export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotClick, onSlotDoubleClick, onSlotRightClick }: MountViewProps) {
   const [slotAssignments, setSlotAssignments] = useState<Map<string, ImagingAsset | null>>(new Map())
   const [isAssigning, setIsAssigning] = useState(false)
+  const [dragOverSlotId, setDragOverSlotId] = useState<string | null>(null)
 
-  // Initialize slot assignments from mount slots
+  const template = getMountTemplate(mount)
+  const layout = getMountLayout(template)
+  const slotOrder = template ? getEffectiveSlotOrder(template, null) : []
+  const defaultTransforms = (template?.default_slot_transformations ?? {}) as Record<string, DisplayAdjustments>
+  const slotsData = mount.mount_slots ?? mount.slots ?? []
+
   useEffect(() => {
-    const assignments = new Map<string, ImagingAsset | null>()
-    const raw = mount.template?.slot_definitions
-    const slotDefs = Array.isArray(raw) ? raw : []
+    const templateFromMount = getMountTemplate(mount)
+    const layoutFromMount = getMountLayout(templateFromMount)
+    const slotsFromMount = mount.mount_slots ?? mount.slots ?? []
+    if (!layoutFromMount) return
 
-    // Initialize all slots as empty
-    slotDefs.forEach((slot: { slot_id: string }) => {
+    const assignments = new Map<string, ImagingAsset | null>()
+    layoutFromMount.slots.forEach((slot) => {
       assignments.set(slot.slot_id, null)
     })
 
-    // Fill in assigned assets
-    if (mount.slots) {
-      mount.slots.forEach((slot) => {
-        if (slot.asset && slot.asset.id) {
-          // Convert API response to ImagingAsset format if needed
-          const asset: ImagingAsset = {
-            id: slot.asset.id,
-            clinic_id: 0, // Not needed for display
-            patient_id: 0, // Not needed for display
-            study_id: null,
-            modality: slot.asset.modality || 'PHOTO',
-            mime_type: 'image/jpeg', // Default
-            size_bytes: 0, // Not needed for display
-            captured_at: slot.asset.captured_at || new Date().toISOString(),
-            source_device: null,
-            storage_key: '',
-            thumb_key: slot.asset.thumb_key || null,
-            web_key: slot.asset.web_key || null,
-            name: slot.asset.name || null,
-            image_source: (slot.asset.image_source as ImagingAsset['image_source']) || null,
-          }
-          assignments.set(slot.slot_id, asset)
+    slotsFromMount.forEach((slot) => {
+      if (slot.asset && slot.asset.id) {
+        const asset: ImagingAsset = {
+          id: slot.asset.id,
+          clinic_id: 0,
+          patient_id: 0,
+          study_id: null,
+          modality: slot.asset.modality || 'PHOTO',
+          mime_type: 'image/jpeg',
+          size_bytes: 0,
+          captured_at: slot.asset.captured_at || new Date().toISOString(),
+          source_device: null,
+          storage_key: '',
+          thumb_key: slot.asset.thumb_key || null,
+          web_key: slot.asset.web_key || null,
+          name: slot.asset.name || null,
+          image_source: (slot.asset.image_source as ImagingAsset['image_source']) || null,
+          display_adjustments: slot.asset.display_adjustments ?? undefined,
         }
-      })
-    }
+        assignments.set(slot.slot_id, asset)
+      }
+    })
 
     setSlotAssignments(assignments)
   }, [mount])
@@ -60,9 +75,7 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
       return
     }
 
-    // Default behavior: show asset selector or remove asset
     if (currentAsset) {
-      // Remove asset from slot
       if (confirm('Remove this image from the mount?')) {
         setIsAssigning(true)
         try {
@@ -72,9 +85,7 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
             next.set(slotId, null)
             return next
           })
-          if (onMountUpdate) {
-            onMountUpdate()
-          }
+          onMountUpdate?.()
         } catch (error) {
           console.error('Failed to remove asset from slot:', error)
         } finally {
@@ -82,8 +93,6 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
         }
       }
     } else {
-      // Assign asset to slot - for now, just use first available asset
-      // In a full implementation, this would open a dialog to select an asset
       if (availableAssets.length > 0) {
         const assetToAssign = availableAssets[0]
         setIsAssigning(true)
@@ -94,9 +103,7 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
             next.set(slotId, assetToAssign)
             return next
           })
-          if (onMountUpdate) {
-            onMountUpdate()
-          }
+          onMountUpdate?.()
         } catch (error) {
           console.error('Failed to assign asset to slot:', error)
         } finally {
@@ -106,21 +113,38 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
     }
   }
 
-  const slotDefinitions = (mount.template?.slot_definitions || []) as Array<{
-    slot_id: string
-    label: string
-    row: number
-    col: number
-    row_span?: number
-    col_span?: number
-  }>
-  const layoutConfig = mount.template?.layout_config as { rows?: number; cols?: number; aspectRatio?: string } | undefined
-  const defaultTransforms = (mount.template?.default_slot_transformations ?? {}) as Record<
-    string,
-    { rotate?: number; flip_h?: boolean; flip_v?: boolean }
-  >
+  const handleSlotDrop = async (slotId: string, e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOverSlotId(null)
+    const raw = e.dataTransfer.getData(IMAGING_ASSET_DROP_TYPE)
+    if (!raw) return
+    const assetId = Number(raw)
+    if (!Number.isFinite(assetId)) return
+    setIsAssigning(true)
+    try {
+      await assignAssetToMountSlot(mount.id, slotId, assetId)
+      const asset = availableAssets.find((a) => a.id === assetId)
+      setSlotAssignments((prev) => {
+        const next = new Map(prev)
+        next.set(slotId, asset ?? null)
+        return next
+      })
+      onMountUpdate?.()
+    } catch (error) {
+      console.error('Failed to assign asset from drop:', error)
+    } finally {
+      setIsAssigning(false)
+    }
+  }
 
-  if (!slotDefinitions.length) {
+  const handleDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes(IMAGING_ASSET_DROP_TYPE)) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'copy'
+    }
+  }
+
+  if (!layout || layout.slots.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>No slot definitions found for this mount template</p>
@@ -128,95 +152,41 @@ export function MountView({ mount, availableAssets = [], onMountUpdate, onSlotCl
     )
   }
 
-  // Calculate grid dimensions (support row_span/col_span)
-  const maxRow = Math.max(
-    ...slotDefinitions.map((s) => s.row + (s.row_span ?? 1) - 1),
-    0
-  )
-  const maxCol = Math.max(
-    ...slotDefinitions.map((s) => s.col + (s.col_span ?? 1) - 1),
-    0
-  )
-  const rows = layoutConfig?.rows ?? maxRow + 1
-  const cols = layoutConfig?.cols ?? maxCol + 1
-
-  // Create grid layout
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-    gap: '8px',
-    aspectRatio: layoutConfig?.aspectRatio || `${cols}:${rows}`,
-  }
+  const canvasSlotAssignments: MountCanvasSlotAssignment[] = layout.slots.map((slot) => {
+    const asset = slotAssignments.get(slot.slot_id) ?? null
+    const templateDefaults = defaultTransforms[slot.slot_id]
+    const slotOverrides = slotsData.find((s) => s.slot_id === slot.slot_id)?.adjustments ?? null
+    const adjustments = mergeDisplayAdjustments(templateDefaults, slotOverrides)
+    return { slot_id: slot.slot_id, asset, adjustments }
+  })
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-lg border p-4">
-        <div style={gridStyle} className="w-full">
-          {slotDefinitions.map((slotDef) => {
-            const asset = slotAssignments.get(slotDef.slot_id) || null
-            const isEmpty = !asset
-            const t = defaultTransforms[slotDef.slot_id]
-            const rotate = t?.rotate ?? 0
-            const flipH = t?.flip_h ?? false
-            const flipV = t?.flip_v ?? false
-            const transformStyle =
-              rotate || flipH || flipV
-                ? {
-                    transform: `rotate(${rotate}deg) scaleX(${flipH ? -1 : 1}) scaleY(${flipV ? -1 : 1})`,
-                  }
-                : undefined
-
-            return (
-              <div
-                key={slotDef.slot_id}
-                onClick={() => handleSlotClick(slotDef.slot_id, asset)}
-                className={`
-                  border-2 rounded-lg overflow-hidden cursor-pointer transition-all
-                  ${isEmpty 
-                    ? 'border-dashed border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100' 
-                    : 'border-gray-200 bg-white hover:border-blue-400 hover:shadow-md'
-                  }
-                  ${isAssigning ? 'opacity-50 cursor-wait' : ''}
-                `}
-                style={{
-                  gridRow: `${slotDef.row + 1} / span ${slotDef.row_span ?? 1}`,
-                  gridColumn: `${slotDef.col + 1} / span ${slotDef.col_span ?? 1}`,
-                }}
-                title={isEmpty ? `Click to assign image to ${slotDef.label}` : `Click to remove image from ${slotDef.label}`}
-              >
-                {asset ? (
-                  <div className="relative w-full h-full">
-                    <div className="w-full h-full" style={transformStyle}>
-                      <AuthenticatedImage
-                        assetId={asset.id}
-                        variant="thumb"
-                        alt={asset.name || `Asset ${asset.id}`}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1">
-                      <div className="truncate">{asset.name || 'Untitled'}</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-2">
-                    <div className="text-gray-400 mb-2">
-                      {isEmpty ? <Plus className="h-6 w-6" /> : <ImageIcon className="h-6 w-6" />}
-                    </div>
-                    <div className="text-xs text-gray-500 text-center">{slotDef.label}</div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+    <div className="w-full h-full max-w-full max-h-full min-h-0 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden p-4">
+        <MountCanvas
+          width={layout.width}
+          height={layout.height}
+          slots={layout.slots}
+          slotAssignments={canvasSlotAssignments}
+          showOrderLabels
+          slotOrder={slotOrder}
+          interactive
+          isAssigning={isAssigning}
+          dragOverSlotId={dragOverSlotId}
+          onSlotClick={handleSlotClick}
+          onSlotDoubleClick={onSlotDoubleClick}
+          onSlotRightClick={onSlotRightClick}
+          onSlotDragOver={handleDragOver}
+          onSlotDragEnter={setDragOverSlotId}
+          onSlotDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverSlotId(null)
+          }}
+          onSlotDrop={handleSlotDrop}
+        />
       </div>
-
-      {/* Slot Legend */}
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-gray-500 flex-shrink-0 py-1">
         <p>
-          {Array.from(slotAssignments.values()).filter((a) => a !== null).length} of {slotDefinitions.length} slots filled
+          {Array.from(slotAssignments.values()).filter((a) => a !== null).length} of {layout.slots.length} slots filled
         </p>
       </div>
     </div>

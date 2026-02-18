@@ -7,102 +7,76 @@ import {
   listClinicMountTemplates,
   copySystemTemplateToClinic,
   createClinicMountTemplate,
+  getMountLayout,
   type SystemMountTemplate,
   type ClinicMountTemplate,
 } from '@/api/mounts'
+import type { NormalizedCanvasSlot } from '@/api/mounts'
+import type { MountCanvasSlotAssignment } from '@/components/imaging/MountCanvas'
 import { MountTemplateBuilderDialog } from '@/components/imaging/MountTemplateBuilderDialog'
+import { MountCanvas } from '@/components/imaging/MountCanvas'
 
-interface SlotDef {
-  slot_id: string
-  label: string
-  row: number
-  col: number
-  row_span?: number
-  col_span?: number
-}
-
-interface LayoutConfig {
-  rows?: number
-  cols?: number
-  aspectRatio?: string
-}
-
-function parseSlotDefs(raw: unknown): SlotDef[] {
-  if (!Array.isArray(raw)) return []
-  return raw.filter(
-    (s): s is SlotDef =>
-      s != null &&
-      typeof s === 'object' &&
-      typeof (s as SlotDef).slot_id === 'string' &&
-      typeof (s as SlotDef).row === 'number' &&
-      typeof (s as SlotDef).col === 'number'
-  ) as SlotDef[]
-}
-
-function parseLayout(raw: unknown): LayoutConfig {
-  if (raw == null || typeof raw !== 'object') return {}
-  const o = raw as Record<string, unknown>
-  return {
-    rows: typeof o.rows === 'number' ? o.rows : undefined,
-    cols: typeof o.cols === 'number' ? o.cols : undefined,
-    aspectRatio: typeof o.aspectRatio === 'string' ? o.aspectRatio : undefined,
-  }
-}
+type TemplateForPreview = SystemMountTemplate | ClinicMountTemplate
 
 function TemplatePreviewCard({
-  name,
-  description,
-  slotDefs,
-  layoutConfig,
-  slotCount,
+  template,
   action,
   actionLabel,
   actionDisabled,
 }: {
-  name: string
-  description?: string | null
-  slotDefs: SlotDef[]
-  layoutConfig: LayoutConfig
-  slotCount: number
+  template: TemplateForPreview
   action: () => void
   actionLabel: string
   actionDisabled?: boolean
 }) {
-  const rows = layoutConfig.rows ?? Math.max(0, ...slotDefs.map((s) => s.row)) + 1
-  const cols = layoutConfig.cols ?? Math.max(0, ...slotDefs.map((s) => s.col)) + 1
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-    gap: 2,
-    aspectRatio: layoutConfig.aspectRatio ?? `${cols}:${rows}`,
-    minHeight: 64,
+  const layout = getMountLayout(template)
+  if (!layout) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">{template.name}</CardTitle>
+          {template.description && (
+            <CardDescription>{template.description}</CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="text-sm text-gray-500">No layout</div>
+          <Button size="sm" onClick={action} disabled={actionDisabled}>
+            {actionLabel}
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
+  const { width, height, slots } = layout
+  const slotAssignments: MountCanvasSlotAssignment[] = slots.map((s: NormalizedCanvasSlot) => ({
+    slot_id: s.slot_id,
+    asset: null,
+    adjustments: {},
+  }))
+  const slotCount = slots.length
+
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">{name}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+        <CardTitle className="text-base">{template.name}</CardTitle>
+        {template.description && (
+          <CardDescription>{template.description}</CardDescription>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         <div
           className="w-full rounded border-2 border-orange-500 overflow-hidden bg-white"
           style={{ minHeight: 80 }}
         >
-          <div style={gridStyle} className="w-full h-full p-1">
-            {slotDefs.map((slot) => (
-              <div
-                key={slot.slot_id}
-                style={{
-                  gridRow: `${slot.row + 1} / span ${slot.row_span ?? 1}`,
-                  gridColumn: `${slot.col + 1} / span ${slot.col_span ?? 1}`,
-                  background: '#f5f5f5',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: 4,
-                }}
-              />
-            ))}
-          </div>
+          <MountCanvas
+            width={width}
+            height={height}
+            slots={slots}
+            slotAssignments={slotAssignments}
+            interactive={false}
+            className="min-h-[80px]"
+          />
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-500">
@@ -195,23 +169,15 @@ export function ImagingTemplates() {
               Read-only templates. Use &quot;Copy to my clinic&quot; to add a copy to your clinic.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {systemTemplates.map((template) => {
-                const slotDefs = parseSlotDefs(template.slot_definitions)
-                const layoutConfig = parseLayout(template.layout_config)
-                return (
-                  <TemplatePreviewCard
-                    key={template.id}
-                    name={template.name}
-                    description={template.description}
-                    slotDefs={slotDefs}
-                    layoutConfig={layoutConfig}
-                    slotCount={slotDefs.length}
-                    action={() => handleCopyToClinic(template)}
-                    actionLabel="Copy to my clinic"
-                    actionDisabled={copyingId === template.id}
-                  />
-                )
-              })}
+              {systemTemplates.map((template) => (
+                <TemplatePreviewCard
+                  key={template.id}
+                  template={template}
+                  action={() => handleCopyToClinic(template)}
+                  actionLabel="Copy to my clinic"
+                  actionDisabled={copyingId === template.id}
+                />
+              ))}
             </div>
             {systemTemplates.length === 0 && (
               <p className="text-sm text-gray-500">No system templates available.</p>
@@ -251,23 +217,18 @@ export function ImagingTemplates() {
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {clinicTemplates.map((template) => {
-                const slotDefs = parseSlotDefs(template.slot_definitions)
-                const layoutConfig = parseLayout(template.layout_config)
-                return (
-                  <TemplatePreviewCard
-                    key={template.id}
-                    name={template.name}
-                    description={template.description}
-                    slotDefs={slotDefs}
-                    layoutConfig={layoutConfig}
-                    slotCount={slotDefs.length}
-                    action={() => {}}
-                    actionLabel="Edit (coming soon)"
-                    actionDisabled
-                  />
-                )
-              })}
+              {clinicTemplates.map((template) => (
+                <TemplatePreviewCard
+                  key={template.id}
+                  template={template}
+                  action={() => {
+                    setEditingTemplate(template)
+                    setBuilderOpen(true)
+                  }}
+                  actionLabel="Edit"
+                  actionDisabled={false}
+                />
+              ))}
             </div>
             {clinicTemplates.length === 0 && (
               <p className="text-sm text-gray-500">

@@ -604,7 +604,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                         }}
                         onBlur={(e) => {
                           setTimeout(() => {
-                            if (!e.currentTarget.contains(document.activeElement)) {
+                            if (!e.currentTarget?.contains(document.activeElement)) {
                               setIsReferralContactPopoverOpen(false)
                             }
                           }, 200)
@@ -753,7 +753,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Name fields - First, Middle, Last in 3 columns at the top */}
           {/* These are already sorted by display_order from processedFields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -909,7 +909,7 @@ export function CreatePatientDialog({ open, onOpenChange, onSuccess }: CreatePat
                       onBlur={(e) => {
                         // Delay closing to allow click on popover items
                         setTimeout(() => {
-                          if (!e.currentTarget.contains(document.activeElement)) {
+                          if (!e.currentTarget?.contains(document.activeElement)) {
                             setIsPopoverOpen(false)
                           }
                         }, 200)

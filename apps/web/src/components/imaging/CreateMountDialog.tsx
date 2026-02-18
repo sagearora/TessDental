@@ -6,23 +6,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { listMountTemplates, createMount, getMount, type SystemMountTemplate, type ClinicMountTemplate } from '@/api/mounts'
-import type { ImagingMount } from '@/api/imaging'
-
-interface SlotDef {
-  slot_id: string
-  label: string
-  row: number
-  col: number
-  row_span?: number
-  col_span?: number
-}
-
-interface LayoutConfig {
-  rows?: number
-  cols?: number
-  aspectRatio?: string
-}
+import { listMountTemplates, createMount, getMount, getMountLayout, type SystemMountTemplate, type ClinicMountTemplate } from '@/api/mounts'
+import type { ImagingMount, ImagingAsset } from '@/api/imaging'
+import type { DisplayAdjustments } from '@/api/mounts'
+import { MountCanvas } from './MountCanvas'
 
 type TemplateOption = (SystemMountTemplate & { source: 'system' }) | (ClinicMountTemplate & { source: 'clinic' })
 
@@ -34,47 +21,16 @@ interface CreateMountDialogProps {
   onCreated: (mount: ImagingMount) => void
 }
 
-function parseSlotDefs(raw: unknown): SlotDef[] {
-  if (!Array.isArray(raw)) return []
-  return raw.filter(
-    (s): s is SlotDef =>
-      s != null &&
-      typeof s === 'object' &&
-      typeof (s as SlotDef).slot_id === 'string' &&
-      typeof (s as SlotDef).row === 'number' &&
-      typeof (s as SlotDef).col === 'number'
-  ) as SlotDef[]
-}
-
-function parseLayout(raw: unknown): LayoutConfig {
-  if (raw == null || typeof raw !== 'object') return {}
-  const o = raw as Record<string, unknown>
-  return {
-    rows: typeof o.rows === 'number' ? o.rows : undefined,
-    cols: typeof o.cols === 'number' ? o.cols : undefined,
-    aspectRatio: typeof o.aspectRatio === 'string' ? o.aspectRatio : undefined,
+function TemplatePreview({ template, className }: { template: TemplateOption; className?: string }) {
+  const layout = getMountLayout(template)
+  if (!layout || layout.slots.length === 0) {
+    return <div className={className} style={{ minHeight: 48, background: '#f5f5f5', borderRadius: 6 }} />
   }
-}
-
-function TemplatePreview({
-  slotDefs,
-  layoutConfig,
-  className,
-}: {
-  slotDefs: SlotDef[]
-  layoutConfig: LayoutConfig
-  className?: string
-}) {
-  const rows = layoutConfig.rows ?? Math.max(0, ...slotDefs.map((s) => s.row)) + 1
-  const cols = layoutConfig.cols ?? Math.max(0, ...slotDefs.map((s) => s.col)) + 1
-  const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-    gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-    gap: 2,
-    aspectRatio: layoutConfig.aspectRatio ?? `${cols}:${rows}`,
-    minHeight: 48,
-  }
+  const slotAssignments = layout.slots.map((slot) => ({
+    slot_id: slot.slot_id,
+    asset: null as ImagingAsset | null,
+    adjustments: {} as DisplayAdjustments,
+  }))
   return (
     <div
       className={className}
@@ -83,22 +39,17 @@ function TemplatePreview({
         borderRadius: 6,
         overflow: 'hidden',
         background: '#fff',
+        minHeight: 48,
       }}
     >
-      <div style={gridStyle} className="w-full h-full">
-        {slotDefs.map((slot) => (
-          <div
-            key={slot.slot_id}
-            style={{
-              gridRow: `${slot.row + 1} / span ${slot.row_span ?? 1}`,
-              gridColumn: `${slot.col + 1} / span ${slot.col_span ?? 1}`,
-              background: '#f5f5f5',
-              border: '1px solid #e5e5e5',
-              borderRadius: 2,
-            }}
-          />
-        ))}
-      </div>
+      <MountCanvas
+        width={layout.width}
+        height={layout.height}
+        slots={layout.slots}
+        slotAssignments={slotAssignments}
+        showOrderLabels={false}
+        interactive={false}
+      />
     </div>
   )
 }
@@ -154,9 +105,6 @@ export function CreateMountDialog({
     }
   }
 
-  const slotDefs = (t: TemplateOption) => parseSlotDefs(t.slot_definitions)
-  const layoutConfig = (t: TemplateOption) => parseLayout(t.layout_config)
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -178,8 +126,7 @@ export function CreateMountDialog({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-2">
             {templates.map((template) => {
-              const slots = slotDefs(template)
-              const layout = layoutConfig(template)
+              const slotCount = Array.isArray(template.slot_definitions) ? template.slot_definitions.length : 0
               return (
                 <Button
                   key={template.source === 'system' ? `s-${template.id}` : `c-${template.id}`}
@@ -188,14 +135,10 @@ export function CreateMountDialog({
                   onClick={() => handleSelect(template)}
                   disabled={creating}
                 >
-                  <TemplatePreview
-                    slotDefs={slots}
-                    layoutConfig={layout}
-                    className="w-full mb-2"
-                  />
+                  <TemplatePreview template={template} className="w-full mb-2 min-h-[60px]" />
                   <span className="font-medium truncate">{template.name}</span>
                   <span className="text-xs text-gray-500">
-                    {slots.length} slot{slots.length !== 1 ? 's' : ''}
+                    {slotCount} slot{slotCount !== 1 ? 's' : ''}
                   </span>
                 </Button>
               )

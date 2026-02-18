@@ -36,6 +36,8 @@ export interface UploadAssetResponse {
   assetId: number
 }
 
+import type { DisplayAdjustments } from '@/api/mounts'
+
 export interface ImagingAsset {
   id: number
   clinic_id: number
@@ -51,6 +53,7 @@ export interface ImagingAsset {
   web_key: string | null
   name: string | null
   image_source: 'intraoral' | 'panoramic' | 'webcam' | 'scanner' | 'photo' | null
+  display_adjustments?: DisplayAdjustments | null
   created_at?: string
   created_by?: string
   updated_at?: string
@@ -87,6 +90,8 @@ export {
   removeAssetFromMountSlot,
   getMountTemplate,
   getNextEmptySlotId,
+  getEmptySlotIdsInOrderFrom,
+  getSlotIdsInOrderFrom,
   normalizeMount,
   copySystemTemplateToClinic,
 } from '@/api/mounts'
@@ -289,17 +294,32 @@ export function getAssetUrl(assetId: number, variant: 'original' | 'web' | 'thum
 
 // Get asset as blob URL (for use in img tags with auth)
 export async function getAssetBlobUrl(assetId: number, variant: 'original' | 'web' | 'thumb' = 'web'): Promise<string> {
+  const blob = await getAssetBlob(assetId, variant)
+  return URL.createObjectURL(blob)
+}
+
+// Get asset as Blob (e.g. for PDF service or base64)
+export async function getAssetBlob(assetId: number, variant: 'original' | 'web' | 'thumb' = 'web'): Promise<Blob> {
   const url = getAssetUrl(assetId, variant)
   const response = await authFetch(url, {
     headers: getAuthHeaders(),
   })
-
   if (!response.ok) {
     throw new Error(`Failed to fetch asset: ${response.statusText}`)
   }
+  return response.blob()
+}
 
-  const blob = await response.blob()
-  return URL.createObjectURL(blob)
+/** Regenerate thumb (and optionally web) from original with display_adjustments applied. Call after saving asset display_adjustments. */
+export async function regenerateAssetDerived(assetId: number): Promise<void> {
+  const response = await authFetch(`${IMAGING_API_URL}/imaging/assets/${assetId}/regenerate-derived`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  })
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({})) as { error?: string; details?: string }
+    throw new Error(err.error || err.details || 'Failed to regenerate thumbnail')
+  }
 }
 
 // Update asset

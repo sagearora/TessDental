@@ -32,7 +32,7 @@ export function makeClient(headers: Record<string, string> = {}): GraphQLClient 
  */
 export function generateJWTToken(userId: string, clinicId: number): string {
   const now = Math.floor(Date.now() / 1000)
-  const expiresIn = 4 * 60 * 60 // 4 hours
+  const expiresIn = 5 * 60 * 60 // 5 hours
 
   const claims = {
     sub: userId,
@@ -110,6 +110,54 @@ export async function imagingServiceRequest(
   })
 
   return response
+}
+
+export interface PdfServiceRequestOptions {
+  /** Abort the request after this many ms (e.g. to fail fast if PDF generation hangs). */
+  timeoutMs?: number
+}
+
+/**
+ * Makes an authenticated request to the PDF service
+ */
+export async function pdfServiceRequest(
+  endpoint: string,
+  method: string,
+  token: string | null,
+  body?: unknown,
+  options?: PdfServiceRequestOptions
+): Promise<Response> {
+  const PDF_API_URL = process.env.PDF_API_URL || 'http://localhost:4021'
+
+  const headers: Record<string, string> = {}
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const controller = options?.timeoutMs != null ? new AbortController() : undefined
+  const timeoutId =
+    controller != null && options?.timeoutMs != null
+      ? setTimeout(() => controller.abort(), options.timeoutMs)
+      : undefined
+
+  try {
+    const response = await fetch(`${PDF_API_URL}${endpoint}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller?.signal,
+    })
+    if (timeoutId != null) clearTimeout(timeoutId)
+    return response
+  } catch (e) {
+    if (timeoutId != null) clearTimeout(timeoutId)
+    throw e
+  }
 }
 
 /**
@@ -279,4 +327,123 @@ export async function bootstrapOwnerUser(
     'Owner',
     ['system_admin', 'clinic_manage', 'users_manage', 'patient_manage', 'audit_export']
   )
+}
+
+const INSERT_PERSON_WITH_PATIENT = /* GraphQL */ `
+  mutation InsertPersonWithPatient(
+    $clinicId: bigint!
+    $firstName: String!
+    $lastName: String!
+    $preferredName: String
+    $status: patient_status_enum_enum!
+  ) {
+    insert_person_one(
+      object: {
+        clinic_id: $clinicId
+        first_name: $firstName
+        last_name: $lastName
+        preferred_name: $preferredName
+        patient: { data: { status: $status } }
+      }
+    ) {
+      id
+    }
+  }
+`
+
+export interface PdfTestData {
+  clinicId: number
+  userId: string
+  token: string
+  personId: number
+  assetId: number
+  mountId: number
+  clinicName: string
+  patientDisplayName: string
+}
+
+/**
+ * Bootstrap clinic + user (with imaging_read, imaging_write), person + patient,
+ * upload one asset, create one mount with that asset assigned. For PDF integration tests.
+ */
+export async function bootstrapPdfTestData(): Promise<PdfTestData> {
+  const clinicName = 'PDF Test Clinic'
+  const patientDisplayName = 'Print Test Patient'
+  const { userId, clinicId } = await bootstrapClinicUser(clinicName, undefined, 'PDF Test Role', [
+    'imaging_read',
+    'imaging_write',
+  ])
+  const token = generateJWTToken(userId, clinicId)
+  const client = makeClient()
+
+  const personResult = await client.request(INSERT_PERSON_WITH_PATIENT, {
+    clinicId,
+    firstName: 'Print',
+    lastName: 'Test',
+    preferredName: patientDisplayName,
+    status: 'active',
+  })
+  const personId = personResult.insert_person_one.id
+
+  const tinyPngBase64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+  const formData = new FormData()
+  formData.append('patientId', String(personId))
+  formData.append('modality', 'PHOTO')
+  formData.append('file', new Blob([Buffer.from(tinyPngBase64, 'base64')], { type: 'image/png' }), 'test.png')
+
+  const uploadRes = await imagingServiceRequest('/imaging/assets/upload', 'POST', token, formData)
+  if (!uploadRes.ok) {
+    const err = await uploadRes.json().catch(() => ({}))
+    throw new Error(`Upload failed: ${uploadRes.status} ${JSON.stringify(err)}`)
+  }
+  const uploadJson = (await uploadRes.json()) as { assetId: number }
+  const assetId = uploadJson.assetId
+
+  const templatesRes = await imagingServiceRequest('/imaging/mount-templates', 'GET', token)
+  if (!templatesRes.ok) throw new Error('Failed to list mount templates')
+  const templates = (await templatesRes.json()) as Array<{ id: number; slot_definitions?: Array<{ slot_id: string }> }>
+  const template = templates[0]
+  if (!template) throw new Error('No mount template found')
+  const slotId = (template.slot_definitions && template.slot_definitions[0]?.slot_id) || 'slot_1'
+
+  const mountUrl = (process.env.IMAGING_API_URL || 'http://localhost:4011') + '/imaging/mounts'
+  const createMountBody = JSON.stringify({
+    patientId: Number(personId),
+    templateId: Number(template.id),
+  })
+  const createMountRes3 = await fetch(mountUrl, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: createMountBody,
+  })
+  if (!createMountRes3.ok) {
+    const err = await createMountRes3.json().catch(() => ({}))
+    throw new Error(`Create mount failed: ${createMountRes3.status} ${JSON.stringify(err)}`)
+  }
+  const mountJson = (await createMountRes3.json()) as { mountId?: number; id?: number }
+  const mountId = mountJson.mountId ?? mountJson.id
+  if (!mountId) throw new Error('Mount response missing id')
+
+  const assignUrl = `${mountUrl}/${mountId}/slots/${encodeURIComponent(slotId)}/assign`
+  const assignRes = await fetch(assignUrl, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ assetId: Number(assetId) }),
+  })
+  if (!assignRes.ok) {
+    const err = await assignRes.json().catch(() => ({}))
+    throw new Error(`Assign asset to slot failed: ${assignRes.status} ${JSON.stringify(err)}`)
+  }
+
+  return {
+    clinicId,
+    userId,
+    token,
+    personId,
+    assetId,
+    mountId,
+    clinicName,
+    patientDisplayName,
+  }
 }

@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import {
-  createMockFieldConfigs,
+  createMockPatientFieldConfigGraphQL,
   createMockGenderEnum,
   createMockReferralKindEnum,
   createMockReferralSources,
@@ -56,6 +56,63 @@ export const handlers = [
     const query = body.query || ''
     const operationName = body.operationName || ''
 
+    // Handle CreatePatientWithRelations mutation first (broad match so submission tests pass)
+    if (
+      operationName === 'CreatePatientWithRelations' ||
+      (query.includes('insert_person_one') && query.includes('CreatePatientWithRelations'))
+    ) {
+      const vars = body.variables || {}
+      return HttpResponse.json({
+        data: {
+          insert_person_one: {
+            __typename: 'person',
+            id: 100,
+            clinic_id: vars.clinicId ?? 1,
+            first_name: vars.firstName ?? '',
+            last_name: vars.lastName ?? '',
+            preferred_name: vars.preferredName ?? null,
+            household_head_id: vars.householdHeadId ?? null,
+            household_relationship: vars.householdRelationship ?? null,
+            responsible_party_id: vars.responsiblePartyId ?? null,
+            patient: {
+              __typename: 'patient',
+              person_id: 100,
+              chart_no: vars.chartNo ?? null,
+              status: vars.status ?? 'active',
+            },
+            person_contact_point: (vars.contactPoints || []).map((p: any, i: number) => ({
+              __typename: 'person_contact_point',
+              id: i + 1,
+              kind: p?.kind ?? 'email',
+              value: p?.value ?? '',
+            })),
+            mailing_address: vars.mailingAddressId
+              ? {
+                  __typename: 'address',
+                  id: vars.mailingAddressId,
+                  line1: '123 Main St',
+                  line2: null,
+                  city: 'Toronto',
+                  region: 'ON',
+                  postal_code: 'M1A 1A1',
+                }
+              : null,
+            billing_address: vars.billingAddressId
+              ? {
+                  __typename: 'address',
+                  id: vars.billingAddressId,
+                  line1: '123 Main St',
+                  line2: null,
+                  city: 'Toronto',
+                  region: 'ON',
+                  postal_code: 'M1A 1A1',
+                }
+              : null,
+          },
+        },
+      })
+    }
+
     // Handle users count query
     if (query.includes('users_aggregate')) {
       return HttpResponse.json({
@@ -81,11 +138,13 @@ export const handlers = [
       })
     }
 
-    // Handle GetPatientFieldConfig query
-    if (operationName === 'GetPatientFieldConfig' || query.includes('GetPatientFieldConfig') || query.includes('patient_field_config')) {
+    // Handle GetPatientFieldConfig query (match by operation name only; mutations can also reference patient_field_config)
+    if (operationName === 'GetPatientFieldConfig') {
+      const { field_config, patient_field_config } = createMockPatientFieldConfigGraphQL()
       return HttpResponse.json({
         data: {
-          patient_field_config: createMockFieldConfigs(),
+          field_config,
+          patient_field_config,
         },
       })
     }
@@ -172,49 +231,6 @@ export const handlers = [
               ],
             },
           ],
-        },
-      })
-    }
-
-    // Handle CreatePatientWithRelations mutation
-    if (operationName === 'CreatePatientWithRelations' || query.includes('CreatePatientWithRelations') || (query.includes('insert_person_one') && body.variables?.contactPoints)) {
-      const vars = body.variables || {}
-      return HttpResponse.json({
-        data: {
-          insert_person_one: {
-            id: 100,
-            clinic_id: vars.clinicId || 1,
-            first_name: vars.firstName || '',
-            last_name: vars.lastName || '',
-            preferred_name: vars.preferredName || null,
-            household_head_id: vars.householdHeadId || null,
-            household_relationship: vars.householdRelationship || null,
-            responsible_party_id: vars.responsiblePartyId || null,
-            patient: {
-              person_id: 100,
-              chart_no: vars.chartNo || null,
-              status: vars.status || 'active',
-            },
-            person_contact_point: vars.contactPoints || [],
-            mailing_address: vars.mailingAddressId
-              ? {
-                  id: vars.mailingAddressId,
-                  line1: '123 Main St',
-                  city: 'Toronto',
-                  region: 'ON',
-                  postal_code: 'M1A 1A1',
-                }
-              : null,
-            billing_address: vars.billingAddressId
-              ? {
-                  id: vars.billingAddressId,
-                  line1: '123 Main St',
-                  city: 'Toronto',
-                  region: 'ON',
-                  postal_code: 'M1A 1A1',
-                }
-              : null,
-          },
         },
       })
     }

@@ -128,21 +128,9 @@ describe('CreatePatientDialog', () => {
       // Navigation should NOT have been called (validation prevented submission)
       expect(mockNavigate).not.toHaveBeenCalled()
 
-      // Error message should appear - try multiple ways to find it
+      // Error message should appear (validation prevents submit)
       await waitFor(() => {
-        // Try to find error by class first
-        let errorDiv = document.querySelector('.bg-red-50') as HTMLElement
-        if (!errorDiv) {
-          // Fallback: find any div with error text
-          errorDiv = Array.from(document.querySelectorAll('div')).find(div => 
-            div.textContent?.includes('required fields') || 
-            div.textContent?.includes('Please fill in required fields')
-          ) as HTMLElement
-        }
-        expect(errorDiv).toBeTruthy()
-        if (errorDiv) {
-          expect(errorDiv.textContent).toMatch(/required fields/i)
-        }
+        expect(screen.getByText(/required fields/i)).toBeInTheDocument()
       }, { timeout: 5000 })
     })
 
@@ -169,21 +157,9 @@ describe('CreatePatientDialog', () => {
       // Navigation should NOT have been called
       expect(mockNavigate).not.toHaveBeenCalled()
 
-      // Error message should appear - try multiple ways to find it
+      // Error message should appear (validation prevents submit)
       await waitFor(() => {
-        // Try to find error by class first
-        let errorDiv = document.querySelector('.bg-red-50') as HTMLElement
-        if (!errorDiv) {
-          // Fallback: find any element with error text
-          errorDiv = Array.from(document.querySelectorAll('*')).find(el => 
-            el.textContent?.includes('required fields') || 
-            el.textContent?.includes('Please fill in required fields')
-          ) as HTMLElement
-        }
-        expect(errorDiv).toBeTruthy()
-        if (errorDiv) {
-          expect(errorDiv.textContent).toMatch(/required fields/i)
-        }
+        expect(screen.getByText(/required fields/i)).toBeInTheDocument()
       }, { timeout: 5000 })
     })
 
@@ -211,12 +187,10 @@ describe('CreatePatientDialog', () => {
       const submitButton = screen.getByRole('button', { name: /Create Patient/i })
       await user.click(submitButton)
 
+      // Referred By is required when household head is not selected; error should appear
       await waitFor(() => {
-        // Look for error message - it should appear in a div with error styling
-        const errorDiv = document.querySelector('.bg-red-50') as HTMLElement
-        expect(errorDiv).toBeTruthy()
-        expect(errorDiv?.textContent).toMatch(/required fields/i)
-      }, { timeout: 3000 })
+        expect(screen.getByText(/required fields/i)).toBeInTheDocument()
+      }, { timeout: 5000 })
     })
   })
 

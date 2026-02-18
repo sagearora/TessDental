@@ -1,10 +1,7 @@
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:4000'
-import { refreshTokensIfNeeded } from '@/lib/authTokens'
 import { authFetch } from '@/lib/onUnauthorized'
 
-async function getAuthHeaders(): Promise<HeadersInit> {
-  await refreshTokensIfNeeded()
-
+function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('accessToken')
   return {
     'Content-Type': 'application/json',
@@ -62,7 +59,7 @@ export interface UpdateRoleRequest {
 export async function createUser(data: CreateUserRequest) {
   const response = await authFetch(`${AUTH_API_URL}/auth/users`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -77,7 +74,7 @@ export async function createUser(data: CreateUserRequest) {
 export async function updateUser(userId: string, data: UpdateUserRequest) {
   const response = await authFetch(`${AUTH_API_URL}/auth/users/${userId}`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -93,7 +90,7 @@ export async function updateUser(userId: string, data: UpdateUserRequest) {
 export async function createRole(clinicId: number, data: CreateRoleRequest) {
   const response = await authFetch(`${AUTH_API_URL}/auth/clinics/${clinicId}/roles`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -108,7 +105,7 @@ export async function createRole(clinicId: number, data: CreateRoleRequest) {
 export async function updateRole(clinicId: number, roleId: number, data: UpdateRoleRequest) {
   const response = await authFetch(`${AUTH_API_URL}/auth/clinics/${clinicId}/roles/${roleId}`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -125,7 +122,7 @@ export async function addCapabilityToRole(clinicId: number, roleId: number, capa
     `${AUTH_API_URL}/auth/clinics/${clinicId}/roles/${roleId}/capabilities`,
     {
       method: 'POST',
-      headers: await getAuthHeaders(),
+      headers: getAuthHeaders(),
       body: JSON.stringify({ capabilityKey }),
     }
   )
@@ -147,7 +144,7 @@ export async function removeCapabilityFromRole(
     `${AUTH_API_URL}/auth/clinics/${clinicId}/roles/${roleId}/capabilities/${capabilityKey}`,
     {
       method: 'DELETE',
-      headers: await getAuthHeaders(),
+      headers: getAuthHeaders(),
     }
   )
 
@@ -165,7 +162,7 @@ export async function assignRoleToUser(clinicId: number, userId: string, roleId:
     `${AUTH_API_URL}/auth/clinics/${clinicId}/users/${userId}/roles`,
     {
       method: 'POST',
-      headers: await getAuthHeaders(),
+      headers: getAuthHeaders(),
       body: JSON.stringify({ roleId }),
     }
   )
@@ -183,7 +180,7 @@ export async function removeRoleFromUser(clinicId: number, userId: string, roleI
     `${AUTH_API_URL}/auth/clinics/${clinicId}/users/${userId}/roles/${roleId}`,
     {
       method: 'DELETE',
-      headers: await getAuthHeaders(),
+      headers: getAuthHeaders(),
     }
   )
 
@@ -199,7 +196,7 @@ export async function removeRoleFromUser(clinicId: number, userId: string, roleI
 export async function updateUserProfile(userId: string, data: UpdateUserProfileRequest) {
   const response = await authFetch(`${AUTH_API_URL}/auth/users/${userId}/profile`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -219,7 +216,7 @@ export async function updateUserMembership(
 ) {
   const response = await authFetch(`${AUTH_API_URL}/auth/clinics/${clinicId}/users/${userId}/membership`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -250,7 +247,7 @@ export interface UpdateClinicRequest {
 export async function updateClinic(clinicId: number, data: UpdateClinicRequest) {
   const response = await authFetch(`${AUTH_API_URL}/auth/clinics/${clinicId}`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -288,7 +285,7 @@ export async function createProviderIdentifier(
 ) {
   const response = await authFetch(`${AUTH_API_URL}/auth/users/${userId}/provider-identifiers`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -306,7 +303,7 @@ export async function updateProviderIdentifier(
 ) {
   const response = await authFetch(`${AUTH_API_URL}/auth/users/provider-identifiers/${identifierId}`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
 
@@ -321,7 +318,7 @@ export async function updateProviderIdentifier(
 export async function deleteProviderIdentifier(identifierId: number) {
   const response = await authFetch(`${AUTH_API_URL}/auth/users/provider-identifiers/${identifierId}`, {
     method: 'DELETE',
-    headers: await getAuthHeaders(),
+    headers: getAuthHeaders(),
   })
 
   if (!response.ok) {

@@ -1,0 +1,2 @@
+-- Down migration: cannot reliably restore original grid layout from canvas coords.
+-- No-op; data remains in canvas format.

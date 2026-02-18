@@ -33,6 +33,7 @@ select_permissions:
         - source_device
         - name
         - image_source
+        - display_adjustments
         - created_at
         - created_by
         - updated_at
@@ -80,6 +81,7 @@ insert_permissions:
         - source_device
         - name
         - image_source
+        - display_adjustments
         - is_active
 update_permissions:
   - role: clinic_user
@@ -106,6 +108,7 @@ update_permissions:
       columns:
         - name
         - image_source
+        - display_adjustments
         - is_active
       filter:
         clinic_id:

@@ -36,6 +36,7 @@ const config: CodegenConfig = {
     generates: {
         'src/gql/generated.tsx': {
             plugins: [
+                { add: { content: '// @ts-nocheck', placement: 'prepend' } },
                 'typescript',
                 'typescript-operations',
                 'typescript-react-apollo',

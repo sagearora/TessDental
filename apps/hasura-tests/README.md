@@ -27,6 +27,9 @@ Tests run against a dedicated test Hasura instance defined in `infra/compose/doc
 
 - PostgreSQL test database (port 5434)
 - Hasura GraphQL Engine test instance (port 8082)
+- Auth service (port 4001; override with `AUTH_API_URL`)
+- Imaging service (port 4011; override with `IMAGING_API_URL`)
+- PDF service (port 4021; override with `PDF_API_URL`)
 
 ## Test Structure
 

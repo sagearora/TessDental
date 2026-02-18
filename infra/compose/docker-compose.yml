@@ -154,6 +154,28 @@ services:
       timeout: 3s
       retries: 30
 
+  # --- PDF service (fetches image/mount from Imaging API, clinic/patient from Hasura) ---
+  pdf-service:
+    build:
+      context: ../..
+      dockerfile: apps/pdf-service/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      imaging-service:
+        condition: service_started
+      hasura:
+        condition: service_started
+    ports:
+      - "${PDF_PORT:-4020}:4020"
+    environment:
+      NODE_ENV: development
+      PORT: 4020
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      IMAGING_API_URL: ${IMAGING_API_URL}
+      HASURA_GRAPHQL_URL: ${HASURA_GRAPHQL_URL}
+
 volumes:
   tess_pg_data:
   tess_minio_data:

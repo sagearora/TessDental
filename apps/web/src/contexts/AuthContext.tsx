@@ -3,7 +3,12 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { resetApolloClient } from '@/apollo/client'
 import { useUpdateCurrentClinicMutation } from '@/gql/generated'
-import { markTokensRefreshed } from '@/lib/authTokens'
+import {
+  getAccessTokenExpiryMs,
+  markTokensRefreshed,
+  refreshTokensIfNeeded,
+  SESSION_STARTED_AT_KEY,
+} from '@/lib/authTokens'
 import { setOnUnauthorized } from '@/lib/onUnauthorized'
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:4000'
@@ -20,8 +25,9 @@ interface Session {
   clinicId: number
 }
 
-const SESSION_STARTED_AT_KEY = 'sessionStartedAt'
 const MAX_SESSION_MS = 24 * 60 * 60 * 1000 // 24 hours
+const PROACTIVE_REFRESH_INTERVAL_MS = 90 * 1000 // 1.5 min when tab visible
+const TOKEN_STALE_MS = 5 * 60 * 1000 // 5 min: refresh when token expires within this
 
 interface AuthContextType {
   session: Session | null
@@ -52,11 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(sessionData)
         })
         .catch(() => {
-          // Token invalid, try refresh
+          // Token invalid, try refresh (use shared refresh so we don't race with Apollo link)
           if (storedRefreshToken) {
-            refreshAccessToken(storedRefreshToken)
-              .then(({ accessToken: newToken }) => {
-                localStorage.setItem('accessToken', newToken)
+            refreshTokensIfNeeded()
+              .then(() => {
                 resetApolloClient()
                 return fetchSession()
               })
@@ -79,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Enforce a hard 24-hour maximum session lifetime on the frontend.
+  // Enforce a hard 24-hour maximum session lifetime on the frontend (sliding: key updated on each refresh).
   useEffect(() => {
     if (!session) return
 
@@ -96,6 +101,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, 60 * 1000) // check every minute
 
     return () => clearInterval(interval)
+  }, [session])
+
+  // Proactive refresh when tab is visible: keep token fresh even with no user-triggered requests.
+  useEffect(() => {
+    if (!session || document.visibilityState !== 'visible') return
+
+    const runRefreshIfStale = async () => {
+      const expiresAtMs = getAccessTokenExpiryMs()
+      if (expiresAtMs == null) return
+      if (expiresAtMs - Date.now() >= TOKEN_STALE_MS) return
+      try {
+        await refreshTokensIfNeeded()
+        const sessionData = await fetchSession()
+        setSession(sessionData)
+      } catch {
+        // Refresh failed; onUnauthorized / logout will run on next 401.
+      }
+    }
+
+    const interval = setInterval(runRefreshIfStale, PROACTIVE_REFRESH_INTERVAL_MS)
+    runRefreshIfStale()
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void runRefreshIfStale()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }, [session])
 
   async function fetchSession(): Promise<Session> {

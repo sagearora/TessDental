@@ -19,6 +19,20 @@ interface ScannerCaptureProps {
 
 type Backend = 'bridge' | 'rest' | 'none'
 
+const STORAGE_KEY_CAPTURE_DEVICE_ID = 'capture-image-dialog-capture-device-id'
+const STORAGE_KEY_CAPTURE_BACKEND = 'capture-image-dialog-capture-backend'
+
+function getStoredDeviceId(): string {
+  if (typeof window === 'undefined') return ''
+  return localStorage.getItem(STORAGE_KEY_CAPTURE_DEVICE_ID) || ''
+}
+
+function getStoredBackend(): Backend | '' {
+  if (typeof window === 'undefined') return ''
+  const v = localStorage.getItem(STORAGE_KEY_CAPTURE_BACKEND)
+  return (v === 'bridge' || v === 'rest') ? v : ''
+}
+
 export function ScannerCapture({
   onCapture,
   getCaptureUploadContext,
@@ -36,6 +50,13 @@ export function ScannerCapture({
   const available = backend !== null && backend !== 'none'
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && selectedDeviceId) {
+      localStorage.setItem(STORAGE_KEY_CAPTURE_DEVICE_ID, selectedDeviceId)
+      if (backend) localStorage.setItem(STORAGE_KEY_CAPTURE_BACKEND, backend)
+    }
+  }, [selectedDeviceId, backend])
+
+  useEffect(() => {
     const init = async () => {
       try {
         const bridgeAvailable = await isCaptureBridgeAvailable()
@@ -44,7 +65,9 @@ export function ScannerCapture({
           try {
             const list = await scanDevices()
             setBridgeDevices(list)
-            if (list.length === 1) setSelectedDeviceId(String(list[0].id))
+            const storedId = getStoredBackend() === 'bridge' ? getStoredDeviceId() : ''
+            const match = list.find((d) => String(d.id) === storedId)
+            setSelectedDeviceId(match ? String(match.id) : list.length === 1 ? String(list[0].id) : '')
           } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Failed to list TWAIN devices')
           }
@@ -56,7 +79,9 @@ export function ScannerCapture({
           try {
             const list = await listScannerDevices()
             setRestDevices(list)
-            if (list.length === 1) setSelectedDeviceId(list[0].id)
+            const storedId = getStoredBackend() === 'rest' ? getStoredDeviceId() : ''
+            const match = list.find((d) => d.id === storedId)
+            setSelectedDeviceId(match ? match.id : list.length === 1 ? list[0].id : '')
           } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Failed to list scanner devices')
           }

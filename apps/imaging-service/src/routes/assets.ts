@@ -7,6 +7,8 @@ import { logAuditEvent } from '../lib/audit.js'
 import { getStorageAdapter } from '../storage/index.js'
 import { generateStorageKey, generateThumbKey, generateWebKey } from '../lib/storage-key.js'
 import { generateThumb, generateWebVersion } from '../lib/thumbnails.js'
+import { applyDisplayAdjustments } from '../lib/apply-display-adjustments.js'
+import { normalizeImageBuffer } from '../lib/normalize-image.js'
 import { computeSha256, computeSha256FromBuffer } from '../lib/sha256.js'
 import { env } from '../env.js'
 import { signUploadToken, verifyUploadToken, UPLOAD_TOKEN_EXPIRES_IN_SEC, type UploadTokenClaims } from '../jwt.js'
@@ -90,13 +92,31 @@ export async function assetsRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: `File too large. Maximum size: ${env.IMAGING_MAX_UPLOAD_MB}MB` })
     }
 
-    const sha256 = computeSha256FromBuffer(fileBuffer)
     let mimeType = data.mimetype || 'application/octet-stream'
     if (mimeType === 'application/octet-stream' && data.filename) {
       const ext = data.filename.split('.').pop()?.toLowerCase()
       if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg'
       else if (ext === 'png') mimeType = 'image/png'
+      else if (ext === 'heic' || ext === 'heif') mimeType = 'image/heic'
     }
+
+    let buffer: Buffer = fileBuffer
+    try {
+      const normalized = await normalizeImageBuffer({
+        buffer: fileBuffer,
+        filename: data.filename,
+        mimeType,
+      })
+      buffer = Buffer.from(normalized.buffer)
+      mimeType = normalized.mimeType
+    } catch (normErr: any) {
+      return reply.status(400).send({
+        error: 'Image conversion failed',
+        details: normErr?.message ?? 'Unsupported image format',
+      })
+    }
+
+    const sha256 = computeSha256FromBuffer(buffer)
 
     const pool = getPool()
     const client = await pool.connect()
@@ -118,7 +138,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
           studyIdNum,
           modalityStr,
           mimeType,
-          fileBuffer.length,
+          buffer.length,
           sha256,
           env.IMAGING_STORAGE_BACKEND,
           '',
@@ -143,18 +163,18 @@ export async function assetsRoutes(fastify: FastifyInstance) {
       )
       await client.query(`UPDATE public.imaging_asset SET storage_key = $1 WHERE id = $2`, [storageKey, assetId])
 
-      const originalStream = Readable.from(fileBuffer)
+      const originalStream = Readable.from(buffer)
       await storage.put(storageKey, originalStream, mimeType)
 
       let thumbKey: string | null = null
       let webKey: string | null = null
       if (env.IMAGING_THUMBS_ENABLED && mimeType.startsWith('image/')) {
         try {
-          const thumbBuffer = await generateThumb(fileBuffer)
+          const thumbBuffer = await generateThumb(buffer)
           thumbKey = generateThumbKey(clinicId, patientIdNum, 0, assetId)
           const thumbStream = Readable.from(thumbBuffer)
           await storage.put(thumbKey, thumbStream, 'image/webp')
-          const webBuffer = await generateWebVersion(fileBuffer)
+          const webBuffer = await generateWebVersion(buffer)
           webKey = generateWebKey(clinicId, patientIdNum, 0, assetId, capturedAtDate)
           const webStream = Readable.from(webBuffer)
           await storage.put(webKey, webStream, 'image/webp')
@@ -278,7 +298,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
 
       // Process each file
       for (let i = 0; i < files.length; i++) {
-        const { buffer: fileBuffer, fileName, mimeType } = files[i]
+        const { buffer: fileBuffer, fileName, mimeType: rawMimeType } = files[i]
         const name = names[i] !== undefined ? names[i] : null
         const capturedAt = capturedAts[i] !== undefined ? capturedAts[i] : new Date()
 
@@ -293,8 +313,27 @@ export async function assetsRoutes(fastify: FastifyInstance) {
             continue
           }
 
+          let buffer: Buffer = fileBuffer
+          let mimeType = rawMimeType
+          try {
+            const normalized = await normalizeImageBuffer({
+              buffer: fileBuffer,
+              filename: fileName,
+              mimeType: rawMimeType,
+            })
+            buffer = Buffer.from(normalized.buffer)
+            mimeType = normalized.mimeType
+          } catch (normErr: any) {
+            results.push({
+              success: false,
+              error: normErr?.message ?? 'Image conversion failed',
+              fileName,
+            })
+            continue
+          }
+
           // Compute SHA256
-          const sha256 = computeSha256FromBuffer(fileBuffer)
+          const sha256 = computeSha256FromBuffer(buffer)
 
           const client = await pool.connect()
 
@@ -333,7 +372,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
                 studyIdNum,
                 modalityStr,
                 mimeType,
-                fileBuffer.length,
+                buffer.length,
                 sha256,
                 env.IMAGING_STORAGE_BACKEND,
                 '', // Will update after we generate the key
@@ -366,7 +405,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
             )
 
             // Store original file
-            const originalStream = Readable.from(fileBuffer)
+            const originalStream = Readable.from(buffer)
             await storage.put(storageKey, originalStream, mimeType)
 
             let thumbKey: string | null = null
@@ -376,13 +415,13 @@ export async function assetsRoutes(fastify: FastifyInstance) {
             if (env.IMAGING_THUMBS_ENABLED && mimeType.startsWith('image/')) {
               try {
                 // Generate thumbnail
-                const thumbBuffer = await generateThumb(fileBuffer)
+                const thumbBuffer = await generateThumb(buffer)
                 thumbKey = generateThumbKey(clinicId, patientIdNum, studyIdNum || 0, assetId)
                 const thumbStream = Readable.from(thumbBuffer)
                 await storage.put(thumbKey, thumbStream, 'image/webp')
 
                 // Generate web version
-                const webBuffer = await generateWebVersion(fileBuffer)
+                const webBuffer = await generateWebVersion(buffer)
                 webKey = generateWebKey(clinicId, patientIdNum, studyIdNum || 0, assetId, capturedAt || new Date())
                 const webStream = Readable.from(webBuffer)
                 await storage.put(webKey, webStream, 'image/webp')
@@ -520,11 +559,25 @@ export async function assetsRoutes(fastify: FastifyInstance) {
       }
       const fileBuffer = Buffer.concat(chunks)
 
-      // Compute SHA256
-      const sha256 = computeSha256FromBuffer(fileBuffer)
+      let buffer: Buffer = fileBuffer
+      let mimeType = data.mimetype || 'application/octet-stream'
+      try {
+        const normalized = await normalizeImageBuffer({
+          buffer: fileBuffer,
+          filename: data.filename,
+          mimeType,
+        })
+        buffer = Buffer.from(normalized.buffer)
+        mimeType = normalized.mimeType
+      } catch (normErr: any) {
+        return reply.status(400).send({
+          error: 'Image conversion failed',
+          details: normErr?.message ?? 'Unsupported image format',
+        })
+      }
 
-      // Get mime type
-      const mimeType = data.mimetype || 'application/octet-stream'
+      // Compute SHA256
+      const sha256 = computeSha256FromBuffer(buffer)
 
       const pool = getPool()
       const client = await pool.connect()
@@ -560,7 +613,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
             studyIdNum,
             modalityStr,
             mimeType,
-            fileBuffer.length,
+            buffer.length,
             sha256,
             env.IMAGING_STORAGE_BACKEND,
             '', // Will update after we generate the key
@@ -593,7 +646,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
         )
 
         // Store original file
-        const originalStream = Readable.from(fileBuffer)
+        const originalStream = Readable.from(buffer)
         await storage.put(storageKey, originalStream, mimeType)
 
         let thumbKey: string | null = null
@@ -603,13 +656,13 @@ export async function assetsRoutes(fastify: FastifyInstance) {
         if (env.IMAGING_THUMBS_ENABLED && mimeType.startsWith('image/')) {
           try {
             // Generate thumbnail
-            const thumbBuffer = await generateThumb(fileBuffer)
+            const thumbBuffer = await generateThumb(buffer)
             thumbKey = generateThumbKey(clinicId, patientIdNum, studyIdNum || 0, assetId)
             const thumbStream = Readable.from(thumbBuffer)
             await storage.put(thumbKey, thumbStream, 'image/webp')
 
             // Generate web version
-            const webBuffer = await generateWebVersion(fileBuffer)
+            const webBuffer = await generateWebVersion(buffer)
             webKey = generateWebKey(clinicId, patientIdNum, studyIdNum || 0, assetId, capturedAtDate)
             const webStream = Readable.from(webBuffer)
             await storage.put(webKey, webStream, 'image/webp')
@@ -691,7 +744,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
           SELECT 
             id, clinic_id, patient_id, study_id, modality, mime_type, 
             size_bytes, captured_at, source_device, storage_key, thumb_key, web_key,
-            name, image_source
+            name, image_source, display_adjustments
           FROM public.imaging_asset
           WHERE clinic_id = $1 AND is_active = true
         `
@@ -715,6 +768,73 @@ export async function assetsRoutes(fastify: FastifyInstance) {
       } catch (error) {
         console.error('List assets error:', error)
         reply.status(500).send({ error: 'Internal server error' })
+      }
+    }
+  )
+
+  // Regenerate thumb (and optionally web) from original with display_adjustments applied
+  fastify.post<{ Params: { assetId: string } }>(
+    '/imaging/assets/:assetId/regenerate-derived',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request: AuthenticatedRequest & { params: { assetId: string } }, reply) => {
+      const hasCapability = await requireCapability(request, reply, 'imaging_write')
+      if (!hasCapability) return
+
+      const assetId = Number(request.params.assetId)
+      const auditContext = request.auditContext!
+      const clinicId = Number(auditContext.clinicId)
+
+      const pool = getPool()
+      const storage = getStorageAdapter()
+
+      try {
+        const result = await pool.query(
+          `SELECT id, clinic_id, patient_id, study_id, storage_backend, storage_key, thumb_key, web_key, mime_type, display_adjustments
+           FROM public.imaging_asset
+           WHERE id = $1 AND clinic_id = $2 AND is_active = true`,
+          [assetId, clinicId]
+        )
+        if (result.rows.length === 0) {
+          return reply.status(404).send({ error: 'Asset not found or access denied' })
+        }
+        const asset = result.rows[0]
+        const clinicIdNum = Number(asset.clinic_id)
+        const patientIdNum = Number(asset.patient_id)
+        const studyIdNum = asset.study_id != null ? Number(asset.study_id) : 0
+        const displayAdjustments = asset.display_adjustments as Record<string, unknown> | null | undefined
+
+        const originalStream = await storage.get(asset.storage_key)
+        const chunks: Buffer[] = []
+        for await (const chunk of originalStream) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+        }
+        const originalBuffer = Buffer.concat(chunks)
+
+        let adjustedBuffer: Buffer = originalBuffer
+        if (displayAdjustments && Object.keys(displayAdjustments).length > 0) {
+          adjustedBuffer = await applyDisplayAdjustments(originalBuffer, displayAdjustments) as Buffer
+        }
+
+        if (!env.IMAGING_THUMBS_ENABLED) {
+          return reply.status(400).send({ error: 'Thumbnail generation is disabled' })
+        }
+
+        const thumbBuffer = await generateThumb(adjustedBuffer)
+        const thumbKey = generateThumbKey(clinicIdNum, patientIdNum, studyIdNum, assetId)
+        await storage.put(thumbKey, Readable.from(thumbBuffer), 'image/webp')
+
+        await pool.query(
+          `UPDATE public.imaging_asset SET thumb_key = $1 WHERE id = $2`,
+          [thumbKey, assetId]
+        )
+
+        return reply.send({ ok: true, thumb_key: thumbKey })
+      } catch (error: unknown) {
+        console.error('Regenerate derived error:', error)
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return reply.status(500).send({ error: 'Internal server error', details: message })
       }
     }
   )
@@ -743,7 +863,7 @@ export async function assetsRoutes(fastify: FastifyInstance) {
       try {
         // Get asset
         const result = await pool.query(
-          `SELECT id, clinic_id, patient_id, study_id, storage_backend, storage_key, thumb_key, web_key, mime_type
+          `SELECT id, clinic_id, patient_id, study_id, storage_backend, storage_key, thumb_key, web_key, mime_type, display_adjustments
            FROM public.imaging_asset
            WHERE id = $1 AND clinic_id = $2 AND is_active = true`,
           [assetId, clinicId]

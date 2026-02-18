@@ -49,7 +49,12 @@ function createWsLink() {
   
   wsClient = createWsClient({
     url: hasuraWsUrl,
-    connectionParams: () => {
+    connectionParams: async () => {
+      try {
+        await refreshTokensIfNeeded();
+      } catch {
+        // Let connection proceed; Hasura may return 401 and existing handling will run.
+      }
       const token = getToken();
       return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
     },

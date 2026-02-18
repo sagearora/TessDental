@@ -92,6 +92,31 @@ export function createMockFieldConfig(overrides?: Partial<MockFieldConfig>): Moc
   }
 }
 
+/** GraphQL-shaped item for patient_field_config (includes nested field_config) */
+function createPatientFieldConfigItem(
+  id: number,
+  fieldConfigId: number,
+  key: string,
+  label: string,
+  displayOrder: number,
+  isRequired: boolean
+) {
+  return {
+    id,
+    clinic_id: 1,
+    field_config_id: fieldConfigId,
+    display_order: displayOrder,
+    is_displayed: true,
+    is_required: isRequired,
+    field_config: {
+      id: fieldConfigId,
+      key,
+      label,
+      is_active: true,
+    },
+  }
+}
+
 export function createMockFieldConfigs(): MockFieldConfig[] {
   return [
     createMockFieldConfig({
@@ -151,6 +176,27 @@ export function createMockFieldConfigs(): MockFieldConfig[] {
       is_required: true,
     }),
   ]
+}
+
+/** Returns GetPatientFieldConfig shape for MSW (patient_field_config with nested field_config + field_config list) */
+export function createMockPatientFieldConfigGraphQL() {
+  const items = [
+    createPatientFieldConfigItem(1, 1, 'first_name', 'First Name', 1, true),
+    createPatientFieldConfigItem(2, 2, 'last_name', 'Last Name', 2, true),
+    createPatientFieldConfigItem(3, 3, 'preferred_name', 'Preferred Name', 3, false),
+    createPatientFieldConfigItem(4, 4, 'dob', 'Date of Birth', 4, false),
+    createPatientFieldConfigItem(5, 5, 'gender', 'Gender', 5, false),
+    createPatientFieldConfigItem(6, 6, 'email', 'Email', 6, true),
+    createPatientFieldConfigItem(7, 7, 'cell_phone', 'Cell Phone', 7, true),
+    createPatientFieldConfigItem(8, 8, 'referred_by', 'Referred By', 8, true),
+  ]
+  const field_config = items.map((p) => ({
+    id: p.field_config.id,
+    key: p.field_config.key,
+    label: p.field_config.label,
+    is_active: true,
+  }))
+  return { field_config, patient_field_config: items }
 }
 
 export function createMockGenderEnum(): MockGenderEnum[] {

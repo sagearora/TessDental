@@ -143,10 +143,39 @@ services:
       hasura-test:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4010/health', (r) => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))"]
       interval: 5s
       timeout: 3s
       retries: 30
+      start_period: 15s
+
+  # PDF service for test environment
+  pdf-service-test:
+    build:
+      context: ../../
+      dockerfile: apps/pdf-service/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      imaging-service-test:
+        condition: service_healthy
+      hasura-test:
+        condition: service_started
+    environment:
+      NODE_ENV: test
+      PORT: 4020
+      JWT_SECRET: testjwtsecret_testjwtsecret_testjwt
+      JWT_ISSUER: test-issuer
+      JWT_AUDIENCE: test-audience
+      IMAGING_API_URL: http://imaging-service-test:4010
+      HASURA_GRAPHQL_URL: http://hasura-test:8080/v1/graphql
+    ports:
+      - "4021:4020"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4020/health', (r) => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
 
 volumes:
   tess_pg_data_test:

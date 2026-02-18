@@ -1,33 +1,138 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSubscription } from '@apollo/client/react'
 import { gql } from '@apollo/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   listAssets,
-  updateAsset,
   deleteAsset,
   listMounts,
   getMount,
+  removeAssetFromMountSlot,
+  getAssetBlobUrl,
+  regenerateAssetDerived,
   type ImagingAsset,
   type ImagingMount,
 } from '@/api/imaging'
+import { fetchPrintImagePdf, fetchPrintMountPdf } from '@/api/pdf'
 import {
   listMountTemplates,
-  getNextEmptySlotId,
+  getSlotIdsInOrderFrom,
+  updateMountSlotAdjustments,
+  updateAssetDisplayAdjustments,
+  deleteMount,
   type SystemMountTemplate,
   type ClinicMountTemplate,
 } from '@/api/mounts'
 import { CaptureImageDialog } from '@/components/imaging/CaptureImageDialog'
 import { AssetInfoDialog } from '@/components/imaging/AssetInfoDialog'
 import { useAuth } from '@/contexts/AuthContext'
-import { ImageIcon, X, Layout, Calendar, Trash2, CircleHelp, Pencil, ChevronLeft, ChevronRight, Camera } from 'lucide-react'
+import { ImageIcon, X, Layout, Trash2, CircleHelp, Pencil, ChevronLeft, ChevronRight, Camera, Download, Printer, SlidersHorizontal } from 'lucide-react'
 import { AuthenticatedImage } from '@/components/imaging/AuthenticatedImage'
-import { InlineEditableField } from '@/components/profile/InlineEditableField'
-import { InlineEditableSelect } from '@/components/profile/InlineEditableSelect'
 import { MountView } from '@/components/imaging/MountView'
+import { MountCanvas } from '@/components/imaging/MountCanvas'
 import { CreateMountDialog } from '@/components/imaging/CreateMountDialog'
+import { MountInfoDialog } from '@/components/imaging/MountInfoDialog'
+import { TransformationDialog } from '@/components/imaging/TransformationDialog'
+import { getMountLayout, getMountTemplate, getEffectiveSlotOrder, MOUNT_CANVAS_WIDTH, MOUNT_CANVAS_HEIGHT } from '@/api/mounts'
+import { mergeDisplayAdjustments, displayAdjustmentsToFilter, displayAdjustmentsToTransform } from '@/lib/display-adjustments'
+import type { DisplayAdjustments } from '@/api/mounts'
+
+/** Assets in this mount in slot order (capture order), for fullscreen prev/next */
+function getMountAssetsInSlotOrder(mount: ImagingMount): ImagingAsset[] {
+  const template = getMountTemplate(mount)
+  if (!template) return []
+  const order = getEffectiveSlotOrder(template, null)
+  const slots = mount.mount_slots ?? mount.slots ?? []
+  const result: ImagingAsset[] = []
+  for (const slotId of order) {
+    const slot = slots.find((s) => s.slot_id === slotId && s.asset)
+    if (!slot?.asset) continue
+    const a = slot.asset
+    result.push({
+      id: a.id,
+      clinic_id: 0,
+      patient_id: 0,
+      study_id: null,
+      modality: (a.modality as ImagingAsset['modality']) || 'PHOTO',
+      mime_type: 'image/jpeg',
+      size_bytes: 0,
+      captured_at: a.captured_at || new Date().toISOString(),
+      source_device: null,
+      storage_key: '',
+      thumb_key: a.thumb_key ?? null,
+      web_key: a.web_key ?? null,
+      name: a.name ?? null,
+      image_source: (a.image_source as ImagingAsset['image_source']) ?? null,
+    })
+  }
+  return result
+}
+
+// Mini mount preview for gallery: same canvas layout as main preview, read-only
+function MountThumbnail({ mount }: { mount: ImagingMount }) {
+  const template = getMountTemplate(mount)
+  const layout = getMountLayout(template)
+  const defaultTransforms = (template?.default_slot_transformations ?? {}) as Record<string, DisplayAdjustments>
+  const slotsData = mount.mount_slots ?? mount.slots ?? []
+
+  if (!layout || layout.slots.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Layout className="h-6 w-6 text-gray-400" />
+      </div>
+    )
+  }
+
+  const slotAssignments = layout.slots.map((slot) => {
+    const slotData = slotsData.find((s) => s.slot_id === slot.slot_id)
+    const asset = slotData?.asset
+    const imagingAsset: ImagingAsset | null =
+      asset && asset.id
+        ? {
+            id: asset.id,
+            clinic_id: 0,
+            patient_id: 0,
+            study_id: null,
+            modality: (asset.modality as ImagingAsset['modality']) || 'PHOTO',
+            mime_type: 'image/jpeg',
+            size_bytes: 0,
+            captured_at: asset.captured_at || new Date().toISOString(),
+            source_device: null,
+            storage_key: '',
+            thumb_key: asset.thumb_key || null,
+            web_key: asset.web_key || null,
+            name: asset.name || null,
+            image_source: (asset.image_source as ImagingAsset['image_source']) || null,
+          }
+        : null
+    const adjustments = mergeDisplayAdjustments(defaultTransforms[slot.slot_id], slotData?.adjustments ?? null)
+    return { slot_id: slot.slot_id, asset: imagingAsset, adjustments }
+  })
+
+  return (
+    <div className="w-full h-full flex items-center justify-center min-h-0 min-w-0 p-0.5">
+      <div
+        className="max-w-full max-h-full min-h-0 w-full"
+        style={{
+          aspectRatio: layout.width / layout.height,
+          maxHeight: '100%',
+        }}
+      >
+        <MountCanvas
+          width={layout.width}
+          height={layout.height}
+          slots={layout.slots}
+          slotAssignments={slotAssignments}
+          showOrderLabels={false}
+          interactive={false}
+          className="w-full h-full"
+        />
+      </div>
+    </div>
+  )
+}
 
 /** Unified template option for Create a Mount (system or clinic) */
 type MountTemplateOption = (SystemMountTemplate & { source: 'system' }) | (ClinicMountTemplate & { source: 'clinic' })
@@ -57,11 +162,11 @@ const SUBSCRIBE_IMAGING_ASSETS = gql`
       web_key
       name
       image_source
+      display_adjustments
     }
   }
 `
 
-type ViewMode = 'images' | 'mounts'
 
 export function groupAssetsByCaptureDate(assets: ImagingAsset[]): { dateLabel: string; dateKey: string; assets: ImagingAsset[] }[] {
   const byDate = new Map<string, ImagingAsset[]>()
@@ -82,6 +187,54 @@ export function groupAssetsByCaptureDate(assets: ImagingAsset[]): { dateLabel: s
   })
 }
 
+type GalleryItem = { type: 'asset'; data: ImagingAsset } | { type: 'mount'; data: ImagingMount }
+
+export function groupGalleryItemsByDate(
+  assets: ImagingAsset[],
+  mounts: ImagingMount[]
+): { dateLabel: string; dateKey: string; items: GalleryItem[] }[] {
+  const byDate = new Map<string, GalleryItem[]>()
+  
+  // Add assets
+  for (const asset of assets) {
+    const d = asset.captured_at ? new Date(asset.captured_at) : new Date(0)
+    const dateKey = d.toISOString().slice(0, 10)
+    const list = byDate.get(dateKey) ?? []
+    list.push({ type: 'asset', data: asset })
+    byDate.set(dateKey, list)
+  }
+  
+  // Add mounts
+  for (const mount of mounts) {
+    const d = mount.created_at ? new Date(mount.created_at) : new Date(0)
+    const dateKey = d.toISOString().slice(0, 10)
+    const list = byDate.get(dateKey) ?? []
+    list.push({ type: 'mount', data: mount })
+    byDate.set(dateKey, list)
+  }
+  
+  const entries = Array.from(byDate.entries())
+  entries.sort((a, b) => b[0].localeCompare(a[0]))
+  return entries.map(([dateKey, list]) => {
+    // Sort items: assets by captured_at desc, mounts by created_at desc
+    list.sort((a, b) => {
+      if (a.type === 'asset' && b.type === 'asset') {
+        return new Date(b.data.captured_at).getTime() - new Date(a.data.captured_at).getTime()
+      }
+      if (a.type === 'mount' && b.type === 'mount') {
+        return new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime()
+      }
+      // Assets come before mounts on the same day
+      if (a.type === 'asset' && b.type === 'mount') return -1
+      if (a.type === 'mount' && b.type === 'asset') return 1
+      return 0
+    })
+    const d = new Date(dateKey + 'T12:00:00Z')
+    const dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+    return { dateKey, dateLabel, items: list }
+  })
+}
+
 function mapSubscriptionAsset(row: {
   id: number
   clinic_id: number
@@ -97,6 +250,7 @@ function mapSubscriptionAsset(row: {
   web_key: string | null
   name: string | null
   image_source: string | null
+  display_adjustments?: Record<string, unknown> | null
 }): ImagingAsset {
   return {
     id: row.id,
@@ -113,6 +267,7 @@ function mapSubscriptionAsset(row: {
     web_key: row.web_key,
     name: row.name,
     image_source: row.image_source as ImagingAsset['image_source'],
+    display_adjustments: row.display_adjustments as ImagingAsset['display_adjustments'],
   }
 }
 
@@ -125,14 +280,36 @@ export function Imaging() {
   const [error, setError] = useState<string | null>(null)
   const [selectedAsset, setSelectedAsset] = useState<ImagingAsset | null>(null)
   const [selectedMount, setSelectedMount] = useState<ImagingMount | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('images')
   const [patientId, setPatientId] = useState<string>(personId || '')
   const [, setMountTemplates] = useState<MountTemplateOption[]>([])
   const [captureDialogOpen, setCaptureDialogOpen] = useState(false)
   const [captureDialogMount, setCaptureDialogMount] = useState<ImagingMount | null>(null)
+  const [captureDialogSlotId, setCaptureDialogSlotId] = useState<string | null>(null)
+  const [mountContextMenu, setMountContextMenu] = useState<{ x: number; y: number; slotId: string } | null>(null)
+  const [autoAcquisitionQueue, setAutoAcquisitionQueue] = useState<string[] | null>(null)
   const [createMountDialogOpen, setCreateMountDialogOpen] = useState(false)
   const [assetForInfoDialog, setAssetForInfoDialog] = useState<ImagingAsset | null>(null)
+  const [assetInfoDialogMode, setAssetInfoDialogMode] = useState<'edit' | 'inspect'>('edit')
+  const [mountInfoDialogMount, setMountInfoDialogMount] = useState<ImagingMount | null>(null)
+  const [mountInfoDialogMode, setMountInfoDialogMode] = useState<'edit' | 'inspect' | null>(null)
+  const [transformDialogContext, setTransformDialogContext] = useState<
+    | { type: 'asset'; asset: ImagingAsset }
+    | { type: 'mount'; mount: ImagingMount; slotId: string }
+    | null
+  >(null)
+  const [transformPreviewAdjustments, setTransformPreviewAdjustments] = useState<DisplayAdjustments | null>(null)
   const [previewFullscreen, setPreviewFullscreen] = useState(false)
+  const [fullscreenFromMount, setFullscreenFromMount] = useState<ImagingMount | null>(null)
+  const [previewMaxWidth, setPreviewMaxWidth] = useState<number | null>(null)
+  const [galleryContextMenu, setGalleryContextMenu] = useState<{
+    x: number
+    y: number
+    item: GalleryItem
+  } | null>(null)
+
+  const mountContextMenuRef = useRef<HTMLDivElement | null>(null)
+  const galleryContextMenuRef = useRef<HTMLDivElement | null>(null)
+  const contentWrapperRef = useRef<HTMLDivElement | null>(null)
 
   // Update patientId when personId changes
   useEffect(() => {
@@ -141,20 +318,52 @@ export function Imaging() {
     }
   }, [personId])
 
-  // Fullscreen preview: Escape to close, ArrowLeft/ArrowRight for prev/next (same date group)
+  useEffect(() => {
+    if (!mountContextMenu) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mountContextMenuRef.current && !mountContextMenuRef.current.contains(e.target as Node)) {
+        setMountContextMenu(null)
+      }
+    }
+    const t = setTimeout(() => document.addEventListener('click', handleClickOutside), 0)
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [mountContextMenu])
+
+  useEffect(() => {
+    if (!galleryContextMenu) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (galleryContextMenuRef.current && !galleryContextMenuRef.current.contains(e.target as Node)) {
+        setGalleryContextMenu(null)
+      }
+    }
+    const t = setTimeout(() => document.addEventListener('click', handleClickOutside), 0)
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [galleryContextMenu])
+
+  // Fullscreen preview: Escape to close, ArrowLeft/ArrowRight for prev/next.
+  // When opened from a mount, prev/next use mount slot order; otherwise same-date group.
   const groups = groupAssetsByCaptureDate(assets)
-  const fullscreenGroup = previewFullscreen && selectedAsset
+  const fullscreenGroup = previewFullscreen && selectedAsset && !fullscreenFromMount
     ? groups.find((g) => g.assets.some((a) => a.id === selectedAsset.id))
     : null
+  const fullscreenAssetList = fullscreenFromMount
+    ? getMountAssetsInSlotOrder(fullscreenFromMount)
+    : fullscreenGroup?.assets ?? []
   const fullscreenIndex =
-    fullscreenGroup && selectedAsset
-      ? fullscreenGroup.assets.findIndex((a) => a.id === selectedAsset.id)
+    selectedAsset && fullscreenAssetList.length > 0
+      ? fullscreenAssetList.findIndex((a) => a.id === selectedAsset.id)
       : -1
   const fullscreenPrev =
-    fullscreenGroup && fullscreenIndex > 0 ? fullscreenGroup.assets[fullscreenIndex - 1] : null
+    fullscreenIndex > 0 ? fullscreenAssetList[fullscreenIndex - 1] ?? null : null
   const fullscreenNext =
-    fullscreenGroup && fullscreenIndex >= 0 && fullscreenIndex < fullscreenGroup.assets.length - 1
-      ? fullscreenGroup.assets[fullscreenIndex + 1]
+    fullscreenIndex >= 0 && fullscreenIndex < fullscreenAssetList.length - 1
+      ? fullscreenAssetList[fullscreenIndex + 1] ?? null
       : null
 
   useEffect(() => {
@@ -162,6 +371,10 @@ export function Imaging() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setPreviewFullscreen(false)
+        setFullscreenFromMount((prev) => {
+          if (prev) setSelectedAsset(null)
+          return null
+        })
         e.preventDefault()
       } else if (e.key === 'ArrowLeft' && fullscreenPrev) {
         setSelectedAsset(fullscreenPrev)
@@ -175,8 +388,7 @@ export function Imaging() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [previewFullscreen, fullscreenPrev, fullscreenNext])
 
-  const subscriptionActive =
-    viewMode === 'images' && Boolean(patientId && session?.clinicId)
+  const subscriptionActive = Boolean(patientId && session?.clinicId)
 
   interface SubscribeImagingAssetsData {
     imaging_asset: Parameters<typeof mapSubscriptionAsset>[0][]
@@ -229,9 +441,14 @@ export function Imaging() {
     setError(null)
     try {
       const data = await listMounts(Number(patientId), session.clinicId)
-      setMounts(data)
-      // Clear selection if selected mount no longer exists
-      if (selectedMount && !data.find((m) => m.id === selectedMount.id)) {
+      // If selected mount is missing from the list (e.g. stale cache), keep it in the list so gallery and preview stay correct
+      const list =
+        selectedMount && !data.find((m) => m.id === selectedMount.id)
+          ? [selectedMount, ...data]
+          : data
+      setMounts(list)
+      // Clear selection only if selected mount is not in the final list (e.g. was deleted)
+      if (selectedMount && !list.find((m) => m.id === selectedMount.id)) {
         setSelectedMount(null)
       }
     } catch (err: any) {
@@ -257,16 +474,44 @@ export function Imaging() {
   }
 
   useEffect(() => {
-    if (viewMode === 'images') {
-      if (!subscriptionActive) fetchAssets()
-    } else {
-      fetchMounts()
-    }
-  }, [session, patientId, viewMode, subscriptionActive])
+    if (!subscriptionActive) fetchAssets()
+    fetchMounts()
+  }, [session, patientId, subscriptionActive])
 
   useEffect(() => {
     fetchMountTemplates()
   }, [session])
+
+  // Cap preview at 3/5 of vertical space: with aspect ratio 2:1, height = width/2, so width <= 1.2 * containerHeight
+  useEffect(() => {
+    const el = contentWrapperRef.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        setPreviewMaxWidth(Math.min(width, 1.2 * height))
+      }
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  /** Hide the transformation panel only; do not change selected asset/mount. */
+  const closeTransformPanel = () => {
+    setTransformDialogContext(null)
+    setTransformPreviewAdjustments(null)
+  }
+
+  useEffect(() => {
+    if (!transformDialogContext) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeTransformPanel()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [transformDialogContext])
 
   const handleCaptureSuccess = () => {
     fetchAssets()
@@ -291,56 +536,62 @@ export function Imaging() {
     }
   }
 
-  const handleUpdateAssetName = async (name: string) => {
-    if (!selectedAsset) return
+  const handleDownloadAsset = async (
+    assetId: number,
+    variant: 'original' | 'web',
+    filename: string
+  ) => {
     try {
-      await updateAsset(selectedAsset.id, { name: name.trim() || null })
-      await fetchAssets()
-      // Update selected asset
-      const updated = await listAssets(Number(patientId))
-      const updatedAsset = updated.find((a) => a.id === selectedAsset.id)
-      if (updatedAsset) {
-        setSelectedAsset(updatedAsset)
-      }
+      const blobUrl = await getAssetBlobUrl(assetId, variant)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename || `image-${assetId}-${variant}.jpg`
+      a.click()
+      URL.revokeObjectURL(blobUrl)
     } catch (err: any) {
-      throw new Error(err.message || 'Failed to update name')
+      setError(err?.message || 'Failed to download image')
     }
   }
 
-  const handleUpdateImageSource = async (imageSource: string) => {
-    if (!selectedAsset) return
+  const handlePrintAsset = async (asset: ImagingAsset) => {
     try {
-      await updateAsset(selectedAsset.id, {
-        imageSource: imageSource as 'intraoral' | 'panoramic' | 'webcam' | 'scanner' | 'photo' | null,
-      })
-      await fetchAssets()
-      // Update selected asset
-      const updated = await listAssets(Number(patientId))
-      const updatedAsset = updated.find((a) => a.id === selectedAsset.id)
-      if (updatedAsset) {
-        setSelectedAsset(updatedAsset)
+      const pdfBlob = await fetchPrintImagePdf(asset.id)
+      const url = URL.createObjectURL(pdfBlob)
+      const w = window.open(url, '_blank')
+      if (!w) {
+        setError('Please allow popups to open the PDF')
+        URL.revokeObjectURL(url)
+        return
       }
     } catch (err: any) {
-      throw new Error(err.message || 'Failed to update image source')
+      setError(err?.message || 'Failed to print image')
     }
   }
 
-  const imageSourceOptions = [
-    { value: 'intraoral', label: 'Intraoral' },
-    { value: 'panoramic', label: 'Panoramic' },
-    { value: 'webcam', label: 'Webcam' },
-    { value: 'scanner', label: 'Scanner' },
-    { value: 'photo', label: 'Photo' },
-  ]
+  const handlePrintMount = async (mountId: number) => {
+    try {
+      const pdfBlob = await fetchPrintMountPdf(mountId)
+      const url = URL.createObjectURL(pdfBlob)
+      const w = window.open(url, '_blank')
+      if (!w) {
+        setError('Please allow popups to open the PDF')
+        URL.revokeObjectURL(url)
+        return
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to print mount')
+    }
+  }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  const handleDeleteMount = async (mountId: number) => {
+    if (!confirm('Are you sure you want to delete this mount?')) return
+    try {
+      await deleteMount(mountId)
+      if (selectedMount?.id === mountId) setSelectedMount(null)
+      await fetchMounts()
+    } catch (err: any) {
+      setError(err?.message || 'Failed to delete mount')
+    }
   }
 
   return (
@@ -355,145 +606,406 @@ export function Imaging() {
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {viewMode === 'images' ? (
-          /* Images view: top = preview (no scroll), bottom = gallery (only scroll) */
-          <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-            {/* Top: Preview area (~50%) – inside card, dark grey background */}
-            <div className="flex-1 min-h-0 flex flex-col p-4 overflow-hidden">
-              <Card className="flex-1 min-h-0 flex flex-col overflow-hidden bg-gray-900 border-border">
-                <CardContent className="flex-1 min-h-0 relative p-0 overflow-hidden">
-                  {selectedAsset ? (
-                    <>
-                      <div
-                        className="absolute inset-0 flex min-h-0 min-w-0 items-center justify-center overflow-hidden cursor-pointer"
-                        onDoubleClick={() => setPreviewFullscreen(true)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => e.key === 'Enter' && setPreviewFullscreen(true)}
-                        aria-label="Double-click to view fullscreen"
-                      >
-                        <AuthenticatedImage
-                          assetId={selectedAsset.id}
-                          variant="web"
-                          alt={selectedAsset.name || `Asset ${selectedAsset.id}`}
-                          className="max-h-full max-w-full object-contain pointer-events-none"
-                        />
+      {/* Main Content: large max-width; preview width capped by resize so it uses at most 3/5 of vertical space */}
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="flex-1 flex overflow-hidden justify-center min-h-0">
+          <div
+            ref={contentWrapperRef}
+            className="flex-1 flex flex-col overflow-hidden min-h-0 w-full max-w-7xl"
+          >
+          {/* Top: Preview area – when transform open: two columns (preview | panel); else single card */}
+          {transformDialogContext ? (
+            <div className="flex-shrink-0 flex flex-row gap-0 min-h-0 px-4 pt-4 pb-4 flex-1">
+              <div
+                className="flex-1 min-w-0 flex justify-center cursor-pointer"
+                onClick={closeTransformPanel}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && closeTransformPanel()}
+                aria-label="Click to close transformation panel"
+              >
+                <div
+                  className="flex flex-col overflow-hidden h-full"
+                  style={{
+                    aspectRatio: MOUNT_CANVAS_WIDTH / MOUNT_CANVAS_HEIGHT,
+                    width: '100%',
+                    maxWidth: previewMaxWidth ?? undefined,
+                  }}
+                >
+                  <Card className="flex-1 min-h-0 flex flex-col overflow-hidden bg-gray-900 border-border">
+                    <CardContent className="flex-1 min-h-0 relative p-0 overflow-hidden flex items-center justify-center">
+                      <div className="relative w-full h-full min-h-0 flex items-center justify-center">
+                        {(() => {
+                          const currentAdj =
+                            transformDialogContext.type === 'asset'
+                              ? (transformDialogContext.asset.display_adjustments ?? {})
+                              : mergeDisplayAdjustments(
+                                  (transformDialogContext.mount.template?.default_slot_transformations as Record<string, DisplayAdjustments> | undefined)?.[transformDialogContext.slotId] ?? null,
+                                  (transformDialogContext.mount.mount_slots ?? transformDialogContext.mount.slots ?? []).find((s) => s.slot_id === transformDialogContext.slotId)?.adjustments ?? null
+                                )
+                          const previewAdj = transformPreviewAdjustments ?? currentAdj
+                          const filter = displayAdjustmentsToFilter(previewAdj)
+                          const transformCss = displayAdjustmentsToTransform(previewAdj)
+                          const slot = transformDialogContext.type === 'mount'
+                            ? (transformDialogContext.mount.mount_slots ?? transformDialogContext.mount.slots ?? []).find((s) => s.slot_id === transformDialogContext.slotId)
+                            : null
+                          const asset = transformDialogContext.type === 'asset'
+                            ? transformDialogContext.asset
+                            : slot?.asset
+                              ? {
+                                  id: slot.asset.id,
+                                  clinic_id: 0,
+                                  patient_id: 0,
+                                  study_id: null,
+                                  modality: (slot.asset.modality as ImagingAsset['modality']) || 'PHOTO',
+                                  mime_type: 'image/jpeg',
+                                  size_bytes: 0,
+                                  captured_at: slot.asset.captured_at || new Date().toISOString(),
+                                  source_device: null,
+                                  storage_key: '',
+                                  thumb_key: slot.asset.thumb_key ?? null,
+                                  web_key: slot.asset.web_key ?? null,
+                                  name: slot.asset.name ?? null,
+                                  image_source: (slot.asset.image_source as ImagingAsset['image_source']) ?? null,
+                                } as ImagingAsset
+                              : null
+                          if (!asset) {
+                            return (
+                              <div className="text-gray-500 text-sm">No image in this slot</div>
+                            )
+                          }
+                          return (
+                            <div
+                              className="w-full h-full flex items-center justify-center"
+                              style={{
+                                filter: filter !== 'none' ? filter : undefined,
+                                transform: transformCss !== 'none' ? transformCss : undefined,
+                              }}
+                            >
+                              <AuthenticatedImage
+                                assetId={asset.id}
+                                variant="original"
+                                alt={asset.name || `Asset ${asset.id}`}
+                                className="max-h-full max-w-full object-contain"
+                              />
+                            </div>
+                          )
+                        })()}
                       </div>
-                      <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20"
-                          onClick={() => setAssetForInfoDialog(selectedAsset)}
-                        >
-                          <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                          Modify
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20 hover:text-red-300"
-                          onClick={() => handleDelete(selectedAsset.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                          Delete
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-gray-400 p-4">
-                      <ImageIcon className="h-16 w-16 text-gray-600 mb-4" />
-                      <p>Select an image</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+              <TransformationDialog
+                open={true}
+                onOpenChange={(open) => !open && closeTransformPanel()}
+                variant="panel"
+                current={
+                  transformDialogContext.type === 'asset'
+                    ? (transformDialogContext.asset.display_adjustments ?? {})
+                    : mergeDisplayAdjustments(
+                        (transformDialogContext.mount.template?.default_slot_transformations as Record<string, DisplayAdjustments> | undefined)?.[transformDialogContext.slotId] ?? null,
+                        (transformDialogContext.mount.mount_slots ?? transformDialogContext.mount.slots ?? []).find((s) => s.slot_id === transformDialogContext.slotId)?.adjustments ?? null
+                      )
+                }
+                onPreviewChange={setTransformPreviewAdjustments}
+                onClose={closeTransformPanel}
+                onSave={async (adjustments) => {
+                  if (transformDialogContext.type === 'asset') {
+                    try {
+                      await updateAssetDisplayAdjustments(transformDialogContext.asset.id, adjustments)
+                      await regenerateAssetDerived(transformDialogContext.asset.id)
+                      await fetchAssets()
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : 'Failed to save adjustments')
+                    }
+                  } else {
+                    const slotRow = (transformDialogContext.mount.mount_slots ?? transformDialogContext.mount.slots ?? []).find((s) => s.slot_id === transformDialogContext.slotId)
+                    if (slotRow) {
+                      try {
+                        await updateMountSlotAdjustments(slotRow.id, adjustments)
+                        const updated = await getMount(transformDialogContext.mount.id)
+                        setSelectedMount(updated)
+                        await fetchMounts()
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : 'Failed to save adjustments')
+                      }
+                    }
+                  }
+                  // Keep panel open so user can continue editing; close via X or click outside
+                }}
+                title={transformDialogContext.type === 'asset' ? 'Transform image' : 'Transform slot image'}
+              />
             </div>
-            {/* Bottom: gallery card with fixed header and scrollable content */}
+          ) : (
+          <div className="flex-shrink-0 flex justify-center px-4 pt-4 pb-4">
+            <div
+              className="flex flex-col overflow-hidden"
+              style={{
+                aspectRatio: MOUNT_CANVAS_WIDTH / MOUNT_CANVAS_HEIGHT,
+                width: '100%',
+                maxWidth: previewMaxWidth ?? undefined,
+              }}
+            >
+            <Card className="flex-1 min-h-0 flex flex-col overflow-hidden bg-gray-900 border-border">
+                <CardContent className="flex-1 min-h-0 relative p-0 overflow-hidden flex items-center justify-center">
+                  <div className="relative w-full h-full min-h-0">
+                  {selectedAsset && !fullscreenFromMount ? (
+                  <>
+                    <div
+                      className="absolute inset-0 flex min-h-0 min-w-0 items-center justify-center overflow-hidden cursor-pointer"
+                      onDoubleClick={() => {
+                        setFullscreenFromMount(null)
+                        setPreviewFullscreen(true)
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && setPreviewFullscreen(true)}
+                      aria-label="Double-click to view fullscreen"
+                      style={{
+                        filter: displayAdjustmentsToFilter(selectedAsset.display_adjustments ?? undefined),
+                        transform: displayAdjustmentsToTransform(selectedAsset.display_adjustments ?? undefined),
+                      }}
+                    >
+                      <AuthenticatedImage
+                        assetId={selectedAsset.id}
+                        variant="original"
+                        alt={selectedAsset.name || `Asset ${selectedAsset.id}`}
+                        className="max-h-full max-w-full object-contain pointer-events-none"
+                      />
+                    </div>
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 flex-wrap">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20 hover:text-red-300"
+                        onClick={() => handleDelete(selectedAsset.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                        Delete
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20"
+                        onClick={() => {
+                          setAssetForInfoDialog(selectedAsset)
+                          setAssetInfoDialogMode('edit')
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Modify
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20"
+                        onClick={() => {
+                          setAssetForInfoDialog(selectedAsset)
+                          setAssetInfoDialogMode('inspect')
+                        }}
+                      >
+                        <CircleHelp className="h-3.5 w-3.5 mr-1.5" />
+                        Inspect
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20"
+                        onClick={() => setTransformDialogContext({ type: 'asset', asset: selectedAsset })}
+                      >
+                        <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+                        Transform
+                      </Button>
+                    </div>
+                  </>
+                ) : selectedMount ? (
+                  <div className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden p-4">
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 z-10">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20"
+                        onClick={() => {
+                          setMountInfoDialogMount(selectedMount)
+                          setMountInfoDialogMode('edit')
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Modify
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-white/90 hover:text-white hover:bg-white/20"
+                        onClick={() => {
+                          setMountInfoDialogMount(selectedMount)
+                          setMountInfoDialogMode('inspect')
+                        }}
+                      >
+                        <CircleHelp className="h-3.5 w-3.5 mr-1.5" />
+                        Inspect
+                      </Button>
+                    </div>
+                    <div className="flex-1 min-h-0 flex min-w-0 items-center justify-center overflow-hidden">
+                      <div className="w-full h-full max-w-full max-h-full min-h-0">
+                        <MountView
+                        key={`mount-${selectedMount.id}-${selectedMount.updated_at ?? ''}-${(selectedMount.mount_slots ?? selectedMount.slots ?? []).length}`}
+                        mount={selectedMount}
+                        availableAssets={assets}
+                        onMountUpdate={async () => {
+                          const updated = await getMount(selectedMount.id)
+                          setSelectedMount(updated)
+                          await fetchMounts()
+                        }}
+                        onSlotClick={async (slotId, currentAssetId) => {
+                          // Left-click: existing behavior (remove if filled, or assign first available)
+                          console.log('Slot clicked:', slotId, 'Current asset:', currentAssetId)
+                        }}
+                        onSlotDoubleClick={(_, asset) => {
+                          if (asset && selectedMount) {
+                            setSelectedAsset(asset)
+                            setFullscreenFromMount(selectedMount)
+                            setPreviewFullscreen(true)
+                          }
+                        }}
+                        onSlotRightClick={(slotId, e) => {
+                          e.preventDefault()
+                          setMountContextMenu({ x: e.clientX, y: e.clientY, slotId })
+                        }}
+                      />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-500 text-sm">
+                    Select an image or mount from the gallery
+                  </div>
+                )}
+                  </div>
+              </CardContent>
+            </Card>
+            </div>
+          </div>
+          )}
+            {/* Bottom: gallery card with scrollable content */}
             <div className="flex-1 min-h-0 flex flex-col p-4">
               <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 py-3">
-                  <CardTitle className="text-base">Gallery</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit"
-                      onClick={() => setCaptureDialogOpen(true)}
-                      disabled={!session || !patientId}
-                    >
-                      <Camera className="mr-2 h-4 w-4" />
-                      Capture Image
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit"
-                      onClick={() => setCreateMountDialogOpen(true)}
-                      disabled={!patientId || !session}
-                    >
-                      <Layout className="mr-2 h-4 w-4" />
-                      Create a Mount
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 min-h-0 overflow-y-auto pt-0">
+                <CardContent className="flex-1 min-h-0 overflow-y-auto pt-3">
                   {(loading || (subscriptionActive && subscriptionLoading)) ? (
                     <div className="flex items-center justify-center py-12 text-gray-500">
-                      Loading images...
+                      Loading...
                     </div>
-                  ) : assets.length === 0 ? (
+                  ) : assets.length === 0 && mounts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <ImageIcon className="h-12 w-12 text-gray-400 mb-4" />
-                      <p className="text-gray-500">No images uploaded yet</p>
-                      <p className="text-sm text-gray-400 mt-2">Capture an image using the button above</p>
+                      <p className="text-gray-500">No images or mounts yet</p>
+                      <p className="text-sm text-gray-400 mt-2">Capture an image or create a mount using the buttons above</p>
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {groupAssetsByCaptureDate(assets).map(({ dateKey, dateLabel, assets: groupAssets }) => (
+                      {groupGalleryItemsByDate(assets, mounts).map(({ dateKey, dateLabel, items }) => (
                         <div key={dateKey}>
                           <h3 className="text-sm font-medium text-gray-700 mb-2">{dateLabel}</h3>
-                          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                            {groupAssets.map((asset) => (
-                              <div
-                                key={asset.id}
-                                className="relative flex aspect-square items-center justify-center rounded-lg overflow-hidden border-2 bg-gray-100 cursor-pointer transition-all group"
-                                onClick={() => setSelectedAsset(asset)}
-                                onDoubleClick={() => {
-                                  setSelectedAsset(asset)
-                                  setPreviewFullscreen(true)
-                                }}
-                              >
-                                {asset.thumb_key ? (
-                                  <AuthenticatedImage
-                                    assetId={asset.id}
-                                    variant="thumb"
-                                    alt={asset.name || `Asset ${asset.id}`}
-                                    className="max-h-full max-w-full object-contain"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                          <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-1.5">
+                            {items.map((item) => {
+                              if (item.type === 'asset') {
+                                const asset = item.data
+                                return (
+                                  <div
+                                    key={`asset-${asset.id}`}
+                                    draggable
+                                    className="relative flex aspect-square items-center justify-center rounded-lg overflow-hidden border-2 bg-gray-100 cursor-pointer transition-all group"
+                                    onClick={() => {
+                                      setSelectedAsset(asset)
+                                      setSelectedMount(null)
+                                    }}
+                                    onDoubleClick={() => {
+                                      setSelectedAsset(asset)
+                                      setSelectedMount(null)
+                                      setFullscreenFromMount(null)
+                                      setPreviewFullscreen(true)
+                                    }}
+                                    onContextMenu={(e) => {
+                                      e.preventDefault()
+                                      setGalleryContextMenu({ x: e.clientX, y: e.clientY, item: { type: 'asset', data: asset } })
+                                    }}
+                                    onDragStart={(e) => {
+                                      e.dataTransfer.setData('application/x-tess-imaging-asset', String(asset.id))
+                                      e.dataTransfer.effectAllowed = 'copy'
+                                    }}
+                                  >
+                                    {asset.thumb_key ? (
+                                      <AuthenticatedImage
+                                        assetId={asset.id}
+                                        variant="thumb"
+                                        alt={asset.name || `Asset ${asset.id}`}
+                                        className="max-h-full max-w-full object-contain"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center">
+                                        <ImageIcon className="h-8 w-8 text-gray-400" />
+                                      </div>
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setAssetForInfoDialog(asset)
+                                      }}
+                                      aria-label="Image details"
+                                    >
+                                      <CircleHelp className="h-4 w-4" />
+                                    </button>
+                                    {selectedAsset?.id === asset.id && (
+                                      <div className="absolute inset-0 ring-2 ring-blue-500 ring-inset pointer-events-none" />
+                                    )}
                                   </div>
-                                )}
-                                <button
-                                  type="button"
-                                  className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setAssetForInfoDialog(asset)
-                                  }}
-                                  aria-label="Image details"
-                                >
-                                  <CircleHelp className="h-4 w-4" />
-                                </button>
-                                {selectedAsset?.id === asset.id && (
-                                  <div className="absolute inset-0 ring-2 ring-blue-500 ring-inset pointer-events-none" />
-                                )}
-                              </div>
-                            ))}
+                                )
+                              } else {
+                                const mount = item.data
+                                const filledSlots = (mount.mount_slots ?? mount.slots ?? []).filter(s => s.asset).length
+                                const totalSlots = Array.isArray(mount.template?.slot_definitions) 
+                                  ? mount.template!.slot_definitions.length 
+                                  : 0
+                                return (
+                                  <div
+                                    key={`mount-${mount.id}`}
+                                    className="relative flex aspect-square items-center justify-center rounded-lg overflow-hidden border-2 bg-white cursor-pointer transition-all group border-blue-300 hover:border-blue-400 hover:shadow-md"
+                                    onClick={async () => {
+                                      try {
+                                        const fullMount = await getMount(mount.id)
+                                        setSelectedMount(fullMount)
+                                        setSelectedAsset(null)
+                                      } catch (err: any) {
+                                        setError(err.message || 'Failed to load mount')
+                                      }
+                                    }}
+                                    onContextMenu={(e) => {
+                                      e.preventDefault()
+                                      setGalleryContextMenu({ x: e.clientX, y: e.clientY, item: { type: 'mount', data: mount } })
+                                    }}
+                                  >
+                                    <div className="w-full h-full relative">
+                                      <MountThumbnail mount={mount} />
+                                      {/* Overlay with mount info on hover */}
+                                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
+                                        <div className="text-xs font-medium text-white text-center truncate w-full">
+                                          {mount.name || mount.template?.name || 'Unnamed Mount'}
+                                        </div>
+                                        <div className="text-xs text-white/80 mt-0.5">
+                                          {filledSlots}/{totalSlots} filled
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {selectedMount?.id === mount.id && (
+                                      <div className="absolute inset-0 ring-2 ring-blue-500 ring-inset pointer-events-none" />
+                                    )}
+                                  </div>
+                                )
+                              }
+                            })}
                           </div>
                         </div>
                       ))}
@@ -503,225 +1015,217 @@ export function Imaging() {
               </Card>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Left Panel - Mounts List */}
-            <div className="w-2/3 border-r bg-white overflow-y-auto">
-              <div className="p-4">
-              <div className="mb-4">
-                <Button
-                  onClick={() => setCreateMountDialogOpen(true)}
-                  disabled={!patientId || !session}
-                >
-                  <Layout className="h-4 w-4 mr-2" />
-                  New Mount
-                </Button>
-              </div>
-
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-500">Loading mounts...</div>
-                </div>
-              ) : mounts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Layout className="h-12 w-12 text-gray-400 mb-4" />
-                  <p className="text-gray-500">No mounts created yet</p>
-                  <p className="text-sm text-gray-400 mt-2">Create your first mount using the button above</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {mounts.map((mount) => (
-                    <div
-                      key={mount.id}
-                      onClick={async () => {
-                        try {
-                          const fullMount = await getMount(mount.id)
-                          setSelectedMount(fullMount)
-                        } catch (err: any) {
-                          setError(err.message || 'Failed to load mount')
-                        }
-                      }}
-                      className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                        selectedMount?.id === mount.id
-                          ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-50'
-                          : 'hover:bg-gray-50 border-gray-200'
-                      }`}
-                    >
-                      <div className="font-medium text-gray-900">
-                        {mount.name || mount.template?.name || 'Unnamed Mount'}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {mount.template?.name || 'Unknown Template'}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {formatDate(mount.created_at)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              </div>
-            </div>
-
-            {/* Right Panel - Preview */}
-            <div className="w-1/3 bg-gray-50 border-l overflow-y-auto">
-              {selectedAsset ? (
-            <div className="p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Image Preview</h2>
-                <div className="bg-white rounded-lg border p-4 mb-4">
-                  <div className="aspect-square bg-gray-100 rounded mb-4">
-                    <AuthenticatedImage
-                      assetId={selectedAsset.id}
-                      variant="web"
-                      alt={selectedAsset.name || `Asset ${selectedAsset.id}`}
-                      className="w-full h-full object-contain rounded"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Image Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <InlineEditableField
-                    value={selectedAsset.name}
-                    onSave={handleUpdateAssetName}
-                    label="Name"
-                    type="text"
-                  />
-
-                  <InlineEditableSelect
-                    value={selectedAsset.image_source || ''}
-                    onSave={handleUpdateImageSource}
-                    label="Image Source"
-                    options={imageSourceOptions}
-                  />
-
-                  <div>
-                    <p className="text-sm text-gray-500">Acquisition Date</p>
-                    <p className="font-medium text-gray-900 flex items-center gap-2 mt-1">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      {formatDate(selectedAsset.captured_at)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Modality</p>
-                    <p className="font-medium text-gray-900 mt-1">{selectedAsset.modality}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">File Size</p>
-                    <p className="font-medium text-gray-900 mt-1">
-                      {Math.round(selectedAsset.size_bytes / 1024)} KB
-                    </p>
-                  </div>
-
-                  {selectedAsset.created_at && (
-                    <div>
-                      <p className="text-sm text-gray-500">Created</p>
-                      <p className="font-medium text-gray-900 mt-1">
-                        {formatDate(selectedAsset.created_at)}
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedAsset.updated_at && selectedAsset.updated_at !== selectedAsset.created_at && (
-                    <div>
-                      <p className="text-sm text-gray-500">Last Updated</p>
-                      <p className="font-medium text-gray-900 mt-1">
-                        {formatDate(selectedAsset.updated_at)}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="destructive"
-                  className="flex-1"
-                  onClick={() => handleDelete(selectedAsset.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Image
-                </Button>
-              </div>
-            </div>
-          ) : selectedMount ? (
-            <div className="p-6 space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Mount Preview</h2>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">{selectedMount.name || 'Unnamed Mount'}</CardTitle>
-                    <CardDescription>{selectedMount.template?.name || 'Unknown Template'}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-600">
-                      <p>Created: {formatDate(selectedMount.created_at)}</p>
-                      {selectedMount.description && (
-                        <p className="mt-2">{selectedMount.description}</p>
-                      )}
-                    </div>
-                    {getNextEmptySlotId(selectedMount, null) && (
-                      <div className="mt-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setCaptureDialogMount(selectedMount)
-                            setCaptureDialogOpen(true)
-                          }}
-                        >
-                          <Camera className="h-4 w-4 mr-2" />
-                          Fill with captures
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Mount Layout */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Mount Layout</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MountView
-                    mount={selectedMount}
-                    availableAssets={assets}
-                    onMountUpdate={async () => {
-                      const updated = await getMount(selectedMount.id)
-                      setSelectedMount(updated)
-                      await fetchMounts()
-                    }}
-                    onSlotClick={async (slotId, currentAssetId) => {
-                      // Open dialog to select asset for this slot
-                      // For now, just log - can be enhanced with a proper dialog
-                      console.log('Slot clicked:', slotId, 'Current asset:', currentAssetId)
-                      // TODO: Implement asset selection dialog
-                    }}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            <div className="p-6">
-              <div className="text-center py-12 text-gray-500">
-                <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p>Select an image or mount to view details</p>
-              </div>
-            </div>
-          )}
-            </div>
-          </>
-        )}
+        </div>
+        {/* Fixed footer bar – compact */}
+        <footer className="flex-shrink-0 flex items-center justify-between gap-4 h-11 px-4 border-t bg-background">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8"
+              onClick={() => setCaptureDialogOpen(true)}
+              disabled={!session || !patientId}
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              Capture Image
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8"
+              onClick={() => setCreateMountDialogOpen(true)}
+              disabled={!patientId || !session}
+            >
+              <Layout className="mr-2 h-4 w-4" />
+              Create a Mount
+            </Button>
+          </div>
+        </footer>
       </div>
+
+      {/* Gallery item context menu (right-click on asset or mount) */}
+      {galleryContextMenu && (
+        <div
+          ref={galleryContextMenuRef}
+          className="fixed z-50 min-w-[200px] rounded-md border bg-white py-1 shadow-lg"
+          style={{ left: galleryContextMenu.x, top: galleryContextMenu.y }}
+        >
+          {galleryContextMenu.item.type === 'asset' ? (
+            <>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                onClick={() => {
+                  setGalleryContextMenu(null)
+                  handleDownloadAsset(
+                    galleryContextMenu.item.data.id,
+                    'original',
+                    `image-${galleryContextMenu.item.data.id}-original.jpg`
+                  )
+                }}
+              >
+                <Download className="h-4 w-4" />
+                Download original
+              </button>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                onClick={() => {
+                  setGalleryContextMenu(null)
+                  handleDownloadAsset(
+                    galleryContextMenu.item.data.id,
+                    'web',
+                    `image-${galleryContextMenu.item.data.id}-modified.jpg`
+                  )
+                }}
+              >
+                <Download className="h-4 w-4" />
+                Download modified
+              </button>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                onClick={() => {
+                  setGalleryContextMenu(null)
+                  if (galleryContextMenu.item.type === 'asset') {
+                    handlePrintAsset(galleryContextMenu.item.data)
+                  }
+                }}
+              >
+                <Printer className="h-4 w-4" />
+                Print image
+              </button>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
+                onClick={() => {
+                  setGalleryContextMenu(null)
+                  handleDelete(galleryContextMenu.item.data.id)
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete image
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-gray-400 cursor-not-allowed flex items-center gap-2"
+                title="Single images only"
+                disabled
+              >
+                <Download className="h-4 w-4" />
+                Download original
+              </button>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm text-gray-400 cursor-not-allowed flex items-center gap-2"
+                title="Single images only"
+                disabled
+              >
+                <Download className="h-4 w-4" />
+                Download modified
+              </button>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                onClick={() => {
+                  setGalleryContextMenu(null)
+                  handlePrintMount(galleryContextMenu.item.data.id)
+                }}
+              >
+                <Printer className="h-4 w-4" />
+                Print image
+              </button>
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
+                onClick={() => {
+                  setGalleryContextMenu(null)
+                  handleDeleteMount(galleryContextMenu.item.data.id)
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete image
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Mount placeholder context menu */}
+      {mountContextMenu && selectedMount && (() => {
+        const slots = selectedMount.mount_slots ?? selectedMount.slots ?? []
+        const slotHasImage = slots.some((s) => s.slot_id === mountContextMenu.slotId && s.asset_id != null)
+        return (
+          <div
+            ref={mountContextMenuRef}
+            className="fixed z-50 min-w-[180px] rounded-md border bg-white py-1 shadow-lg"
+            style={{ left: mountContextMenu.x, top: mountContextMenu.y }}
+          >
+            <button
+              type="button"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+              onClick={() => {
+                setMountContextMenu(null)
+                setCaptureDialogMount(selectedMount)
+                setCaptureDialogSlotId(mountContextMenu.slotId)
+                setCaptureDialogOpen(true)
+              }}
+            >
+              Capture Image
+            </button>
+            <button
+              type="button"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+              onClick={() => {
+                setTransformDialogContext({
+                  type: 'mount',
+                  mount: selectedMount,
+                  slotId: mountContextMenu.slotId,
+                })
+                setMountContextMenu(null)
+              }}
+            >
+              Transform
+            </button>
+            <button
+              type="button"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+              onClick={() => {
+                const queue = getSlotIdsInOrderFrom(selectedMount, mountContextMenu.slotId)
+                setMountContextMenu(null)
+                setAutoAcquisitionQueue(queue)
+                setCaptureDialogMount(selectedMount)
+                setCaptureDialogSlotId(queue[0] ?? null)
+                setCaptureDialogOpen(true)
+              }}
+            >
+              Continue Auto-Acquisition
+            </button>
+            {slotHasImage && (
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 text-red-600"
+                onClick={async () => {
+                  setMountContextMenu(null)
+                  try {
+                    await removeAssetFromMountSlot(selectedMount.id, mountContextMenu.slotId)
+                    const updated = await getMount(selectedMount.id)
+                    setSelectedMount(updated)
+                    await fetchMounts()
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Failed to remove image')
+                  }
+                }}
+              >
+                Remove image
+              </button>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Capture Image Dialog */}
       {patientId && (
@@ -730,6 +1234,8 @@ export function Imaging() {
           onOpenChange={(open) => {
             if (!open) {
               setCaptureDialogMount(null)
+              setCaptureDialogSlotId(null)
+              setAutoAcquisitionQueue(null)
               if (selectedMount) {
                 getMount(selectedMount.id).then(setSelectedMount).catch(() => {})
               }
@@ -739,6 +1245,8 @@ export function Imaging() {
           patientId={Number(patientId)}
           onSuccess={handleCaptureSuccess}
           mount={captureDialogMount}
+          targetSlotId={captureDialogSlotId}
+          isAutoAcquisition={autoAcquisitionQueue != null && autoAcquisitionQueue.length > 0}
           onMountUpdated={async () => {
             if (captureDialogMount) {
               const updated = await getMount(captureDialogMount.id)
@@ -747,6 +1255,17 @@ export function Imaging() {
                 setSelectedMount(updated)
               }
               await fetchMounts()
+
+              if (autoAcquisitionQueue != null && autoAcquisitionQueue.length > 0) {
+                const nextQueue = autoAcquisitionQueue.slice(1)
+                setAutoAcquisitionQueue(nextQueue.length > 0 ? nextQueue : null)
+                if (nextQueue.length > 0) {
+                  setCaptureDialogSlotId(nextQueue[0])
+                } else {
+                  setCaptureDialogSlotId(null)
+                  setCaptureDialogOpen(false)
+                }
+              }
             }
           }}
           onMountFillComplete={() => {
@@ -763,9 +1282,32 @@ export function Imaging() {
         open={!!assetForInfoDialog}
         onOpenChange={(open) => !open && setAssetForInfoDialog(null)}
         asset={assetForInfoDialog}
+        mode={assetInfoDialogMode}
         onSave={() => {
           fetchAssets()
           setAssetForInfoDialog(null)
+        }}
+      />
+
+      {/* Mount info / edit dialog */}
+      <MountInfoDialog
+        open={!!mountInfoDialogMount}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMountInfoDialogMount(null)
+            setMountInfoDialogMode(null)
+          }
+        }}
+        mount={mountInfoDialogMount}
+        mode={mountInfoDialogMode ?? 'inspect'}
+        onSave={async () => {
+          if (mountInfoDialogMount) {
+            const updated = await getMount(mountInfoDialogMount.id)
+            setSelectedMount(updated)
+            await fetchMounts()
+          }
+          setMountInfoDialogMount(null)
+          setMountInfoDialogMode(null)
         }}
       />
 
@@ -774,12 +1316,12 @@ export function Imaging() {
         onOpenChange={setCreateMountDialogOpen}
         patientId={Number(patientId)}
         clinicId={session?.clinicId ?? 0}
-        onCreated={(mount) => {
-          setSelectedMount(mount)
-          setViewMode('mounts')
-          fetchMounts()
-          setCaptureDialogMount(mount)
-          setCaptureDialogOpen(true)
+        onCreated={async (mount) => {
+          // Add mount to gallery and select it, but don't switch view or auto-open capture
+          await fetchMounts()
+          const fullMount = await getMount(mount.id)
+          setSelectedMount(fullMount)
+          setSelectedAsset(null)
         }}
       />
 
@@ -787,12 +1329,23 @@ export function Imaging() {
       {previewFullscreen && selectedAsset && (
         <div
           className="fixed inset-0 z-50 flex min-h-0 min-w-0 items-center justify-center bg-black/60 backdrop-blur-md"
-          onClick={() => setPreviewFullscreen(false)}
+          onClick={() => {
+            setPreviewFullscreen(false)
+            setFullscreenFromMount((prev) => {
+              if (prev) setSelectedAsset(null)
+              return null
+            })
+          }}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setPreviewFullscreen(false)
-            else if (e.key === 'ArrowLeft' && fullscreenPrev) setSelectedAsset(fullscreenPrev)
+            onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setPreviewFullscreen(false)
+              setFullscreenFromMount((prev) => {
+                if (prev) setSelectedAsset(null)
+                return null
+              })
+            } else if (e.key === 'ArrowLeft' && fullscreenPrev) setSelectedAsset(fullscreenPrev)
             else if (e.key === 'ArrowRight' && fullscreenNext) setSelectedAsset(fullscreenNext)
           }}
           aria-label="Click backdrop or press Escape to close; use arrows for previous/next"
@@ -805,6 +1358,10 @@ export function Imaging() {
             onClick={(e) => {
               e.stopPropagation()
               setPreviewFullscreen(false)
+              setFullscreenFromMount((prev) => {
+                if (prev) setSelectedAsset(null)
+                return null
+              })
             }}
             aria-label="Close fullscreen"
           >
@@ -847,10 +1404,14 @@ export function Imaging() {
           <div
             className="flex h-full w-full min-h-0 min-w-0 items-center justify-center p-12"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              filter: displayAdjustmentsToFilter(selectedAsset.display_adjustments ?? undefined),
+              transform: displayAdjustmentsToTransform(selectedAsset.display_adjustments ?? undefined),
+            }}
           >
             <AuthenticatedImage
               assetId={selectedAsset.id}
-              variant="web"
+              variant="original"
               alt={selectedAsset.name || `Asset ${selectedAsset.id}`}
               className="max-h-full max-w-full object-contain"
             />

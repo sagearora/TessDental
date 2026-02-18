@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileText, Download, Calendar } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { refreshTokensIfNeeded } from '@/lib/authTokens'
 import { authFetch } from '@/lib/onUnauthorized'
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:4000'
@@ -31,15 +30,6 @@ export function AuditExport() {
     setIsExporting(true)
 
     try {
-      await refreshTokensIfNeeded()
-
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        alert('No access token found')
-        setIsExporting(false)
-        return
-      }
-
       // Build query params
       const params = new URLSearchParams()
       params.append('format', format)
@@ -54,12 +44,7 @@ export function AuditExport() {
 
       const url = `${AUTH_API_URL}/auth/audit/export?${params.toString()}`
 
-      const response = await authFetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const response = await authFetch(url, { method: 'GET' })
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Failed to export' }))

@@ -21,6 +21,7 @@
     "test": "pnpm -r test",
     "test:web": "pnpm -C apps/web test",
     "test:hasura": "pnpm -C apps/hasura-tests test",
+    "test:hasura:pdf": "pnpm -C apps/hasura-tests test pdf.integration",
     "test:hasura:setup": "cd apps/hasura-tests && bash scripts/setup-test-infra.sh",
     "test:hasura:down": "docker compose -f infra/compose/docker-compose.test.yml down -v",
     "test:e2e": "pnpm -C apps/web test:e2e",

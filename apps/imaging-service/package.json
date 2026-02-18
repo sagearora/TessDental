@@ -16,6 +16,7 @@
     "@fastify/multipart": "^8.0.1",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
+    "heic-convert": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.5",
     "pino": "^9.5.0",
