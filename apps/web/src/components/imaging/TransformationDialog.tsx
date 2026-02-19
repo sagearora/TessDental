@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useImperativeHandle } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,8 @@ export interface TransformationDialogProps {
   onClose?: () => void
   /** 'dialog' = modal; 'panel' = inline side panel (no Dialog wrapper). */
   variant?: 'dialog' | 'panel'
+  /** Called when local adjustments differ from defaults (unsaved changes). */
+  onUnsavedChange?: (hasUnsaved: boolean) => void
 }
 
 export const defaultAdjustments: DisplayAdjustments = {
@@ -39,6 +41,11 @@ export const defaultAdjustments: DisplayAdjustments = {
 type AdjustmentKey = keyof DisplayAdjustments
 
 const EMPTY_ADJUSTMENTS: DisplayAdjustments = {}
+
+export interface TransformationDialogHandle {
+  /** Current local adjustments that would be saved, or null if none. */
+  getLocalAdjustments: () => DisplayAdjustments | null
+}
 
 function getActiveAdjustmentsShort(local: DisplayAdjustments): { key: AdjustmentKey; label: string }[] {
   const out: { key: AdjustmentKey; label: string }[] = []
@@ -62,6 +69,12 @@ function getActiveAdjustmentsShort(local: DisplayAdjustments): { key: Adjustment
     out.push({ key: k, label })
   }
   return out
+}
+
+function hasAnyAdjustments(local: DisplayAdjustments): boolean {
+  return (Object.keys(local) as AdjustmentKey[]).some(
+    (k) => local[k] !== undefined && local[k] !== defaultAdjustments[k]
+  )
 }
 
 /** Inline switch (no dropdown) */
@@ -129,35 +142,67 @@ function InlineSlider({
   )
 }
 
-export function TransformationDialog({
-  open,
-  onOpenChange,
-  current,
-  onSave,
-  title = 'Transform image',
-  onPreviewChange,
-  onClose,
-  variant = 'dialog',
-}: TransformationDialogProps) {
+export const TransformationDialog = React.forwardRef<TransformationDialogHandle, TransformationDialogProps>(
+  (props: TransformationDialogProps, ref) => {
+    const {
+      open,
+      onOpenChange,
+      current,
+      onSave,
+      title = 'Transform image',
+      onPreviewChange,
+      onClose,
+      variant = 'dialog',
+      onUnsavedChange,
+    } = props
+
   const [local, setLocal] = useState<DisplayAdjustments>({
     ...defaultAdjustments,
     ...current,
   })
 
+  const currentSerialized = JSON.stringify(current ?? {})
   useEffect(() => {
     setLocal((prev) => ({ ...defaultAdjustments, ...current, ...prev }))
-  }, [current, open])
+  }, [currentSerialized, open])
 
   const merged = mergeDisplayAdjustments(current, local)
   const isEmptyLocal = (Object.keys(local) as AdjustmentKey[]).every(
     (k) => local[k] === undefined || local[k] === defaultAdjustments[k]
   )
   const previewAdjustments = isEmptyLocal ? EMPTY_ADJUSTMENTS : merged
+  const localSerialized = JSON.stringify(local ?? {})
   useEffect(() => {
-    if (open && onPreviewChange) {
-      onPreviewChange(previewAdjustments)
+    if (!open || !onPreviewChange) return
+    const nextMerged = mergeDisplayAdjustments(current, local)
+    const isEmpty = (Object.keys(local) as AdjustmentKey[]).every(
+      (k) => local[k] === undefined || local[k] === defaultAdjustments[k]
+    )
+    onPreviewChange(isEmpty ? EMPTY_ADJUSTMENTS : nextMerged)
+    // Content-based deps (localSerialized, currentSerialized) avoid infinite loop from object refs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, localSerialized, currentSerialized, onPreviewChange])
+
+  useEffect(() => {
+    if (!onUnsavedChange) return
+    if (!open) {
+      onUnsavedChange(false)
+      return
     }
-  }, [open, previewAdjustments, onPreviewChange])
+    onUnsavedChange(hasAnyAdjustments(local))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, localSerialized, currentSerialized, onUnsavedChange])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getLocalAdjustments: () => {
+        const hasAny = hasAnyAdjustments(local)
+        return hasAny ? local : null
+      },
+    }),
+    [localSerialized]
+  )
 
   const update = useCallback((patch: Partial<DisplayAdjustments>) => {
     setLocal((prev) => {
@@ -199,11 +244,7 @@ export function TransformationDialog({
   }
 
   const handleApply = async () => {
-    const hasAny = (Object.keys(local) as AdjustmentKey[]).some(
-      (k) =>
-        local[k] !== undefined &&
-        local[k] !== defaultAdjustments[k]
-    )
+    const hasAny = hasAnyAdjustments(local)
     await Promise.resolve(onSave(hasAny ? local : null))
     // Keep panel open so user can continue editing
   }
@@ -388,4 +429,6 @@ export function TransformationDialog({
       </DialogContent>
     </Dialog>
   )
-}
+  }
+)
+TransformationDialog.displayName = 'TransformationDialog'

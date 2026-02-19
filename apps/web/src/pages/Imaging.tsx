@@ -34,7 +34,8 @@ import { MountView } from '@/components/imaging/MountView'
 import { MountCanvas } from '@/components/imaging/MountCanvas'
 import { CreateMountDialog } from '@/components/imaging/CreateMountDialog'
 import { MountInfoDialog } from '@/components/imaging/MountInfoDialog'
-import { TransformationDialog } from '@/components/imaging/TransformationDialog'
+import { TransformationDialog, type TransformationDialogHandle } from '@/components/imaging/TransformationDialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { getMountLayout, getMountTemplate, getEffectiveSlotOrder, MOUNT_CANVAS_WIDTH, MOUNT_CANVAS_HEIGHT } from '@/api/mounts'
 import { mergeDisplayAdjustments, displayAdjustmentsToFilter, displayAdjustmentsToTransform } from '@/lib/display-adjustments'
 import type { DisplayAdjustments } from '@/api/mounts'
@@ -69,6 +70,11 @@ function getMountAssetsInSlotOrder(mount: ImagingMount): ImagingAsset[] {
   }
   return result
 }
+
+type PendingAction =
+  | { action: 'selectAsset'; asset: ImagingAsset }
+  | { action: 'selectMount'; mount: ImagingMount }
+  | { action: 'openTransform'; context: { type: 'mount'; mount: ImagingMount; slotId: string } }
 
 // Mini mount preview for gallery: same canvas layout as main preview, read-only
 function MountThumbnail({ mount }: { mount: ImagingMount }) {
@@ -311,6 +317,11 @@ export function Imaging() {
   const galleryContextMenuRef = useRef<HTMLDivElement | null>(null)
   const contentWrapperRef = useRef<HTMLDivElement | null>(null)
 
+  const [transformHasUnsavedChanges, setTransformHasUnsavedChanges] = useState(false)
+  const [pendingAfterSaveOrDiscard, setPendingAfterSaveOrDiscard] = useState<PendingAction | null>(null)
+  const [savingTransform, setSavingTransform] = useState(false)
+  const transformationDialogRef = useRef<TransformationDialogHandle | null>(null)
+
   // Update patientId when personId changes
   useEffect(() => {
     if (personId) {
@@ -500,6 +511,55 @@ export function Imaging() {
   const closeTransformPanel = () => {
     setTransformDialogContext(null)
     setTransformPreviewAdjustments(null)
+  }
+
+  const applyPendingAction = () => {
+    if (!pendingAfterSaveOrDiscard) return
+    if (pendingAfterSaveOrDiscard.action === 'selectAsset') {
+      setSelectedAsset(pendingAfterSaveOrDiscard.asset)
+      setSelectedMount(null)
+    } else if (pendingAfterSaveOrDiscard.action === 'selectMount') {
+      setSelectedMount(pendingAfterSaveOrDiscard.mount)
+      setSelectedAsset(null)
+    } else if (pendingAfterSaveOrDiscard.action === 'openTransform') {
+      setTransformDialogContext(pendingAfterSaveOrDiscard.context)
+      setTransformPreviewAdjustments(null)
+    }
+    setPendingAfterSaveOrDiscard(null)
+  }
+
+  const handleConfirmSaveTransforms = async () => {
+    if (!transformDialogContext) {
+      closeTransformPanel()
+      applyPendingAction()
+      return
+    }
+    setSavingTransform(true)
+    try {
+      const adjustments = transformationDialogRef.current?.getLocalAdjustments() ?? null
+      if (transformDialogContext.type === 'asset') {
+        await updateAssetDisplayAdjustments(transformDialogContext.asset.id, adjustments)
+        await regenerateAssetDerived(transformDialogContext.asset.id)
+        await fetchAssets()
+      } else {
+        const slotRow = (transformDialogContext.mount.mount_slots ?? transformDialogContext.mount.slots ?? []).find(
+          (s) => s.slot_id === transformDialogContext.slotId
+        )
+        if (slotRow) {
+          await updateMountSlotAdjustments(slotRow.id, adjustments)
+          const updated = await getMount(transformDialogContext.mount.id)
+          setSelectedMount(updated)
+          await fetchMounts()
+        }
+      }
+      closeTransformPanel()
+      applyPendingAction()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save transformations')
+    } finally {
+      setSavingTransform(false)
+      setPendingAfterSaveOrDiscard(null)
+    }
   }
 
   useEffect(() => {
@@ -697,6 +757,7 @@ export function Imaging() {
                 </div>
               </div>
               <TransformationDialog
+                ref={transformationDialogRef}
                 open={true}
                 onOpenChange={(open) => !open && closeTransformPanel()}
                 variant="panel"
@@ -710,6 +771,7 @@ export function Imaging() {
                 }
                 onPreviewChange={setTransformPreviewAdjustments}
                 onClose={closeTransformPanel}
+                onUnsavedChange={setTransformHasUnsavedChanges}
                 onSave={async (adjustments) => {
                   if (transformDialogContext.type === 'asset') {
                     try {
@@ -917,6 +979,22 @@ export function Imaging() {
                                     draggable
                                     className="relative flex aspect-square items-center justify-center rounded-lg overflow-hidden border-2 bg-gray-100 cursor-pointer transition-all group"
                                     onClick={() => {
+                                      if (transformDialogContext && transformHasUnsavedChanges) {
+                                        if (
+                                          transformDialogContext.type === 'asset' &&
+                                          transformDialogContext.asset.id === asset.id
+                                        ) {
+                                          closeTransformPanel()
+                                          setSelectedAsset(asset)
+                                          setSelectedMount(null)
+                                          return
+                                        }
+                                        setPendingAfterSaveOrDiscard({ action: 'selectAsset', asset })
+                                        return
+                                      }
+                                      if (transformDialogContext) {
+                                        closeTransformPanel()
+                                      }
                                       setSelectedAsset(asset)
                                       setSelectedMount(null)
                                     }}
@@ -976,6 +1054,13 @@ export function Imaging() {
                                     onClick={async () => {
                                       try {
                                         const fullMount = await getMount(mount.id)
+                                        if (transformDialogContext && transformHasUnsavedChanges) {
+                                          setPendingAfterSaveOrDiscard({ action: 'selectMount', mount: fullMount })
+                                          return
+                                        }
+                                        if (transformDialogContext) {
+                                          closeTransformPanel()
+                                        }
                                         setSelectedMount(fullMount)
                                         setSelectedAsset(null)
                                       } catch (err: any) {
@@ -1180,6 +1265,24 @@ export function Imaging() {
               type="button"
               className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
               onClick={() => {
+                if (selectedMount && transformDialogContext && transformHasUnsavedChanges) {
+                  const isSameContext =
+                    transformDialogContext.type === 'mount' &&
+                    transformDialogContext.mount.id === selectedMount.id &&
+                    transformDialogContext.slotId === mountContextMenu.slotId
+                  if (!isSameContext) {
+                    setPendingAfterSaveOrDiscard({
+                      action: 'openTransform',
+                      context: {
+                        type: 'mount',
+                        mount: selectedMount,
+                        slotId: mountContextMenu.slotId,
+                      },
+                    })
+                    setMountContextMenu(null)
+                    return
+                  }
+                }
                 setTransformDialogContext({
                   type: 'mount',
                   mount: selectedMount,
@@ -1310,6 +1413,51 @@ export function Imaging() {
           setMountInfoDialogMode(null)
         }}
       />
+
+      {/* Unsaved transformations dialog */}
+      <Dialog
+        open={!!pendingAfterSaveOrDiscard}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingAfterSaveOrDiscard(null)
+            setSavingTransform(false)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved transformations</DialogTitle>
+            <DialogDescription>
+              You have unsaved transformations. Save or discard your changes before switching images.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPendingAfterSaveOrDiscard(null)
+                setSavingTransform(false)
+              }}
+              disabled={savingTransform}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                closeTransformPanel()
+                applyPendingAction()
+              }}
+              disabled={savingTransform}
+            >
+              Discard changes
+            </Button>
+            <Button onClick={handleConfirmSaveTransforms} disabled={savingTransform}>
+              {savingTransform ? 'Saving…' : 'Save and continue'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <CreateMountDialog
         open={createMountDialogOpen}
