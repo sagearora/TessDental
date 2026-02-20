@@ -291,11 +291,36 @@ export async function listAssets(patientId?: number, studyId?: number): Promise<
 export function getAssetUrl(assetId: number, variant: 'original' | 'web' | 'thumb' = 'web'): string {
   return `${IMAGING_API_URL}/imaging/assets/${assetId}?variant=${variant}`
 }
+const ASSET_BLOB_VARIANTS: Array<'original' | 'web' | 'thumb'> = ['original', 'web', 'thumb']
 
-// Get asset as blob URL (for use in img tags with auth)
+/** In-memory cache of blob URLs by assetId:variant so we don't re-request unchanged thumbs. */
+const assetBlobUrlCache = new Map<string, { url: string }>()
+
+function assetBlobCacheKey(assetId: number, variant: 'original' | 'web' | 'thumb'): string {
+  return `${assetId}:${variant}`
+}
+
+/** Revoke and clear cached blob URLs for an asset (all variants). Call after regenerateAssetDerived(assetId). */
+export function invalidateAssetBlobCache(assetId: number): void {
+  for (const variant of ASSET_BLOB_VARIANTS) {
+    const key = assetBlobCacheKey(assetId, variant)
+    const entry = assetBlobUrlCache.get(key)
+    if (entry) {
+      URL.revokeObjectURL(entry.url)
+      assetBlobUrlCache.delete(key)
+    }
+  }
+}
+
+// Get asset as blob URL (for use in img tags with auth). Uses cache so unchanged assets are not re-requested.
 export async function getAssetBlobUrl(assetId: number, variant: 'original' | 'web' | 'thumb' = 'web'): Promise<string> {
+  const key = assetBlobCacheKey(assetId, variant)
+  const cached = assetBlobUrlCache.get(key)
+  if (cached) return cached.url
   const blob = await getAssetBlob(assetId, variant)
-  return URL.createObjectURL(blob)
+  const url = URL.createObjectURL(blob)
+  assetBlobUrlCache.set(key, { url })
+  return url
 }
 
 // Get asset as Blob (e.g. for PDF service or base64)

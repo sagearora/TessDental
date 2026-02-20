@@ -12,6 +12,7 @@ import {
   removeAssetFromMountSlot,
   getAssetBlobUrl,
   regenerateAssetDerived,
+  invalidateAssetBlobCache,
   type ImagingAsset,
   type ImagingMount,
 } from '@/api/imaging'
@@ -540,6 +541,7 @@ export function Imaging() {
       if (transformDialogContext.type === 'asset') {
         await updateAssetDisplayAdjustments(transformDialogContext.asset.id, adjustments)
         await regenerateAssetDerived(transformDialogContext.asset.id)
+        invalidateAssetBlobCache(transformDialogContext.asset.id)
         await fetchAssets()
       } else {
         const slotRow = (transformDialogContext.mount.mount_slots ?? transformDialogContext.mount.slots ?? []).find(
@@ -777,6 +779,7 @@ export function Imaging() {
                     try {
                       await updateAssetDisplayAdjustments(transformDialogContext.asset.id, adjustments)
                       await regenerateAssetDerived(transformDialogContext.asset.id)
+                      invalidateAssetBlobCache(transformDialogContext.asset.id)
                       await fetchAssets()
                     } catch (err) {
                       setError(err instanceof Error ? err.message : 'Failed to save adjustments')

@@ -27,11 +27,6 @@ export function AuthenticatedImage({
       try {
         setLoading(true)
         setError(false)
-        // Revoke previous blob URL if it exists
-        if (blobUrlRef.current) {
-          URL.revokeObjectURL(blobUrlRef.current)
-          blobUrlRef.current = null
-        }
         const blobUrl = await getAssetBlobUrl(assetId, variant)
         blobUrlRef.current = blobUrl
         setImageUrl(blobUrl)
@@ -46,14 +41,12 @@ export function AuthenticatedImage({
 
     loadImage()
 
-    // Cleanup blob URL on unmount or when assetId/variant changes
+    // Do not revoke the blob URL here: getAssetBlobUrl caches URLs and other
+    // instances may still use them. Only invalidateAssetBlobCache() revokes.
     return () => {
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current)
-        blobUrlRef.current = null
-      }
+      blobUrlRef.current = null
     }
-  }, [assetId, variant]) // Removed onError from deps to avoid unnecessary re-renders
+  }, [assetId, variant])
 
   if (loading) {
     return (
